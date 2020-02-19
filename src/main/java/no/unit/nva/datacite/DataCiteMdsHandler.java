@@ -29,10 +29,10 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
 
     public static final String QUERY_PARAMETERS_KEY = "queryParameters";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
-    public static final String PATH_PARAMETER_IDENTIFIER = "identifier";
+    public static final String PATH_PARAMETER_IDENTIFIER_KEY = "identifier";
 
     public static final String MISSING_PATH_PARAMETER_IDENTIFIER =
-            "Missing path param '" + PATH_PARAMETER_IDENTIFIER + "'";
+            "Missing path param '" + PATH_PARAMETER_IDENTIFIER_KEY + "'";
     public static final String ERROR_RETRIEVING_DATACITE_MDS_CLIENT_CONFIGS = "Error retrieving DataCite MDS client configs";
     public static final String ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER = "Institution is not set up as a DataCite provider";
     public static final String ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA = "Error setting DOI url, error deleting metadata";
@@ -102,7 +102,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
             return gatewayResponse;
         }
 
-        // TODO: Transform and validate metadata for datacite
+        // TODO: Retrieve directly - or transform and validate metadata for datacite
         Resource resource = new Resource();
 
         // Create Datacite connection and perform doi creation
@@ -182,7 +182,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
         if (Objects.isNull(pathParameters)) {
             throw new RuntimeException(MISSING_PATH_PARAMETER_IDENTIFIER);
         }
-        if (StringUtils.isEmpty(pathParameters.get(PATH_PARAMETER_IDENTIFIER))) {
+        if (StringUtils.isEmpty(pathParameters.get(PATH_PARAMETER_IDENTIFIER_KEY))) {
             throw new RuntimeException(MISSING_PATH_PARAMETER_IDENTIFIER);
         }
     }
