@@ -7,7 +7,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -36,21 +35,25 @@ public class DataCiteMdsConnection {
     public static final String FORM_PARAM_URL = "url";
 
     private final transient CloseableHttpClient httpClient;
+    private final String host;
 
     /**
      * Constructor for testability reasons.
      *
      * @param httpClient HttpClient
      */
-    public DataCiteMdsConnection(CloseableHttpClient httpClient) {
+    public DataCiteMdsConnection(CloseableHttpClient httpClient, String host) {
         this.httpClient = httpClient;
+        this.host = host;
     }
 
-    public DataCiteMdsConnection() {
+    public DataCiteMdsConnection(String host, String user, String password) {
+
+        this.host = host;
 
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials
-                = new UsernamePasswordCredentials("TODO-user", "TODO-pass");
+                = new UsernamePasswordCredentials(user, password);
         provider.setCredentials(AuthScope.ANY, credentials);
 
         httpClient = HttpClientBuilder.create()
@@ -70,7 +73,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse postMetadata(String doi, Resource resource) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPathSegments(DATACITE_PATH_METADATA, doi)
                 .build();
 
@@ -98,7 +101,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse getMetadata(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPath(DATACITE_PATH_METADATA + "/" + doi)
                 .build();
 
@@ -118,7 +121,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse deleteMetadata(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPath(DATACITE_PATH_METADATA + "/" + doi)
                 .build();
 
@@ -138,7 +141,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse getDoi(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
                 .build();
 
@@ -158,7 +161,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse deleteDoi(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
                 .build();
 
@@ -181,7 +184,7 @@ public class DataCiteMdsConnection {
     public CloseableHttpResponse postDoi(String doi, String url) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost("TODO-datacite-host")
+                .setHost(host)
                 .setPath(DATACITE_PATH_DOI)
                 .build();
 

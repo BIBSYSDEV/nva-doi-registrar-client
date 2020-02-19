@@ -1,21 +1,19 @@
 package no.unit.nva.datacite;
 
-
-import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 public class Config {
 
     public static final String MISSING_ENVIRONMENT_VARIABLES = "Missing environment variables";
-    public static final String DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
     public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "ALLOWED_ORIGIN";
+    public static final String DATACITE_MDS_CONFIGS_SECRET_ID_ENVIRONMENT_NAME = "DATACITE_MDS_CONFIGS";
+    public static final String NVA_HOST_ENVIRONMENT_NAME = "NVA_HOST";
 
     private String corsHeader;
-    private Map<String, DataCiteMdsClientConfig> dataCiteMdsClientConfigsMap = new TreeMap<>();
+    private String nvaHost;
+    private String dataCiteMdsConfigsSecretId;
+
 
     private Config() {
     }
@@ -26,32 +24,36 @@ public class Config {
 
         static {
             INSTANCE.setCorsHeader(System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME));
-            INSTANCE.setDataCiteMdsConfigs(System.getenv(DATACITE_MDS_CONFIGS));
+            INSTANCE.setDataCiteMdsConfigsSecretId(System.getenv(DATACITE_MDS_CONFIGS_SECRET_ID_ENVIRONMENT_NAME));
+            INSTANCE.setNvaHost(System.getenv(NVA_HOST_ENVIRONMENT_NAME));
         }
     }
 
+    public static Config getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
     public boolean checkProperties() {
-        if (dataCiteMdsClientConfigsMap.isEmpty()) {
+        if (StringUtils.isEmpty(dataCiteMdsConfigsSecretId) || StringUtils.isEmpty(nvaHost)) {
             throw new RuntimeException(MISSING_ENVIRONMENT_VARIABLES);
         }
         return true;
     }
 
-    public void setDataCiteMdsConfigs(String dataCiteMdsConfigs) {
-        DataCiteMdsClientConfig[] dataCiteMdsClientConfigs = new Gson().fromJson(dataCiteMdsConfigs, DataCiteMdsClientConfig[].class);
-        if (dataCiteMdsClientConfigs != null) {
-            for (DataCiteMdsClientConfig dataCiteMdsClientConfig : dataCiteMdsClientConfigs) {
-                dataCiteMdsClientConfigsMap.put(dataCiteMdsClientConfig.institution, dataCiteMdsClientConfig);
-            }
-        }
+    public String getNvaHost() {
+        return nvaHost;
     }
 
-    public DataCiteMdsClientConfig getDataciteMdsConfigForInstitution(String institution) {
-        return dataCiteMdsClientConfigsMap.get(institution);
+    public void setNvaHost(String nvaHost) {
+        this.nvaHost = nvaHost;
     }
 
-    public static Config getInstance() {
-        return LazyHolder.INSTANCE;
+    public String getDataCiteMdsConfigsSecretId() {
+        return dataCiteMdsConfigsSecretId;
+    }
+
+    public void setDataCiteMdsConfigsSecretId(String dataCiteMdsConfigsSecretId) {
+        this.dataCiteMdsConfigsSecretId = dataCiteMdsConfigsSecretId;
     }
 
     public String getCorsHeader() {
