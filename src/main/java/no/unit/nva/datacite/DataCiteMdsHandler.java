@@ -147,6 +147,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
 
         try (CloseableHttpResponse createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url)) {
             if (createDoiResponse.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()) {
+                // TODO: Does this handler persist created DOI onto resource?
                 gatewayResponse.setBody(createdDoi);
                 gatewayResponse.setStatusCode(Response.Status.CREATED.getStatusCode());
                 return gatewayResponse;
