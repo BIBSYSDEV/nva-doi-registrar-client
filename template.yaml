@@ -44,9 +44,14 @@ Resources:
           title: NVA Datacite MDS
           version: '1.0'
         paths:
-          /:
+          /{identifier}:
             post:
               summary:  Todo
+              parameters:
+                - in: path
+                  name: identifier
+                  type: string
+                  description: publication identifier.
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDataciteMdsFunction.Arn}/invocations
@@ -114,7 +119,7 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             RestApiId: !Ref NvaDataciteMdsApi
-            Path: /
+            Path: /{identifier}
             Method: post
 
   NvaDataciteMdsBasePathMapping:
