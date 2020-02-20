@@ -2,17 +2,67 @@ package no.unit.nva.datacite;
 
 public class DataCiteMdsClientConfig {
 
-    public String institution;
-    public String institutionPrefix;
-    public String dataCiteMdsClient_url;
-    public String dataCiteMdsClient_username;
-    public String dataCiteMdsClient_password;
+    private String institution;
+    private String institutionPrefix;
+    private String dataCiteMdsClientUrl;
+    private String dataCiteMdsClientUsername;
+    private String dataCiteMdsClientPassword;
 
-    public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClient_url, String dataCiteMdsClient_username, String dataCiteMdsClient_password) {
+    /**
+     * POJO for DataCite MDS API configuration.
+     *
+     * @param institution Institution id
+     * @param institutionPrefix Provider assigned prefix
+     * @param dataCiteMdsClientUrl DataCite MDS API host
+     * @param dataCiteMdsClientUsername Username
+     * @param dataCiteMdsClientPassword Password
+     */
+    public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl,
+                                   String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
         this.institution = institution;
         this.institutionPrefix = institutionPrefix;
-        this.dataCiteMdsClient_url = dataCiteMdsClient_url;
-        this.dataCiteMdsClient_username = dataCiteMdsClient_username;
-        this.dataCiteMdsClient_password = dataCiteMdsClient_password;
+        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
+        this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
+        this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
+    }
+
+    public String getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+
+    public String getInstitutionPrefix() {
+        return institutionPrefix;
+    }
+
+    public void setInstitutionPrefix(String institutionPrefix) {
+        this.institutionPrefix = institutionPrefix;
+    }
+
+    public String getDataCiteMdsClientUrl() {
+        return dataCiteMdsClientUrl;
+    }
+
+    public void setDataCiteMdsClientUrl(String dataCiteMdsClientUrl) {
+        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
+    }
+
+    public String getDataCiteMdsClientUsername() {
+        return dataCiteMdsClientUsername;
+    }
+
+    public void setDataCiteMdsClientUsername(String dataCiteMdsClientUsername) {
+        this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
+    }
+
+    public String getDataCiteMdsClientPassword() {
+        return dataCiteMdsClientPassword;
+    }
+
+    public void setDataCiteMdsClientPassword(String dataCiteMdsClientPassword) {
+        this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
     }
 }

@@ -33,8 +33,13 @@ public class Config {
         return LazyHolder.INSTANCE;
     }
 
+    /**
+     * Checking if mandatory properties are present.
+     *
+     * @return <code>TRUE</code> if properties are present.
+     */
     public boolean checkProperties() {
-        if (StringUtils.isEmpty(dataCiteMdsConfigsSecretId) || StringUtils.isEmpty(nvaHost)) {
+        if (StringUtils.isEmpty(getDataCiteMdsConfigsSecretId()) || StringUtils.isEmpty(getNvaHost())) {
             throw new RuntimeException(MISSING_ENVIRONMENT_VARIABLES);
         }
         return true;

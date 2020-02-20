@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.model;
+package no.unit.nva.datacite.model.generated;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 

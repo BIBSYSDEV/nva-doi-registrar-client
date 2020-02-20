@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.model;
+package no.unit.nva.datacite.model.generated;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -86,6 +86,7 @@ public class ResourceTest {
                                                 new FunderIdentifier("http://doi.org/10.13039/501100000780")
                                                         .funderIdentifierType("Crossref Funder ID")
                                         )
+                                .awardNumber(new AwardNumber(""))
                         );
         assertNotNull(new XmlMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)

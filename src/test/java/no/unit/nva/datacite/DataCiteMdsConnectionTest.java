@@ -1,6 +1,6 @@
 package no.unit.nva.datacite;
 
-import no.unit.nva.datacite.model.Resource;
+import no.unit.nva.datacite.model.generated.Resource;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -38,6 +38,7 @@ public class DataCiteMdsConnectionTest {
     public static final Resource MOCK_RESOURCE = new Resource();
     public static final String MOCK_USER = "MOCK_USER";
     public static final String MOCK_PASSWORD = "MOCK_PASSWORD";
+    public static final String MOCK_INSTITUTION = "institution";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -61,9 +62,15 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
+    public void dataCiteMdsConnectionConfigureTest() {
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
+        dataCiteMdsConnection.configure(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
+        assertNotNull(dataCiteMdsConnection);
+    }
+
+    @Test
     public void postMetadataTest() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-
         mockCloseableHttpResponse.setEntity(mockEntity);
         when(mockEntity.getContent()).thenReturn(stream);
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);

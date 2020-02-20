@@ -80,6 +80,11 @@ check.dependsOn jacocoTestCoverageVerification
 jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
 
 jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: 'no/unit/nva/datacite//model/generated/**')
+        }))
+    }
     violationRules {
         rule {
             limit {

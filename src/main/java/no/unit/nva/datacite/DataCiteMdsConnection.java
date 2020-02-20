@@ -2,7 +2,7 @@ package no.unit.nva.datacite;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import no.unit.nva.datacite.model.Resource;
+import no.unit.nva.datacite.model.generated.Resource;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -27,15 +27,15 @@ import java.util.List;
 
 public class DataCiteMdsConnection {
 
-    public static final String HTTPS = "https";
-    public static final String DATACITE_PATH_DOI = "doi";
-    public static final String DATACITE_PATH_METADATA = "metadata";
-    public static final String CHARACTER_SLASH = "/";
-    public static final String FORM_PARAM_DOI = "doi";
-    public static final String FORM_PARAM_URL = "url";
+    private static final String HTTPS = "https";
+    private static final String DATACITE_PATH_DOI = "doi";
+    private static final String DATACITE_PATH_METADATA = "metadata";
+    private static final String CHARACTER_SLASH = "/";
+    private static final String FORM_PARAM_DOI = "doi";
+    private static final String FORM_PARAM_URL = "url";
 
-    private final transient CloseableHttpClient httpClient;
-    private final String host;
+    private transient CloseableHttpClient httpClient;
+    private transient String host;
 
     /**
      * Constructor for testability reasons.
@@ -47,15 +47,37 @@ public class DataCiteMdsConnection {
         this.host = host;
     }
 
+    /**
+     *  Initialize DataCiteMdsConnection for provider.
+     *
+     * @param host DataCite MDS API host
+     * @param user username
+     * @param password password
+     */
     public DataCiteMdsConnection(String host, String user, String password) {
-
         this.host = host;
-
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials
                 = new UsernamePasswordCredentials(user, password);
         provider.setCredentials(AuthScope.ANY, credentials);
+        httpClient = HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(provider)
+                .build();
+    }
 
+    /**
+     *  Reconfigures DataCiteMdsConnection for another provider.
+     *
+     * @param host DataCite MDS API host
+     * @param user username
+     * @param password password
+     */
+    public void configure(String host, String user, String password) {
+        this.host = host;
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials
+                = new UsernamePasswordCredentials(user, password);
+        provider.setCredentials(AuthScope.ANY, credentials);
         httpClient = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider)
                 .build();
@@ -64,11 +86,11 @@ public class DataCiteMdsConnection {
     /**
      * This request stores a new version of metadata.
      *
-     * @param doi
-     * @param resource
+     * @param doi      perfix/suffix
+     * @param resource resource metadata
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse postMetadata(String doi, Resource resource) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
@@ -93,10 +115,10 @@ public class DataCiteMdsConnection {
     /**
      * This request requests the most recent version of metadata associated with a given DOI.
      *
-     * @param doi
+     * @param doi perfix/suffix
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse getMetadata(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
@@ -113,10 +135,10 @@ public class DataCiteMdsConnection {
     /**
      * This request marks a dataset as inactive. To activate it again, add new metadata.
      *
-     * @param doi
+     * @param doi perfix/suffix
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse deleteMetadata(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
@@ -133,10 +155,10 @@ public class DataCiteMdsConnection {
     /**
      * This requests the URL associated with a given DOI.
      *
-     * @param doi
+     * @param doi perfix/suffix
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse getDoi(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
@@ -153,10 +175,10 @@ public class DataCiteMdsConnection {
     /**
      * Deletes a DOI if DOI is in draft status.
      *
-     * @param doi
+     * @param doi perfix/suffix
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse deleteDoi(String doi) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
@@ -175,11 +197,11 @@ public class DataCiteMdsConnection {
      * Will register a new DOI if the specified DOI doesn’t exist. This method will attempt to update the
      * URL if you specify an existing DOI.
      *
-     * @param doi
-     * @param url
+     * @param doi perfix/suffix
+     * @param url landing page url
      * @return CloseableHttpResponse
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
      */
     public CloseableHttpResponse postDoi(String doi, String url) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
