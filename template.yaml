@@ -26,6 +26,14 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
+  DataciteMdsConfigs:
+    Type: String
+    Description: Institution configs for Datacite MDS API
+    Default: '{{resolve:secretsmanager:dataciteMdsConfigs:SecretString}}'
+  NvaFrontendHost:
+    Type: String
+    Description: Hostname frontend landing page
+    Default: '{{resolve:ssm:nvaFrontendHost:1}}'
 
 Resources:
 
@@ -110,6 +118,8 @@ Resources:
     Properties:
       Environment:
         Variables:
+          DATACITE_MDS_CONFIGS: !Ref DataciteMdsConfigs
+          NVA_FRONTEND_HOST: !Ref NvaFrontendHost
           ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.datacite.DataciteMdsHandler::handleRequest
       Runtime: java8

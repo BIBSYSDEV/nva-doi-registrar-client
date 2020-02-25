@@ -7,12 +7,12 @@ public class Config {
     public static final String MISSING_ENVIRONMENT_VARIABLES = "Missing environment variables";
 
     public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "ALLOWED_ORIGIN";
-    public static final String DATACITE_MDS_CONFIGS_SECRET_ID_ENVIRONMENT_NAME = "DATACITE_MDS_CONFIGS";
-    public static final String NVA_HOST_ENVIRONMENT_NAME = "NVA_HOST";
+    public static final String DATACITE_MDS_CONFIGS_ENVIRONMENT_NAME = "DATACITE_MDS_CONFIGS";
+    public static final String NVA_FRONTEND_HOST_ENVIRONMENT_NAME = "NVA_FRONTEND_HOST";
 
     private String corsHeader;
-    private String nvaHost;
-    private String dataCiteMdsConfigsSecretId;
+    private String nvaFrontendHost;
+    private String dataCiteMdsConfigs;
 
 
     private Config() {
@@ -24,8 +24,8 @@ public class Config {
 
         static {
             INSTANCE.setCorsHeader(System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME));
-            INSTANCE.setDataCiteMdsConfigsSecretId(System.getenv(DATACITE_MDS_CONFIGS_SECRET_ID_ENVIRONMENT_NAME));
-            INSTANCE.setNvaHost(System.getenv(NVA_HOST_ENVIRONMENT_NAME));
+            INSTANCE.setDataCiteMdsConfigs(System.getenv(DATACITE_MDS_CONFIGS_ENVIRONMENT_NAME));
+            INSTANCE.setNvaFrontendHost(System.getenv(NVA_FRONTEND_HOST_ENVIRONMENT_NAME));
         }
     }
 
@@ -39,26 +39,26 @@ public class Config {
      * @return <code>TRUE</code> if properties are present.
      */
     public boolean checkProperties() {
-        if (StringUtils.isEmpty(getDataCiteMdsConfigsSecretId()) || StringUtils.isEmpty(getNvaHost())) {
+        if (StringUtils.isEmpty(getDataCiteMdsConfigs()) || StringUtils.isEmpty(getNvaFrontendHost())) {
             throw new RuntimeException(MISSING_ENVIRONMENT_VARIABLES);
         }
         return true;
     }
 
-    public String getNvaHost() {
-        return nvaHost;
+    public String getNvaFrontendHost() {
+        return nvaFrontendHost;
     }
 
-    public void setNvaHost(String nvaHost) {
-        this.nvaHost = nvaHost;
+    public void setNvaFrontendHost(String nvaFrontendHost) {
+        this.nvaFrontendHost = nvaFrontendHost;
     }
 
-    public String getDataCiteMdsConfigsSecretId() {
-        return dataCiteMdsConfigsSecretId;
+    public String getDataCiteMdsConfigs() {
+        return dataCiteMdsConfigs;
     }
 
-    public void setDataCiteMdsConfigsSecretId(String dataCiteMdsConfigsSecretId) {
-        this.dataCiteMdsConfigsSecretId = dataCiteMdsConfigsSecretId;
+    public void setDataCiteMdsConfigs(String dataCiteMdsConfigsSecretId) {
+        this.dataCiteMdsConfigs = dataCiteMdsConfigsSecretId;
     }
 
     public String getCorsHeader() {

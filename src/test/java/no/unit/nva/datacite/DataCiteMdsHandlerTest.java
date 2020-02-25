@@ -57,8 +57,8 @@ public class DataCiteMdsHandlerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         final Config config = Config.getInstance();
-        config.setNvaHost(MOCK_HOST_ENV_VAR);
-        config.setDataCiteMdsConfigsSecretId(MOCK_SECRET_ID_ENV_VAR);
+        config.setNvaFrontendHost(MOCK_HOST_ENV_VAR);
+        config.setDataCiteMdsConfigs(MOCK_SECRET_ID_ENV_VAR);
     }
 
     @Rule
@@ -213,7 +213,7 @@ public class DataCiteMdsHandlerTest {
 
     @Test
     public void testFailingRequestCauseInvalidNvaHostInEnvironment() {
-        Config.getInstance().setNvaHost(MOCK_INVALID_HOST);
+        Config.getInstance().setNvaFrontendHost(MOCK_INVALID_HOST);
 
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(PATH_PARAM_IDENTIFIER_KEY, MOCK_IDENTIFIER);

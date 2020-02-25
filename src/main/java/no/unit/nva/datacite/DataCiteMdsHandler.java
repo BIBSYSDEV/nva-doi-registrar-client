@@ -184,7 +184,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
     private String createLandingPageUrl(String identifier) throws URISyntaxException, MalformedURLException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost(Config.getInstance().getNvaHost())
+                .setHost(Config.getInstance().getNvaFrontendHost())
                 .setPathSegments(identifier)
                 .build();
 
@@ -204,7 +204,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
     }
 
     private void checkAndSetDataCiteMdsConfigs() {
-        String secretASJson = secretCache.getSecretString(Config.getInstance().getDataCiteMdsConfigsSecretId());
+        String secretASJson = secretCache.getSecretString(Config.getInstance().getDataCiteMdsConfigs());
         if (StringUtils.isEmpty(secretASJson)) {
             throw new RuntimeException(ERROR_RETRIEVING_DATACITE_MDS_CLIENT_CONFIGS);
         }
