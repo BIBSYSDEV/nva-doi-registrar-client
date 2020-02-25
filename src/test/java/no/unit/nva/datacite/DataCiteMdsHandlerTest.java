@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
+import static no.unit.nva.datacite.DataCiteMdsHandler.PARENTHESES_START;
+import static no.unit.nva.datacite.DataCiteMdsHandler.PARENTHESES_STOP;
+import static no.unit.nva.datacite.DataCiteMdsHandler.WHITESPACE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -252,7 +255,8 @@ public class DataCiteMdsHandlerTest {
 
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(DataCiteMdsHandler.ERROR_SETTING_DOI_METADATA);
+        expectedResponse.setErrorBody(DataCiteMdsHandler.ERROR_SETTING_DOI_METADATA + WHITESPACE + PARENTHESES_START
+                + Response.Status.UNAUTHORIZED.getStatusCode() + PARENTHESES_STOP);
 
         assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
         assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());

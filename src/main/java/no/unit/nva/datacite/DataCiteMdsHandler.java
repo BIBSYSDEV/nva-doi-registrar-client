@@ -39,6 +39,7 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
             "Error setting DOI url, error deleting metadata";
     public static final String ERROR_SETTING_DOI_METADATA = "Error setting DOI metadata";
     public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
+    public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
     public static final String ERROR_CREATING_LANDING_PAGE_URL = "Error creating landing page url";
 
     public static final String HTTPS = "https";
@@ -133,7 +134,8 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
         try (CloseableHttpResponse createMetadataResponse =
                      dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), resource)) {
             if (createMetadataResponse.getStatusLine().getStatusCode() != Response.Status.CREATED.getStatusCode()) {
-                gatewayResponse.setErrorBody(ERROR_SETTING_DOI_METADATA);
+                gatewayResponse.setErrorBody(ERROR_SETTING_DOI_METADATA + WHITESPACE + PARENTHESES_START
+                        + createMetadataResponse.getStatusLine().getStatusCode() + PARENTHESES_STOP);
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 return gatewayResponse;
             }
@@ -151,6 +153,9 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
                 gatewayResponse.setBody(createdDoi);
                 gatewayResponse.setStatusCode(Response.Status.CREATED.getStatusCode());
                 return gatewayResponse;
+            } else {
+                System.out.println(ERROR_SETTING_DOI_URL + WHITESPACE + PARENTHESES_START
+                        + createDoiResponse.getStatusLine().getStatusCode() + PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
             System.out.println(e);
@@ -162,6 +167,9 @@ public class DataCiteMdsHandler implements RequestHandler<Map<String, Object>, G
                 gatewayResponse.setErrorBody(ERROR_SETTING_DOI_URL);
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 return gatewayResponse;
+            } else {
+                System.out.println(ERROR_DELETING_DOI_METADATA + WHITESPACE + PARENTHESES_START
+                        + deleteDoiMetadata.getStatusLine().getStatusCode() + PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
             System.out.println(e);
