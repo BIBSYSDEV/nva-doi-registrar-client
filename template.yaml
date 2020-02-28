@@ -30,10 +30,6 @@ Parameters:
     Type: String
     Description: Institution configs for Datacite MDS API
     Default: '{{resolve:secretsmanager:dataciteMdsConfigs:SecretString}}'
-  NvaFrontendHost:
-    Type: String
-    Description: Hostname frontend landing page
-    Default: '{{resolve:ssm:nvaFrontendHost:1}}'
 
 Resources:
 
@@ -52,14 +48,25 @@ Resources:
           title: NVA Datacite MDS
           version: '1.0'
         paths:
-          /{identifier}:
+          /:
             post:
               summary:  Todo
               parameters:
-                - in: path
-                  name: identifier
+                - in: query
+                  name: url
+                  required: true
                   type: string
-                  description: publication identifier.
+                  description: Landing page url
+                - in: query
+                  name: dataciteXml
+                  required: true
+                  type: string
+                  description: Datacite XML
+                - in: query
+                  name: institutionId
+                  required: true
+                  type: string
+                  description: Institution id
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDataciteMdsFunction.Arn}/invocations
@@ -79,6 +86,17 @@ Resources:
                     application/json:
                       schema:
                         title: 400 Bad Request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '402':
+                  description: Payment required.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Payment Required
                         type: object
                         properties:
                           error:
@@ -119,9 +137,8 @@ Resources:
       Environment:
         Variables:
           DATACITE_MDS_CONFIGS: !Ref DataciteMdsConfigs
-          NVA_FRONTEND_HOST: !Ref NvaFrontendHost
           ALLOWED_ORIGIN:  '*'
-      Handler: no.unit.nva.datacite.DataciteMdsHandler::handleRequest
+      Handler: no.unit.nva.datacite.DataciteMdsCreateDoiHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Events:
@@ -129,7 +146,7 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             RestApiId: !Ref NvaDataciteMdsApi
-            Path: /{identifier}
+            Path: /
             Method: post
 
   NvaDataciteMdsBasePathMapping:
