@@ -1,6 +1,5 @@
 package no.unit.nva.datacite;
 
-import no.unit.nva.datacite.model.generated.Resource;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,10 +34,9 @@ public class DataCiteMdsConnectionTest {
     public static final String MOCK_LANDING_PAGE_URL = "https://nva-mock.unit.no/123456789";
     public static final String MOCK_DOI_PREFIX = "prefix";
     public static final String MOCK_DOI = "prefix/suffix";
-    public static final Resource MOCK_RESOURCE = new Resource();
+    public static final String MOCK_DATACITE_XML = "mock-xml";
     public static final String MOCK_USER = "MOCK_USER";
     public static final String MOCK_PASSWORD = "MOCK_PASSWORD";
-    public static final String MOCK_INSTITUTION = "institution";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -78,7 +76,7 @@ public class DataCiteMdsConnectionTest {
 
         DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(mockHttpClient, MOCK_HOST);
 
-        CloseableHttpResponse httpResponse = mockDataCiteMdsConnection.postMetadata(MOCK_DOI_PREFIX, MOCK_RESOURCE);
+        CloseableHttpResponse httpResponse = mockDataCiteMdsConnection.postMetadata(MOCK_DOI_PREFIX, MOCK_DATACITE_XML);
 
         assertNotNull(httpResponse);
         assertNotNull(EntityUtils.toString(httpResponse.getEntity()));

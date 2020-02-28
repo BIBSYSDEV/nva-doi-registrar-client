@@ -1,8 +1,5 @@
 package no.unit.nva.datacite;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import no.unit.nva.datacite.model.generated.Resource;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -87,12 +84,13 @@ public class DataCiteMdsConnection {
      * This request stores a new version of metadata.
      *
      * @param doi      perfix/suffix
-     * @param resource resource metadata
+     * @param dataciteXml resource metadata as Datacite XML
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
      */
-    public CloseableHttpResponse postMetadata(String doi, Resource resource) throws IOException, URISyntaxException {
+    public CloseableHttpResponse postMetadata(String doi, String dataciteXml) throws IOException,
+            URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
@@ -102,10 +100,7 @@ public class DataCiteMdsConnection {
         HttpPost httpPost = new HttpPost(uri);
 
         httpPost.addHeader("Content-Type", "application/xml; charset=UTF-8");
-        String xml = new XmlMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .writeValueAsString(resource);
-        httpPost.setEntity(new StringEntity(xml));
+        httpPost.setEntity(new StringEntity(dataciteXml));
 
         return httpClient.execute(httpPost);
 

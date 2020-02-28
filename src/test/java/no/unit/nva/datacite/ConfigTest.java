@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 public class ConfigTest {
 
     public static final String DUMMY_DATACITE_CONFIGS = "secret";
-    public static final String DUMMY_NVA_FRONTEND_HOST = "nvaFrontendHost";
 
     @Test
     public void testCorsHeaderNotSet() {
@@ -27,14 +26,6 @@ public class ConfigTest {
         assertNull(dataCiteMdsConfigs);
     }
 
-    @Test
-    public void testNvaHostNotSet() {
-        final Config config = Config.getInstance();
-        config.setNvaFrontendHost(null);
-        final String nvaFrontendHost = config.getNvaFrontendHost();
-        assertNull(nvaFrontendHost);
-    }
-
     @Test(expected = RuntimeException.class)
     public void testCheckPropertiesNotSet() {
         final Config config = Config.getInstance();
@@ -47,7 +38,6 @@ public class ConfigTest {
     public void testCheckPropertiesSet() {
         final Config instance = Config.getInstance();
         instance.setDataCiteMdsConfigs(DUMMY_DATACITE_CONFIGS);
-        instance.setNvaFrontendHost(DUMMY_NVA_FRONTEND_HOST);
         assertTrue(instance.checkProperties());
     }
 }
