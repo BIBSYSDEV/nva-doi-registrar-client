@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    public static final String QUERY_PARAMETERS_KEY = "queryParameters";
+    public static final String QUERY_PARAMETERS_KEY = "queryStringParameters";
     public static final String QUERY_PARAMETER_DATACITE_XML_KEY = "dataciteXml";
     public static final String QUERY_PARAMETER_URL_KEY = "url";
     public static final String QUERY_PARAMETER_INSTITUTION_ID_KEY = "institutionId";
