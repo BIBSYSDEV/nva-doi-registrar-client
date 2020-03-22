@@ -1,6 +1,7 @@
 package no.unit.nva.datacite;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 public class DataCiteMdsClientConfigTest {
 
@@ -9,7 +10,7 @@ public class DataCiteMdsClientConfigTest {
     public static final String INSTITUTION_PREFIX = "institutionPrefix";
     public static final String DATA_CITE_MDS_CLIENT_URL = "dataCiteMdsClientUrl";
     public static final String DATACITE_MDS_CLIENT_USERNAME = "dataCiteMdsClientUsername";
-    public static final String DATACITE_MDS_CLIENT_PASSWORD = "dataCiteMdsClientUassword";
+    public static final String DATACITE_MDS_CLIENT_PASSWORD = "dataCiteMdsClientPassword";
 
     @Test
     public void exists() {
@@ -18,7 +19,7 @@ public class DataCiteMdsClientConfigTest {
     }
 
     @Test
-    public void settersTest() {
+    public void testSetters() {
         DataCiteMdsClientConfig dataCiteMdsClientConfig = new DataCiteMdsClientConfig(INSTITUTION, INSTITUTION_PREFIX,
                 DATA_CITE_MDS_CLIENT_URL, DATACITE_MDS_CLIENT_USERNAME, DATACITE_MDS_CLIENT_PASSWORD);
         dataCiteMdsClientConfig.setInstitution(INSTITUTION);

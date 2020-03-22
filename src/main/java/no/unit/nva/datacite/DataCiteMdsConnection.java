@@ -139,7 +139,7 @@ public class DataCiteMdsConnection {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
-                .setPath(DATACITE_PATH_METADATA + "/" + doi)
+                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
                 .build();
 
         HttpDelete httpDelete = new HttpDelete(uri);

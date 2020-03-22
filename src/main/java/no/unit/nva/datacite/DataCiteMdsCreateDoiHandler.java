@@ -11,7 +11,6 @@ import org.apache.http.util.EntityUtils;
 
 import javax.ws.rs.core.Response;
 
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;

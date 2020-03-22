@@ -4,15 +4,11 @@ import com.amazonaws.secretsmanager.caching.SecretCache;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -25,13 +21,12 @@ import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_M
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.PARENTHESES_START;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.PARENTHESES_STOP;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.WHITESPACE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(MockitoJUnitRunner.class)
 public class DataCiteMdsCreateDoiHandlerTest {
 
     public static final String QUERY_PARAMETERS_KEY = "queryStringParameters";
@@ -56,15 +51,12 @@ public class DataCiteMdsCreateDoiHandlerTest {
     /**
      * Initialize mocks and Config.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         final Config config = Config.getInstance();
         config.setDataCiteMdsConfigs(MOCK_SECRET_ID_ENV_VAR);
     }
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     DataCiteMdsConnection mockDataCiteMdsConnection;
@@ -122,7 +114,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseDataciteConfigsNotFound() {
+    public void testFailingRequestDataciteConfigsNotFound() {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
         queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
@@ -147,7 +139,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseDataciteConfigNotFound() {
+    public void testFailingRequestDataciteConfigNotFound() {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
         queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_UNKNOWN_INSTITUTION_ID);
@@ -172,7 +164,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseMissingQueryParameters() {
+    public void testFailingRequestMissingQueryParameters() {
         Map<String, Object> requestEvent = new HashMap<>();
 
         DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
@@ -189,7 +181,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseEmptyQueryParameters() {
+    public void testFailingRequestEmptyQueryParameters() {
         HashMap<String, String> queryParameters = new HashMap<>();
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
@@ -207,7 +199,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseMissingQueryParameterUrl() {
+    public void testFailingRequestMissingQueryParameterUrl() {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
         queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
@@ -228,7 +220,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseMissingPathParameterDataciteXml() {
+    public void testFailingRequestMissingQueryParameterDataciteXml() {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
         queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
@@ -249,7 +241,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestCauseMissingPathParameterInstitutionId() {
+    public void testFailingRequestMissingQueryParameterInstitutionId() {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
         queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
@@ -362,7 +354,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestErrorSettingDoiUrlErrorAndDeletingMetadataError() throws IOException,
+    public void testFailingRequestErrorSettingDoiUrlAndDeletingMetadataError() throws IOException,
             URISyntaxException {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
@@ -407,7 +399,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    public void testFailingRequestErrorSettingDoiUrlErrorAndExceptionDeletingMetadata() throws IOException,
+    public void testFailingRequestErrorSettingDoiUrlAndExceptionDeletingMetadata() throws IOException,
             URISyntaxException {
         HashMap<String, String> queryParameters = new HashMap<>();
         queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);

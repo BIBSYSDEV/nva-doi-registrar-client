@@ -1,10 +1,10 @@
 package no.unit.nva.datacite;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConfigTest {
 
@@ -26,12 +26,13 @@ public class ConfigTest {
         assertNull(dataCiteMdsConfigs);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testCheckPropertiesNotSet() {
-        final Config config = Config.getInstance();
-        config.setDataCiteMdsConfigs(null);
-        config.checkProperties();
-        fail();
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            final Config config = Config.getInstance();
+            config.setDataCiteMdsConfigs(null);
+            config.checkProperties();
+        });
     }
 
     @Test

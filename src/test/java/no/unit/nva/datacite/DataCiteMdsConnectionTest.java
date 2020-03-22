@@ -4,25 +4,20 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DataCiteMdsConnectionTest {
 
     public static final String DATACITE_MDS_OK_RESPONSE = "/dataciteMdsOkResponse.txt";
@@ -38,9 +33,6 @@ public class DataCiteMdsConnectionTest {
     public static final String MOCK_USER = "MOCK_USER";
     public static final String MOCK_PASSWORD = "MOCK_PASSWORD";
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
     @Mock
     CloseableHttpClient mockHttpClient;
     @Mock
@@ -48,26 +40,26 @@ public class DataCiteMdsConnectionTest {
     @Mock
     HttpEntity mockEntity;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void dataCiteMdsConnectionTest() {
+    public void testDataCiteMdsConnection() {
         DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
         assertNotNull(dataCiteMdsConnection);
     }
 
     @Test
-    public void dataCiteMdsConnectionConfigureTest() {
+    public void testDataCiteMdsConnectionConfigure() {
         DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
         dataCiteMdsConnection.configure(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
         assertNotNull(dataCiteMdsConnection);
     }
 
     @Test
-    public void postMetadataTest() throws IOException, URISyntaxException {
+    public void testPostMetadata() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
         mockCloseableHttpResponse.setEntity(mockEntity);
         when(mockEntity.getContent()).thenReturn(stream);
@@ -84,7 +76,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void getMetadataTest() throws IOException, URISyntaxException {
+    public void testGetMetadata() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_XML_RESOURCE_EXAMPLE);
 
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -101,7 +93,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void deleteMetadataTest() throws IOException, URISyntaxException {
+    public void testDeleteMetadata() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
 
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -118,7 +110,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void getDoiTest() throws IOException, URISyntaxException {
+    public void testGetDoi() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_GET_DOI_RESPONSE);
 
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -135,7 +127,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void postDoiTest() throws IOException, URISyntaxException {
+    public void testPostDoi() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
 
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -152,7 +144,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void deleteDoiTest() throws IOException, URISyntaxException {
+    public void testDeleteDoi() throws IOException, URISyntaxException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
 
         mockCloseableHttpResponse.setEntity(mockEntity);
