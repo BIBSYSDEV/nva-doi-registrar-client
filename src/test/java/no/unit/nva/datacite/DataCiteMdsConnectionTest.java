@@ -23,8 +23,8 @@ public class DataCiteMdsConnectionTest {
     public static final String DATACITE_MDS_OK_RESPONSE = "/dataciteMdsOkResponse.txt";
     public static final String DATACITE_MDS_POST_METADATA_RESPONSE = "/dataciteMdsPostMetadataResponse.txt";
     public static final String DATACITE_MDS_GET_DOI_RESPONSE = "/dataciteMdsGetDoiResponse.txt";
-
     public static final String DATACITE_XML_RESOURCE_EXAMPLE = "/dataciteXmlResourceExample.xml";
+
     public static final String MOCK_HOST = "nva-mock.unit.no";
     public static final String MOCK_LANDING_PAGE_URL = "https://nva-mock.unit.no/123456789";
     public static final String MOCK_DOI_PREFIX = "prefix";

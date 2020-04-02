@@ -25,11 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    public static final String QUERY_PARAMETERS_KEY = "queryStringParameters";
-    public static final String QUERY_PARAMETER_DATACITE_XML_KEY = "dataciteXml";
-    public static final String QUERY_PARAMETER_URL_KEY = "url";
-    public static final String QUERY_PARAMETER_INSTITUTION_ID_KEY = "institutionId";
-
     public static final String ERROR_MISSING_QUERY_PARAMETERS =
             "Query parameters 'institutionId', 'dataciteXml' and 'url' are mandatory";
     public static final String ERROR_MISSING_QUERY_PARAMETER_DATACITE_XML =
@@ -48,9 +43,14 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
     public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
     public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
 
-    public static final String PARENTHESES_START = "(";
-    public static final String PARENTHESES_STOP = ")";
-    public static final String WHITESPACE = " ";
+    public static final String QUERY_PARAMETERS_KEY = "queryStringParameters";
+    public static final String QUERY_PARAMETER_DATACITE_XML_KEY = "dataciteXml";
+    public static final String QUERY_PARAMETER_URL_KEY = "url";
+    public static final String QUERY_PARAMETER_INSTITUTION_ID_KEY = "institutionId";
+
+    public static final String CHARACTER_PARENTHESES_START = "(";
+    public static final String CHARACTER_PARENTHESES_STOP = ")";
+    public static final String CHARACTER_WHITESPACE = " ";
 
     private final transient Map<String, DataCiteMdsClientConfig> dataCiteMdsClientConfigsMap =
             new ConcurrentHashMap<>();
@@ -78,7 +78,7 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
         try {
             this.checkParameters(input);
         } catch (RuntimeException e) {
-            System.out.println(e);
+            e.printStackTrace();
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             return gatewayResponse;
@@ -88,7 +88,7 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
             Config.getInstance().checkProperties();
             this.checkAndSetDataCiteMdsConfigs();
         } catch (RuntimeException e) {
-            System.out.println(e);
+            e.printStackTrace();
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             return gatewayResponse;
@@ -97,14 +97,14 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
         Map<String, String> queryParameters = (Map<String, String>) input.get(QUERY_PARAMETERS_KEY);
         String institutionId = queryParameters.get(QUERY_PARAMETER_INSTITUTION_ID_KEY);
 
-        // Check if resource institution is present in datacite configs
+        // Check if provided institutionId is present in DataCite configs
         if (!dataCiteMdsClientConfigsMap.containsKey(institutionId)) {
             gatewayResponse.setErrorBody(ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER);
             gatewayResponse.setStatusCode(Response.Status.PAYMENT_REQUIRED.getStatusCode());
             return gatewayResponse;
         }
 
-        // Create Datacite connection and perform doi creation
+        // Create DataCite connection for institution
         DataCiteMdsClientConfig dataCiteMdsClientConfig = dataCiteMdsClientConfigsMap.get(institutionId);
         dataCiteMdsConnection.configure(dataCiteMdsClientConfig.getDataCiteMdsClientUrl(),
                 dataCiteMdsClientConfig.getDataCiteMdsClientUsername(),
@@ -118,52 +118,65 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
 
     private GatewayResponse createDoi(GatewayResponse gatewayResponse, DataCiteMdsClientConfig dataCiteMdsClientConfig,
                                       String url, String dataciteXml) {
+
+        // Register DOI metadata and retrieve generated DOI
         String createdDoi;
         try (CloseableHttpResponse createMetadataResponse =
                      dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), dataciteXml)) {
             if (createMetadataResponse.getStatusLine().getStatusCode() != Response.Status.CREATED.getStatusCode()) {
-                gatewayResponse.setErrorBody(ERROR_SETTING_DOI_METADATA + WHITESPACE + PARENTHESES_START
-                        + createMetadataResponse.getStatusLine().getStatusCode() + PARENTHESES_STOP);
+                gatewayResponse.setErrorBody(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
+                        + CHARACTER_PARENTHESES_START
+                        + createMetadataResponse.getStatusLine().getStatusCode()
+                        + CHARACTER_PARENTHESES_STOP);
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 return gatewayResponse;
             }
             String createMetadataResponseBody = EntityUtils.toString(createMetadataResponse.getEntity(),
                     StandardCharsets.UTF_8.name());
-            createdDoi = StringUtils.substringBetween(createMetadataResponseBody, PARENTHESES_START, PARENTHESES_STOP);
+            createdDoi = StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
+                    CHARACTER_PARENTHESES_STOP);
         } catch (IOException | URISyntaxException e) {
             gatewayResponse.setErrorBody(ERROR_SETTING_DOI_METADATA);
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             return gatewayResponse;
         }
 
+        // Set DOI URL (Landing page)
         try (CloseableHttpResponse createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url)) {
             if (createDoiResponse.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()) {
                 gatewayResponse.setBody(createdDoi);
                 gatewayResponse.setStatusCode(Response.Status.CREATED.getStatusCode());
                 return gatewayResponse;
             } else {
-                System.out.println(ERROR_SETTING_DOI_URL + WHITESPACE + PARENTHESES_START
-                        + createDoiResponse.getStatusLine().getStatusCode() + PARENTHESES_STOP);
+                log(ERROR_SETTING_DOI_URL
+                        + CHARACTER_WHITESPACE
+                        + CHARACTER_PARENTHESES_START
+                        + createDoiResponse.getStatusLine().getStatusCode()
+                        + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
-        // Delete metadata - registering DOI url failed
+        // Registering DOI URL has failed, delete metadata
         try (CloseableHttpResponse deleteDoiMetadata = dataCiteMdsConnection.deleteMetadata(createdDoi)) {
             if (deleteDoiMetadata.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
                 gatewayResponse.setErrorBody(ERROR_SETTING_DOI_URL);
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 return gatewayResponse;
             } else {
-                System.out.println(ERROR_DELETING_DOI_METADATA + WHITESPACE + PARENTHESES_START
-                        + deleteDoiMetadata.getStatusLine().getStatusCode() + PARENTHESES_STOP);
+                log(ERROR_DELETING_DOI_METADATA
+                        + CHARACTER_WHITESPACE
+                        + CHARACTER_PARENTHESES_START
+                        + deleteDoiMetadata.getStatusLine().getStatusCode()
+                        + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
-        System.out.println(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA + WHITESPACE + PARENTHESES_START
-                + createdDoi + PARENTHESES_STOP);
+        log(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA + CHARACTER_WHITESPACE
+                + CHARACTER_PARENTHESES_START
+                + createdDoi + CHARACTER_PARENTHESES_STOP);
         gatewayResponse.setErrorBody(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA);
         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         return gatewayResponse;
@@ -204,6 +217,10 @@ public class DataCiteMdsCreateDoiHandler implements RequestHandler<Map<String, O
                 dataCiteMdsClientConfigsMap.put(dataCiteMdsClientConfig.getInstitution(), dataCiteMdsClientConfig);
             }
         }
+    }
+
+    public static void log(String message) {
+        System.out.println(message);
     }
 
 }

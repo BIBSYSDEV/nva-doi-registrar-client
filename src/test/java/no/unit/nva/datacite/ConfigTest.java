@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConfigTest {
 
-    public static final String DUMMY_DATACITE_CONFIGS = "secret";
+    public static final String MOCK_DATACITE_CONFIGS = "mock-secret";
 
     @Test
     public void testCorsHeaderNotSet() {
@@ -38,7 +38,7 @@ public class ConfigTest {
     @Test
     public void testCheckPropertiesSet() {
         final Config instance = Config.getInstance();
-        instance.setDataCiteMdsConfigs(DUMMY_DATACITE_CONFIGS);
+        instance.setDataCiteMdsConfigs(MOCK_DATACITE_CONFIGS);
         assertTrue(instance.checkProperties());
     }
 }

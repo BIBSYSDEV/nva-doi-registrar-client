@@ -4,10 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Config {
 
-    public static final String MISSING_ENVIRONMENT_VARIABLES = "Missing environment variables";
+    public static final String ERROR_MISSING_ENVIRONMENT_VARIABLES = "Missing environment variables";
 
-    public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "ALLOWED_ORIGIN";
-    public static final String DATACITE_MDS_CONFIGS_ENVIRONMENT_NAME = "DATACITE_MDS_CONFIGS";
+    public static final String ENVIRONMENT_NAME_CORS_ALLOW_ORIGIN_HEADER = "ALLOWED_ORIGIN";
+    public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
     private String corsHeader;
     private String dataCiteMdsConfigs;
@@ -21,8 +21,8 @@ public class Config {
         private static final Config INSTANCE = new Config();
 
         static {
-            INSTANCE.setCorsHeader(System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME));
-            INSTANCE.setDataCiteMdsConfigs(System.getenv(DATACITE_MDS_CONFIGS_ENVIRONMENT_NAME));
+            INSTANCE.setCorsHeader(System.getenv(ENVIRONMENT_NAME_CORS_ALLOW_ORIGIN_HEADER));
+            INSTANCE.setDataCiteMdsConfigs(System.getenv(ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
         }
     }
 
@@ -37,7 +37,7 @@ public class Config {
      */
     public boolean checkProperties() {
         if (StringUtils.isEmpty(getDataCiteMdsConfigs())) {
-            throw new RuntimeException(MISSING_ENVIRONMENT_VARIABLES);
+            throw new RuntimeException(ERROR_MISSING_ENVIRONMENT_VARIABLES);
         }
         return true;
     }

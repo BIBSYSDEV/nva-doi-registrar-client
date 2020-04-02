@@ -24,12 +24,13 @@ import java.util.List;
 
 public class DataCiteMdsConnection {
 
-    private static final String HTTPS = "https";
-    private static final String DATACITE_PATH_DOI = "doi";
-    private static final String DATACITE_PATH_METADATA = "metadata";
-    private static final String CHARACTER_SLASH = "/";
-    private static final String FORM_PARAM_DOI = "doi";
-    private static final String FORM_PARAM_URL = "url";
+    public static final String HTTPS = "https";
+    public static final String DATACITE_PATH_DOI = "doi";
+    public static final String DATACITE_PATH_METADATA = "metadata";
+    public static final String FORM_PARAM_DOI = "doi";
+    public static final String FORM_PARAM_URL = "url";
+
+    public static final String CHARACTER_SLASH = "/";
 
     private transient CloseableHttpClient httpClient;
     private transient String host;
@@ -83,7 +84,7 @@ public class DataCiteMdsConnection {
     /**
      * This request stores a new version of metadata.
      *
-     * @param doi      perfix/suffix
+     * @param doi      prefix/suffix
      * @param dataciteXml resource metadata as Datacite XML
      * @return CloseableHttpResponse
      * @throws IOException        IOException
@@ -110,7 +111,7 @@ public class DataCiteMdsConnection {
     /**
      * This request requests the most recent version of metadata associated with a given DOI.
      *
-     * @param doi perfix/suffix
+     * @param doi prefix/suffix
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
@@ -130,7 +131,7 @@ public class DataCiteMdsConnection {
     /**
      * This request marks a dataset as inactive. To activate it again, add new metadata.
      *
-     * @param doi perfix/suffix
+     * @param doi prefix/suffix
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
@@ -150,7 +151,7 @@ public class DataCiteMdsConnection {
     /**
      * This requests the URL associated with a given DOI.
      *
-     * @param doi perfix/suffix
+     * @param doi prefix/suffix
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
@@ -170,7 +171,7 @@ public class DataCiteMdsConnection {
     /**
      * Deletes a DOI if DOI is in draft status.
      *
-     * @param doi perfix/suffix
+     * @param doi prefix/suffix
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
@@ -192,7 +193,7 @@ public class DataCiteMdsConnection {
      * Will register a new DOI if the specified DOI doesn’t exist. This method will attempt to update the
      * URL if you specify an existing DOI.
      *
-     * @param doi perfix/suffix
+     * @param doi prefix/suffix
      * @param url landing page url
      * @return CloseableHttpResponse
      * @throws IOException        IOException
