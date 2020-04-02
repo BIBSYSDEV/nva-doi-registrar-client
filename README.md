@@ -16,7 +16,7 @@ DataCite XML: Metadata of resource, expected format: https://schema.datacite.org
 
 Depends on secret "dataciteMdsConfigs"
 
-Value should be stored in JSON like this:
+Value should be stored in JSON format like this:
 
 ```
 [
