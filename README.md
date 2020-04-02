@@ -1,5 +1,17 @@
 # Nva Datacite MDS
 
+### Query parameters (Input)
+```
+InstitutionID - 'institutionId'
+URL - 'url'
+DataCite XML - 'dataciteXML'
+```
+InstitutionID: Identifier of institution
+
+URL: Landing page
+
+DataCite XML: Metadata of resource, expected format: https://schema.datacite.org/meta/kernel-4/   
+
 ### Secrets Manager
 
 Depends on secret "dataciteMdsConfigs"
