@@ -19,7 +19,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.*;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_START;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_STOP;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_WHITESPACE;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETERS;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_DATACITE_XML;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_INSTITUTION_ID;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_URL;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_RETRIEVING_DATACITE_MDS_CLIENT_CONFIGS;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_METADATA;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETERS_KEY;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_DATACITE_XML_KEY;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_INSTITUTION_ID_KEY;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_URL_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -43,7 +58,6 @@ public class DataCiteMdsCreateDoiHandlerTest {
             + "\"dataCiteMdsClientUsername\": \"dataCiteMdsClientUsername\",\"dataCiteMdsClientPassword\": "
             + "\"dataCiteMdsClientPassword\"}]";
     public static final String MOCK_IO_EXCEPTION_MESSAGE = "MOCK IOException";
-    public static final String MOCK_URI_SYNTAX_EXCEPTION = "MOCK URISyntaxException";
 
     /**
      * Initialize mocks and Config.
