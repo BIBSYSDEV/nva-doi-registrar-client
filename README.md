@@ -12,11 +12,11 @@ URL: Landing page
 
 DataCite XML: Metadata of resource, expected format: https://schema.datacite.org/meta/kernel-4/   
 
-### Secrets Manager
+### Secrets Manager (AWS)
 
 Depends on secret "dataciteMdsConfigs"
 
-Value should be stored in JSON like this:
+Value should be stored in JSON format like this:
 
 ```
 [
