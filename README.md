@@ -1,22 +1,25 @@
 # Nva Datacite MDS
 
-### Query parameters (Input)
-```
-InstitutionID - 'institutionId'
-URL - 'url'
-DataCite XML - 'dataciteXML'
-```
-InstitutionID: Identifier of institution
+### Input
 
-URL: Landing page
+```
+{
+    "url": "[url-value]",
+    "institutionId": "[institutionId-value]",
+    "dataciteXml": "[dataciteXml-value]"
+}
+``` 
+url: Landing page URL
 
-DataCite XML: Metadata of resource, expected format: https://schema.datacite.org/meta/kernel-4/   
+institutionId: Identifier of institution
+
+dataciteXml: Metadata of resource, expected format: https://schema.datacite.org/meta/kernel-4/  
 
 ### Secrets Manager (AWS)
 
-Depends on secret "dataciteMdsConfigs"
+Secret with id "dataciteMdsConfigs" must present. 
 
-Value should be stored in JSON format like this:
+Value of secret should be stored in JSON format like this:
 
 ```
 [
