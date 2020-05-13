@@ -108,8 +108,9 @@ public class DataCiteMdsCreateDoiHandlerTest {
 
 
     @Test
-    @DisplayName("handler Returns Created Response With Created DOI In Body On Valid Input")
-    public void handlerReturnsCreatedResponseWithCreatedDoiInBodyOnValidInput() throws IOException, URISyntaxException {
+    @DisplayName("handler Returns Created Response With Created DOI In Body When Valid Input")
+    public void handlerReturnsCreatedResponseWithCreatedDoiInBodyWhenValidInput() throws IOException,
+            URISyntaxException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);

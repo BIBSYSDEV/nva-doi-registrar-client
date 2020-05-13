@@ -148,7 +148,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
     }
 
     private CreateDoiResponse createDoi(DataCiteMdsClientConfig dataCiteMdsClientConfig,
-                                        String url, String dataciteXml) throws ApiGatewayException{
+                                        String url, String dataciteXml) throws ApiGatewayException {
 
         // Register DOI metadata and retrieve generated DOI
         String createdDoi;
@@ -168,7 +168,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
             throw new DataCiteException(ERROR_SETTING_DOI_METADATA);
         }
 
-        // Set DOI URL (Landing page)
+        // Set DOI URL (Landing Page)
         try (CloseableHttpResponse createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url)) {
             if (createDoiResponse.getStatusLine().getStatusCode() == SC_CREATED) {
                 return new CreateDoiResponse(createdDoi);
