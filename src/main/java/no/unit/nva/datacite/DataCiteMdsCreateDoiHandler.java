@@ -4,6 +4,7 @@ import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.google.gson.Gson;
+import no.unit.nva.datacite.exception.DataCiteException;
 import no.unit.nva.datacite.exception.InstitutionIdUnknownException;
 import no.unit.nva.datacite.exception.MissingParametersException;
 import nva.commons.exceptions.ApiGatewayException;
@@ -13,11 +14,8 @@ import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-
-import javax.ws.rs.core.Response;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,6 +23,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.LoggerFactory;
+
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_OK;
 
 
 public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequest, CreateDoiResponse> {
@@ -76,7 +79,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
     public DataCiteMdsCreateDoiHandler(Environment environment,
                                        DataCiteMdsConnection dataCiteMdsConnection,
                                        SecretCache secretCache) {
-        super(CreateDoiRequest.class, environment);
+        super(CreateDoiRequest.class, environment, LoggerFactory.getLogger(DataCiteMdsCreateDoiHandler.class));
 
         if (dataCiteMdsConnection != null) {
             this.dataCiteMdsConnection = dataCiteMdsConnection;
@@ -124,10 +127,6 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
         }
     }
 
-    public static void log(String message) {
-        System.out.println(message);
-    }
-
     @Override
     protected CreateDoiResponse processInput(CreateDoiRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
@@ -145,18 +144,18 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
 
     @Override
     protected Integer getSuccessStatusCode(CreateDoiRequest input, CreateDoiResponse output) {
-        return HttpStatus.SC_CREATED;
+        return SC_CREATED;
     }
 
     private CreateDoiResponse createDoi(DataCiteMdsClientConfig dataCiteMdsClientConfig,
-                                        String url, String dataciteXml) {
+                                        String url, String dataciteXml) throws ApiGatewayException{
 
         // Register DOI metadata and retrieve generated DOI
         String createdDoi;
         try (CloseableHttpResponse createMetadataResponse =
                      dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), dataciteXml)) {
-            if (createMetadataResponse.getStatusLine().getStatusCode() != Response.Status.CREATED.getStatusCode()) {
-                throw new RuntimeException(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
+            if (createMetadataResponse.getStatusLine().getStatusCode() != SC_CREATED) {
+                throw new DataCiteException(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
                         + createMetadataResponse.getStatusLine().getStatusCode()
                         + CHARACTER_PARENTHESES_STOP);
@@ -166,41 +165,41 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
             createdDoi = StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
                     CHARACTER_PARENTHESES_STOP);
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(ERROR_SETTING_DOI_METADATA);
+            throw new DataCiteException(ERROR_SETTING_DOI_METADATA);
         }
 
         // Set DOI URL (Landing page)
         try (CloseableHttpResponse createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url)) {
-            if (createDoiResponse.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()) {
+            if (createDoiResponse.getStatusLine().getStatusCode() == SC_CREATED) {
                 return new CreateDoiResponse(createdDoi);
             } else {
-                log(ERROR_SETTING_DOI_URL
+                logger.warn(ERROR_SETTING_DOI_URL
                         + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
                         + createDoiResponse.getStatusLine().getStatusCode()
                         + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         // Registering DOI URL has failed, delete metadata
         try (CloseableHttpResponse deleteDoiMetadata = dataCiteMdsConnection.deleteMetadata(createdDoi)) {
-            if (deleteDoiMetadata.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
-                throw new RuntimeException(ERROR_SETTING_DOI_URL);
+            if (deleteDoiMetadata.getStatusLine().getStatusCode() == SC_OK) {
+                throw new DataCiteException(ERROR_SETTING_DOI_URL);
             } else {
-                log(ERROR_DELETING_DOI_METADATA
+                logger.error(ERROR_DELETING_DOI_METADATA
                         + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
                         + deleteDoiMetadata.getStatusLine().getStatusCode()
                         + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
-        log(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA + CHARACTER_WHITESPACE
+        logger.error(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA + CHARACTER_WHITESPACE
                 + CHARACTER_PARENTHESES_START
                 + createdDoi + CHARACTER_PARENTHESES_STOP);
-        throw new RuntimeException(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA);
+        throw new DataCiteException(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA);
     }
 }
