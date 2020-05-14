@@ -89,7 +89,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
         setDataCiteMdsConfigsFromSecretsManager(environment);
     }
 
-    private void checkParameters(CreateDoiRequest input) throws InstitutionIdUnknownException,
+    private void validateInput(CreateDoiRequest input) throws InstitutionIdUnknownException,
             MissingParametersException {
         if (Objects.isNull(input)) {
             throw new MissingParametersException(ERROR_MISSING_REQUEST_JSON_BODY);
@@ -128,16 +128,15 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
     protected CreateDoiResponse processInput(CreateDoiRequest input, RequestInfo requestInfo, Context context)
             throws ApiGatewayException {
 
-        checkParameters(input);
+        validateInput(input);
 
-        // Create DataCite connection for institution
+        // Configure DataCite connection for institution
         DataCiteMdsClientConfig dataCiteMdsClientConfig = dataCiteMdsClientConfigsMap.get(input.getInstitutionId());
-
         dataCiteMdsConnection.configure(dataCiteMdsClientConfig.getDataCiteMdsClientUrl(),
                     dataCiteMdsClientConfig.getDataCiteMdsClientUsername(),
                     dataCiteMdsClientConfig.getDataCiteMdsClientPassword());
 
-        return createDoi(dataCiteMdsClientConfig, input.getUrl(), input.getDataciteXml());
+        return createDoi(dataCiteMdsClientConfig.getInstitutionPrefix(), input.getUrl(), input.getDataciteXml());
     }
 
     @Override
@@ -145,14 +144,14 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
         return SC_CREATED;
     }
 
-    private CreateDoiResponse createDoi(DataCiteMdsClientConfig dataCiteMdsClientConfig,
-                                        String url, String dataciteXml) throws ApiGatewayException {
+    private CreateDoiResponse createDoi(String institutionPrefix, String url, String dataciteXml)
+            throws ApiGatewayException {
 
         // Register DOI metadata and retrieve generated DOI
         String createdDoi;
         try {
             HttpResponse<String> createMetadataResponse =
-                    dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), dataciteXml);
+                    dataCiteMdsConnection.postMetadata(institutionPrefix, dataciteXml);
             if (createMetadataResponse.statusCode() != SC_CREATED) {
                 throw new DataCiteException(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START

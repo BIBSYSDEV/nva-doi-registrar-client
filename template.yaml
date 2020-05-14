@@ -58,7 +58,7 @@ Resources:
         paths:
           /:
             post:
-              summary:  Todo
+              summary:  Create DOI
               parameters:
               x-amazon-apigateway-integration:
                 uri:

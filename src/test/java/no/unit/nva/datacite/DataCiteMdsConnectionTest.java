@@ -59,7 +59,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testPostMetadata() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -75,7 +74,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testGetMetadata() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_XML_RESOURCE_EXAMPLE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -91,7 +89,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testDeleteMetadata() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -107,7 +104,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testGetDoi() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_GET_DOI_RESPONSE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -123,7 +119,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testPostDoi() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -139,7 +134,6 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void testDeleteDoi() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
-
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
         when(httpClient.send(any(), any())).thenReturn(httpResponse);
@@ -150,6 +144,5 @@ public class DataCiteMdsConnectionTest {
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
-
     }
 }
