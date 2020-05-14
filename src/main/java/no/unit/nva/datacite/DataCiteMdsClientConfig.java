@@ -1,5 +1,7 @@
 package no.unit.nva.datacite;
 
+import nva.commons.utils.JacocoGenerated;
+
 public class DataCiteMdsClientConfig {
 
     private String institution;
@@ -7,6 +9,10 @@ public class DataCiteMdsClientConfig {
     private String dataCiteMdsClientUrl;
     private String dataCiteMdsClientUsername;
     private String dataCiteMdsClientPassword;
+
+    @JacocoGenerated
+    public DataCiteMdsClientConfig() {
+    }
 
     /**
      * POJO for DataCite MDS API configuration.

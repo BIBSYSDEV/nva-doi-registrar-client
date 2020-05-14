@@ -3,7 +3,6 @@ package no.unit.nva.datacite;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.google.gson.Gson;
 import no.unit.nva.datacite.exception.DataCiteException;
 import no.unit.nva.datacite.exception.InstitutionIdUnknownException;
 import no.unit.nva.datacite.exception.MissingParametersException;
@@ -25,6 +24,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
+
+import static nva.commons.utils.JsonUtils.objectMapper;
 
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -115,7 +116,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
         try {
             String secretASJson =
                     secretCache.getSecretString(environment.readEnv(ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
-            DataCiteMdsClientConfig[] dataCiteMdsClientConfigs = new Gson().fromJson(secretASJson,
+            DataCiteMdsClientConfig[] dataCiteMdsClientConfigs = objectMapper.readValue(secretASJson,
                     DataCiteMdsClientConfig[].class);
             if (dataCiteMdsClientConfigs != null) {
                 for (DataCiteMdsClientConfig dataCiteMdsClientConfig : dataCiteMdsClientConfigs) {
