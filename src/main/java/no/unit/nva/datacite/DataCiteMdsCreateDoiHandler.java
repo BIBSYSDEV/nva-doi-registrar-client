@@ -13,12 +13,10 @@ import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,7 +65,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
      */
     @JacocoGenerated
     public DataCiteMdsCreateDoiHandler() {
-        this(new Environment(), null, null);
+        this(new Environment(), new DataCiteMdsConnection(), null);
     }
 
     /**
@@ -82,9 +80,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
                                        SecretCache secretCache) {
         super(CreateDoiRequest.class, environment, LoggerFactory.getLogger(DataCiteMdsCreateDoiHandler.class));
 
-        if (dataCiteMdsConnection != null) {
-            this.dataCiteMdsConnection = dataCiteMdsConnection;
-        }
+        this.dataCiteMdsConnection = dataCiteMdsConnection;
 
         if (secretCache != null) {
             this.secretCache = secretCache;
@@ -136,9 +132,10 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
 
         // Create DataCite connection for institution
         DataCiteMdsClientConfig dataCiteMdsClientConfig = dataCiteMdsClientConfigsMap.get(input.getInstitutionId());
+
         dataCiteMdsConnection.configure(dataCiteMdsClientConfig.getDataCiteMdsClientUrl(),
-                dataCiteMdsClientConfig.getDataCiteMdsClientUsername(),
-                dataCiteMdsClientConfig.getDataCiteMdsClientPassword());
+                    dataCiteMdsClientConfig.getDataCiteMdsClientUsername(),
+                    dataCiteMdsClientConfig.getDataCiteMdsClientPassword());
 
         return createDoi(dataCiteMdsClientConfig, input.getUrl(), input.getDataciteXml());
     }
@@ -153,49 +150,51 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
 
         // Register DOI metadata and retrieve generated DOI
         String createdDoi;
-        try (CloseableHttpResponse createMetadataResponse =
-                     dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), dataciteXml)) {
-            if (createMetadataResponse.getStatusLine().getStatusCode() != SC_CREATED) {
+        try {
+            HttpResponse<String> createMetadataResponse =
+                    dataCiteMdsConnection.postMetadata(dataCiteMdsClientConfig.getInstitutionPrefix(), dataciteXml);
+            if (createMetadataResponse.statusCode() != SC_CREATED) {
                 throw new DataCiteException(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
-                        + createMetadataResponse.getStatusLine().getStatusCode()
+                        + createMetadataResponse.statusCode()
                         + CHARACTER_PARENTHESES_STOP);
             }
-            String createMetadataResponseBody = EntityUtils.toString(createMetadataResponse.getEntity(),
-                    StandardCharsets.UTF_8.name());
+            String createMetadataResponseBody = createMetadataResponse.body();
             createdDoi = StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
                     CHARACTER_PARENTHESES_STOP);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new DataCiteException(ERROR_SETTING_DOI_METADATA);
         }
 
         // Set DOI URL (Landing Page)
-        try (CloseableHttpResponse createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url)) {
-            if (createDoiResponse.getStatusLine().getStatusCode() == SC_CREATED) {
+        try {
+            HttpResponse<String> createDoiResponse = dataCiteMdsConnection.postDoi(createdDoi, url);
+            if (createDoiResponse.statusCode() == SC_CREATED) {
                 return new CreateDoiResponse(createdDoi);
             } else {
                 logger.warn(ERROR_SETTING_DOI_URL
                         + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
-                        + createDoiResponse.getStatusLine().getStatusCode()
+                        + createDoiResponse.statusCode()
                         + CHARACTER_PARENTHESES_STOP);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             logger.error(e.getMessage());
         }
 
         // Registering DOI URL has failed, delete metadata
-        try (CloseableHttpResponse deleteDoiMetadata = dataCiteMdsConnection.deleteMetadata(createdDoi)) {
-            if (deleteDoiMetadata.getStatusLine().getStatusCode() == SC_OK) {
+        try {
+            HttpResponse<String> deleteDoiMetadata = dataCiteMdsConnection.deleteMetadata(createdDoi);
+            if (deleteDoiMetadata.statusCode() == SC_OK) {
                 throw new DataCiteException(ERROR_SETTING_DOI_URL);
             } else {
                 logger.error(ERROR_DELETING_DOI_METADATA
                         + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
-                        + deleteDoiMetadata.getStatusLine().getStatusCode()
+                        + deleteDoiMetadata.statusCode()
                         + CHARACTER_PARENTHESES_STOP);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             logger.error(e.getMessage());
         }
         logger.error(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA + CHARACTER_WHITESPACE

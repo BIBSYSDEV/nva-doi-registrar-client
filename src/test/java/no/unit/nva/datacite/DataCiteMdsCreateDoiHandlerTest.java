@@ -9,10 +9,7 @@ import no.unit.nva.testutils.TestContext;
 import nva.commons.handlers.GatewayResponse;
 import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -96,8 +95,6 @@ public class DataCiteMdsCreateDoiHandlerTest {
         dataCiteMdsConnection = mock(DataCiteMdsConnection.class);
         secretCache = mock(SecretCache.class);
         when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
-
-        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
     }
 
     @Test
@@ -110,14 +107,14 @@ public class DataCiteMdsCreateDoiHandlerTest {
     @Test
     @DisplayName("handler Returns Created Response With Created DOI In Body When Valid Input")
     public void handlerReturnsCreatedResponseWithCreatedDoiInBodyWhenValidInput() throws IOException,
-            URISyntaxException {
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        HttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
         when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        CloseableHttpResponse httpResponsePostDoi = createHttpResponse(null, SC_CREATED);
+        HttpResponse httpResponsePostDoi = createHttpResponse(null, SC_CREATED);
         when(dataCiteMdsConnection.postDoi(any(), any())).thenReturn(httpResponsePostDoi);
 
         dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
@@ -138,8 +135,8 @@ public class DataCiteMdsCreateDoiHandlerTest {
 
         when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_UNKNOWN_INSTITUTION);
 
-        DataCiteMdsCreateDoiHandler dataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_UNKNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
@@ -156,11 +153,11 @@ public class DataCiteMdsCreateDoiHandlerTest {
     @DisplayName("handler Returns Bad Request Response When Missing JSON In Body")
     public void handlerReturnsBadRequestWhenMissingJsonInBody() throws IOException {
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
 
         InputStream input = requestWithoutBodyAndHeaders();
-        mockDataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
 
@@ -178,6 +175,10 @@ public class DataCiteMdsCreateDoiHandlerTest {
         when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_UNKNOWN_INSTITUTION);
 
         InputStream input = requestWithHeaders(null, null, null);
+
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
@@ -193,6 +194,9 @@ public class DataCiteMdsCreateDoiHandlerTest {
     public void handlerReturnsBadRequestWhenMissingValueInUrlAttribute() throws IOException {
 
         InputStream input = requestWithHeaders(null, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
@@ -209,6 +213,8 @@ public class DataCiteMdsCreateDoiHandlerTest {
     public void handlerReturnsBadRequestWhenMissingValueInDataciteXmlAttribute() throws IOException {
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, null);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
@@ -225,6 +231,8 @@ public class DataCiteMdsCreateDoiHandlerTest {
     public void handlerReturnsBadRequestWhenMissingValueInInstitutionIdAttribute() throws IOException {
 
         InputStream input = requestWithHeaders(MOCK_URL, null, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
@@ -239,12 +247,15 @@ public class DataCiteMdsCreateDoiHandlerTest {
 
     @Test
     @DisplayName("handler Returns Internal Server Error Response When Setting Doi Metadata Fails")
-    public void handlerReturnsInternalServerErrorWhenSettingDoiMetadataFails() throws IOException, URISyntaxException {
+    public void handlerReturnsInternalServerErrorWhenSettingDoiMetadataFails() throws IOException, URISyntaxException,
+            InterruptedException {
 
-        CloseableHttpResponse httpResponsePostMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
+        HttpResponse httpResponsePostMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
         when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
@@ -270,20 +281,23 @@ public class DataCiteMdsCreateDoiHandlerTest {
 
     @Test
     @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url Fails")
-    public void handlerReturnsInternalServerErrorWhenSettingDoiUrlFails() throws IOException, URISyntaxException {
+    public void handlerReturnsInternalServerErrorWhenSettingDoiUrlFails() throws IOException, URISyntaxException,
+            InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        HttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
         when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        CloseableHttpResponse httpResponsePostDoi = createHttpResponse(null, SC_UNAUTHORIZED);
+        HttpResponse httpResponsePostDoi = createHttpResponse(null, SC_UNAUTHORIZED);
         when(dataCiteMdsConnection.postDoi(any(), any())).thenReturn(httpResponsePostDoi);
 
-        CloseableHttpResponse httpResponseDeleteMetadata = createHttpResponse(null, SC_OK);
+        HttpResponse httpResponseDeleteMetadata = createHttpResponse(null, SC_OK);
         when(dataCiteMdsConnection.deleteMetadata(any())).thenReturn(httpResponseDeleteMetadata);
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
         Problem problem = (Problem) gatewayResponse.getBodyObject(Problem.class);
@@ -296,19 +310,21 @@ public class DataCiteMdsCreateDoiHandlerTest {
     @Test
     @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url And Deleting Metadata Fails")
     public void handlerReturnsInternalServerErrorWhenSettingDoiUrlAndDeletingMetadataFails() throws IOException,
-            URISyntaxException {
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        HttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
         when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
         when(dataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(""));
 
-        CloseableHttpResponse httpResponseDeleteMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
+        HttpResponse httpResponseDeleteMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
         when(dataCiteMdsConnection.deleteMetadata(any())).thenReturn(httpResponseDeleteMetadata);
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
         Problem problem = (Problem) gatewayResponse.getBodyObject(Problem.class);
@@ -323,17 +339,20 @@ public class DataCiteMdsCreateDoiHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url And IOException Deleting "
             + "Metadata")
     public void handlerReturnsInternalServerErrorWhenSettingDoiUrlAndIOExceptionDeletingMetadata() throws IOException,
-            URISyntaxException {
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        HttpResponse httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
         when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
         when(dataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(""));
         when(dataCiteMdsConnection.deleteMetadata(any())).thenThrow(new IOException(""));
 
         InputStream input = requestWithHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
+
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
         GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
         Problem problem = (Problem) gatewayResponse.getBodyObject(Problem.class);
@@ -343,15 +362,15 @@ public class DataCiteMdsCreateDoiHandlerTest {
         assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA));
     }
 
-    private CloseableHttpResponse createHttpResponse(InputStream inputStream, int httpStatus) throws IOException {
-        CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
-        HttpEntity entity = mock(HttpEntity.class);
-        httpResponse.setEntity(entity);
-        when(entity.getContent()).thenReturn(inputStream);
-        when(httpResponse.getEntity()).thenReturn(entity);
-        StatusLine statusLine = mock(StatusLine.class);
-        when(statusLine.getStatusCode()).thenReturn(httpStatus);
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+    private HttpResponse createHttpResponse(InputStream inputStream, int httpStatus) throws IOException {
+
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        if (inputStream != null) {
+            String body = IoUtils.streamToString(inputStream);
+            when(httpResponse.body()).thenReturn(body);
+        }
+        when(httpResponse.statusCode()).thenReturn(httpStatus);
+
         return httpResponse;
     }
 
