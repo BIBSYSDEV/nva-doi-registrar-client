@@ -3,7 +3,6 @@ plugins {
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 group 'no.unit.nva'
@@ -13,38 +12,45 @@ sourceCompatibility = JavaVersion.VERSION_11  // source-code version and must be
 targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
 
 repositories {
-    mavenCentral()
+    jcenter()
+    maven { url 'https://jitpack.io' }
 }
+
+def junit5Version = '5.6.0'
+def zalandoVersion = '0.23.0'
 
 dependencies {
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.10'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: 'v0.3.3'
+
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+
     implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
     implementation group: 'com.amazonaws.secretsmanager', name: 'aws-secretsmanager-caching-java', version: '1.0.1'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 
-    shadowJar {
-        archiveClassifier.set('')
-        zip64 true
-    }
+    implementation group: 'org.zalando', name: 'problem', version: zalandoVersion
+    implementation group: 'org.zalando', name: 'jackson-datatype-problem', version: zalandoVersion
+
+    testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: 'v0.1.7'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
 }
-
 
 test {
     useJUnitPlatform()
-    testLogging {
+    failFast = true
+    testLogging{
         events "passed", "skipped", "failed"
     }
-    failFast = true
+    finalizedBy jacocoTestReport
 }
 
-// We don't want a jar, just a fatJar
-jar.enabled = false
-project.tasks.build.dependsOn project.tasks.shadowJar
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
 
 pmd {
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
@@ -63,18 +69,6 @@ tasks.withType(Checkstyle) {
         html.enabled true
         html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
     }
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/reports/jacoco")
-    }
-}
-
-jacoco {
-    toolVersion = "0.8.5"
 }
 
 check.dependsOn jacocoTestCoverageVerification

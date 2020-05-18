@@ -1,26 +1,19 @@
 package no.unit.nva.datacite;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+import java.util.HashMap;
+
+import static nva.commons.utils.JsonUtils.objectMapper;
 
 public class DataCiteMdsConnection {
 
@@ -32,39 +25,32 @@ public class DataCiteMdsConnection {
 
     public static final String CHARACTER_SLASH = "/";
 
-    private transient CloseableHttpClient httpClient;
+    private final transient HttpClient httpClient;
     private transient String host;
+    private transient String user;
+    private transient String password;
 
     /**
      * Constructor for testability reasons.
      *
      * @param httpClient HttpClient
      */
-    public DataCiteMdsConnection(CloseableHttpClient httpClient, String host) {
+    public DataCiteMdsConnection(HttpClient httpClient, String host) {
         this.httpClient = httpClient;
         this.host = host;
     }
 
     /**
-     *  Initialize DataCiteMdsConnection for provider.
-     *
-     * @param host DataCite MDS API host
-     * @param user username
-     * @param password password
+     *  Initialize DataCiteMdsConnection.
      */
-    public DataCiteMdsConnection(String host, String user, String password) {
-        this.host = host;
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials
-                = new UsernamePasswordCredentials(user, password);
-        provider.setCredentials(AuthScope.ANY, credentials);
-        httpClient = HttpClientBuilder.create()
-                .setDefaultCredentialsProvider(provider)
+    public DataCiteMdsConnection() {
+        this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .build();
     }
 
     /**
-     *  Reconfigures DataCiteMdsConnection for another provider.
+     *  Configures DataCiteMdsConnection for provider.
      *
      * @param host DataCite MDS API host
      * @param user username
@@ -72,13 +58,8 @@ public class DataCiteMdsConnection {
      */
     public void configure(String host, String user, String password) {
         this.host = host;
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials
-                = new UsernamePasswordCredentials(user, password);
-        provider.setCredentials(AuthScope.ANY, credentials);
-        httpClient = HttpClientBuilder.create()
-                .setDefaultCredentialsProvider(provider)
-                .build();
+        this.user = user;
+        this.password = password;
     }
 
     /**
@@ -86,24 +67,28 @@ public class DataCiteMdsConnection {
      *
      * @param doi      prefix/suffix
      * @param dataciteXml resource metadata as Datacite XML
-     * @return CloseableHttpResponse
+     * @return HttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
      */
-    public CloseableHttpResponse postMetadata(String doi, String dataciteXml) throws IOException,
-            URISyntaxException {
+    public HttpResponse<String> postMetadata(String doi, String dataciteXml) throws IOException,
+            URISyntaxException, InterruptedException {
+
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
-                .setPathSegments(DATACITE_PATH_METADATA, doi)
+                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
                 .build();
 
-        HttpPost httpPost = new HttpPost(uri);
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=UTF-8")
+                .build();
 
-        httpPost.addHeader("Content-Type", "application/xml; charset=UTF-8");
-        httpPost.setEntity(new StringEntity(dataciteXml));
-
-        return httpClient.execute(httpPost);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     }
 
@@ -115,77 +100,99 @@ public class DataCiteMdsConnection {
      * @return CloseableHttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
      */
-    public CloseableHttpResponse getMetadata(String doi) throws IOException, URISyntaxException {
-        URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_METADATA + "/" + doi)
-                .build();
-
-        HttpGet httpGet = new HttpGet(uri);
-
-        return httpClient.execute(httpGet);
-    }
-
-    /**
-     * This request marks a dataset as inactive. To activate it again, add new metadata.
-     *
-     * @param doi prefix/suffix
-     * @return CloseableHttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
-     */
-    public CloseableHttpResponse deleteMetadata(String doi) throws IOException, URISyntaxException {
+    public HttpResponse<String> getMetadata(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
                 .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
                 .build();
 
-        HttpDelete httpDelete = new HttpDelete(uri);
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .build();
 
-        return httpClient.execute(httpDelete);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * This request marks a dataset as inactive. To activate it again, add new metadata.
+     *
+     * @param doi prefix/suffix
+     * @return HttpResponse
+     * @throws IOException        IOException
+     * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
+     */
+    public HttpResponse<String> deleteMetadata(String doi) throws IOException, URISyntaxException,
+            InterruptedException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(host)
+                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .DELETE()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .build();
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
     }
 
     /**
      * This requests the URL associated with a given DOI.
      *
      * @param doi prefix/suffix
-     * @return CloseableHttpResponse
+     * @return HttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
      */
-    public CloseableHttpResponse getDoi(String doi) throws IOException, URISyntaxException {
+    public HttpResponse<String> getDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
                 .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
                 .build();
 
-        HttpGet httpGet = new HttpGet(uri);
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .build();
 
-        return httpClient.execute(httpGet);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
      * Deletes a DOI if DOI is in draft status.
      *
      * @param doi prefix/suffix
-     * @return CloseableHttpResponse
+     * @return HttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
      */
-    public CloseableHttpResponse deleteDoi(String doi) throws IOException, URISyntaxException {
+    public HttpResponse<String> deleteDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
                 .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
                 .build();
 
-        HttpDelete httpDelete = new HttpDelete(uri);
+        HttpRequest request = HttpRequest.newBuilder()
+                .DELETE()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .build();
 
-        return httpClient.execute(httpDelete);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
 
@@ -195,25 +202,38 @@ public class DataCiteMdsConnection {
      *
      * @param doi prefix/suffix
      * @param url landing page url
-     * @return CloseableHttpResponse
+     * @return HttpResponse
      * @throws IOException        IOException
      * @throws URISyntaxException URISyntaxException
+     * @throws InterruptedException InterruptedException
      */
-    public CloseableHttpResponse postDoi(String doi, String url) throws IOException, URISyntaxException {
+    public HttpResponse<String> postDoi(String doi, String url) throws IOException, URISyntaxException,
+            InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(host)
                 .setPath(DATACITE_PATH_DOI)
                 .build();
 
-        HttpPost httpPost = new HttpPost(uri);
+        HashMap<String, String> formParams = new HashMap<>();
+        formParams.put(FORM_PARAM_DOI, doi);
+        formParams.put(FORM_PARAM_URL, url);
 
-        List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicNameValuePair(FORM_PARAM_DOI, doi));
-        params.add(new BasicNameValuePair(FORM_PARAM_URL, url));
-        httpPost.setEntity(new UrlEncodedFormEntity(params));
+        String requestBody = objectMapper.writeValueAsString(formParams);
 
-        return httpClient.execute(httpPost);
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, basicAuth(user, password))
+                .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType())
+                .build();
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+    }
+
+    private static String basicAuth(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     }
 
 }

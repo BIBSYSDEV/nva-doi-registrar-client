@@ -58,23 +58,8 @@ Resources:
         paths:
           /:
             post:
-              summary:  Todo
+              summary:  Create DOI
               parameters:
-                - in: query
-                  name: url
-                  required: true
-                  type: string
-                  description: Landing page url
-                - in: query
-                  name: dataciteXml
-                  required: true
-                  type: string
-                  description: Datacite XML
-                - in: query
-                  name: institutionId
-                  required: true
-                  type: string
-                  description: Institution id
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDataciteMdsFunction.Arn}/invocations
@@ -90,38 +75,16 @@ Resources:
                         $ref: '#/components/schemas/createDoiResponseBody'
                 '400':
                   description: Bad request.
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad Request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
+                  schema:
+                    $ref: '#/definitions/Problem'
                 '402':
                   description: Payment required.
-                  content:
-                    application/json:
-                      schema:
-                        title: 402 Payment Required
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
+                  schema:
+                    $ref: '#/definitions/Problem'
                 '500':
                   description: Internal server error.
-                  content:
-                    application/json:
-                      schema:
-                        title: 500 Internal Server Error
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-
+                  schema:
+                    $ref: '#/definitions/Problem'
         components:
           securitySchemes:
             CognitoUserPool:
@@ -138,7 +101,15 @@ Resources:
               title: Doi created
               type: string
               description: The created doi
-
+            Problem:
+              type: object
+              properties:
+                title:
+                  type: string
+                status:
+                  type: integer
+                detail:
+                  type: string
   NvaDataciteMdsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -148,7 +119,7 @@ Resources:
           ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.datacite.DataciteMdsCreateDoiHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1408
       Events:
         NvaDataciteMdsEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api

@@ -1,41 +1,60 @@
 package no.unit.nva.datacite;
 
 import com.amazonaws.secretsmanager.caching.SecretCache;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import no.unit.nva.testutils.HandlerUtils;
+import no.unit.nva.testutils.TestContext;
+import no.unit.nva.testutils.TestHeaders;
+import nva.commons.handlers.GatewayResponse;
+import nva.commons.utils.Environment;
+import nva.commons.utils.IoUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import javax.ws.rs.core.Response;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.net.http.HttpResponse;
 import java.util.Map;
 
 import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
+
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_START;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_STOP;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_WHITESPACE;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETERS;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_DATACITE_XML;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_INSTITUTION_ID;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_QUERY_PARAMETER_URL;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_RETRIEVING_DATACITE_MDS_CLIENT_CONFIGS;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_DATACITE_XML;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_INSTITUTION_ID;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_URL;
+import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_REQUEST_JSON_BODY;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_METADATA;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETERS_KEY;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_DATACITE_XML_KEY;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_INSTITUTION_ID_KEY;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.QUERY_PARAMETER_URL_KEY;
+import static nva.commons.handlers.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
+import static nva.commons.handlers.ApiGatewayHandler.CONTENT_TYPE;
+import static nva.commons.utils.JsonUtils.objectMapper;
+import static org.apache.http.HttpHeaders.ACCEPT;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_PAYMENT_REQUIRED;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.core.Is.is;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +66,6 @@ public class DataCiteMdsCreateDoiHandlerTest {
     public static final String MOCK_URL = "mock-url";
     public static final String MOCK_KNOWN_INSTITUTION_ID = "mock-known-institution-id";
     public static final String MOCK_UNKNOWN_INSTITUTION_ID = "mock-unknown-institution-id";
-    public static final String MOCK_SECRET_ID_ENV_VAR = "mock-secret-id";
     public static final String MOCK_CREATED_DOI = "prefix/suffix";
     public static final String MOCK_SECRET_UNKNOWN_INSTITUTION = "[{\"institution\": \"institution\","
             + "\"institutionPrefix\": \"institutionPrefix\"," + "\"dataCiteMdsClientUrl\": \"dataCiteMdsClientUrl\","
@@ -57,410 +75,314 @@ public class DataCiteMdsCreateDoiHandlerTest {
             + "\"institutionPrefix\": \"institutionPrefix\"," + "\"dataCiteMdsClientUrl\": \"dataCiteMdsClientUrl\","
             + "\"dataCiteMdsClientUsername\": \"dataCiteMdsClientUsername\",\"dataCiteMdsClientPassword\": "
             + "\"dataCiteMdsClientPassword\"}]";
-    public static final String MOCK_IO_EXCEPTION_MESSAGE = "MOCK IOException";
+
+    private Environment environment;
+    private Context context;
+    private DataCiteMdsConnection dataCiteMdsConnection;
+    private SecretCache secretCache;
+    private OutputStream output;
+    private DataCiteMdsCreateDoiHandler dataCiteMdsCreateDoiHandler;
 
     /**
-     * Initialize mocks and Config.
+     * Initialize mocks.
      */
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        final Config config = Config.getInstance();
-        config.setDataCiteMdsConfigs(MOCK_SECRET_ID_ENV_VAR);
-    }
+        environment = mock(Environment.class);
+        when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        context = new TestContext();
 
-    @Mock
-    DataCiteMdsConnection mockDataCiteMdsConnection;
+        output = new ByteArrayOutputStream();
 
-    @Mock
-    SecretCache mockSecretCache;
-
-    @Test
-    public void exists() {
-        new DataCiteMdsCreateDoiHandler();
+        dataCiteMdsConnection = mock(DataCiteMdsConnection.class);
+        secretCache = mock(SecretCache.class);
+        when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
     }
 
     @Test
-    @DisplayName("Successful request, DOI created")
-    public void testSuccessfulRequest() throws IOException, URISyntaxException {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Default Constructor Throws Exception When Envs Are Not Set")
+    public void defaultConstructorThrowsExceptionWhenEnvsAreNotSet() {
+        assertThrows(IllegalStateException.class, DataCiteMdsCreateDoiHandler::new);
+    }
 
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
+    @Test
+    @DisplayName("handler Returns Created Response With Created DOI In Body When Valid Input")
+    public void handlerReturnsCreatedResponseWithCreatedDoiInBodyWhenValidInput() throws IOException,
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
-        HttpEntity mockEntity = mock(HttpEntity.class);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockEntity.getContent()).thenReturn(postMetadataResponseStream);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockDataCiteMdsConnection.postMetadata(any(), any())).thenReturn(mockCloseableHttpResponse);
+        HttpResponse<String> httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        CloseableHttpResponse mockCloseableHttpResponse2 = mock(CloseableHttpResponse.class);
-        HttpEntity mockEntity2 = mock(HttpEntity.class);
-        mockCloseableHttpResponse2.setEntity(mockEntity2);
-        StatusLine mockStatusLine2 = mock(StatusLine.class);
-        when(mockStatusLine2.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse2.getStatusLine()).thenReturn(mockStatusLine2);
-        when(mockDataCiteMdsConnection.postDoi(any(), any())).thenReturn(mockCloseableHttpResponse2);
+        HttpResponse<String> httpResponsePostDoi = createHttpResponse(null, SC_CREATED);
+        when(dataCiteMdsConnection.postDoi(any(), any())).thenReturn(httpResponsePostDoi);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.CREATED.getStatusCode());
-        expectedResponse.setBody(MOCK_CREATED_DOI);
-
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_CREATED, gatewayResponse.getStatusCode());
+        CreateDoiResponse response = objectMapper.readValue(gatewayResponse.getBody(), CreateDoiResponse.class);
+        assertEquals(response.getDoi(), MOCK_CREATED_DOI);
     }
 
     @Test
-    @DisplayName("Internal server error when no Datacite config present in Secrets Manager")
-    public void testFailingRequestDataciteConfigsNotFound() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Payment Required Response When Provided InstitutionID Is Not Present In DataCite "
+            + "Config")
+    public void handlerReturnsPaymentRequiredWhenInstitutionIdDataciteConfigNotFound() throws IOException {
 
-        when(mockSecretCache.getSecretString(any())).thenReturn("");
+        when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_UNKNOWN_INSTITUTION);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_UNKNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_RETRIEVING_DATACITE_MDS_CLIENT_CONFIGS);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_PAYMENT_REQUIRED, gatewayResponse.getStatusCode());
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
-
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        assertThat(problem.getDetail(), containsString(ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER));
+        assertThat(problem.getTitle(), containsString(Status.PAYMENT_REQUIRED.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.PAYMENT_REQUIRED));
     }
 
     @Test
-    @DisplayName("Payment required when provided 'institutionId' Datacite config not found")
-    public void testFailingRequestDataciteConfigNotFound() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_UNKNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Bad Request Response When Missing JSON In Body")
+    public void handlerReturnsBadRequestWhenMissingJsonInBody() throws IOException {
 
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_UNKNOWN_INSTITUTION);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.PAYMENT_REQUIRED.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER);
-
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
-
+        assertThat(problem.getDetail(), containsString(ERROR_MISSING_REQUEST_JSON_BODY));
+        assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
     @Test
-    @DisplayName("Bad request when missing query parameters")
-    public void testFailingRequestMissingQueryParameters() {
-        Map<String, Object> requestEvent = new HashMap<>();
+    @DisplayName("handler Returns Bad Request Response When Empty Attribute Values In Body Json")
+    public void handlerReturnsBadRequestWhenEmptyAttributeValuesInBodyJson() throws IOException {
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        when(secretCache.getSecretString(any())).thenReturn(MOCK_SECRET_UNKNOWN_INSTITUTION);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_MISSING_QUERY_PARAMETERS);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        InputStream input = requestWithBodyAndHeaders(null, null, null);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+
+        assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
     @Test
-    @DisplayName("Bad request when empty query parameters")
-    public void testFailingRequestEmptyQueryParameters() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Bad Request Response When Missing Value In Attribute 'url'")
+    public void handlerReturnsBadRequestWhenMissingValueInUrlAttribute() throws IOException {
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_MISSING_QUERY_PARAMETERS);
+        InputStream input = requestWithBodyAndHeaders(null, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+
+        assertThat(problem.getDetail(), containsString(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_URL));
+        assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
     @Test
-    @DisplayName("Bad request when missing mandatory query parameter 'url'")
-    public void testFailingRequestMissingQueryParameterUrl() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Bad Request Response When Missing Value In Attribute 'dataciteXml'")
+    public void handlerReturnsBadRequestWhenMissingValueInDataciteXmlAttribute() throws IOException {
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_MISSING_QUERY_PARAMETER_URL);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, null);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
+        assertThat(problem.getDetail(), containsString(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_DATACITE_XML));
+        assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
     @Test
-    @DisplayName("Bad request when missing mandatory query parameter 'dataciteXml'")
-    public void testFailingRequestMissingQueryParameterDataciteXml() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Bad Request Response When Missing Value In Attribute 'institutionId'")
+    public void handlerReturnsBadRequestWhenMissingValueInInstitutionIdAttribute() throws IOException {
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_MISSING_QUERY_PARAMETER_DATACITE_XML);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, null, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-    }
-
-    @Test
-    @DisplayName("Bad request when missing mandatory query parameter 'institutionId'")
-    public void testFailingRequestMissingQueryParameterInstitutionId() {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
-
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
-
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_MISSING_QUERY_PARAMETER_INSTITUTION_ID);
-
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
-
+        assertThat(problem.getDetail(), containsString(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_INSTITUTION_ID));
+        assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
 
-
     @Test
-    @DisplayName("Error setting DOI metadata")
-    public void testFailingRequestErrorSettingDoiMetadata() throws IOException, URISyntaxException {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
+    @DisplayName("handler Returns Internal Server Error Response When Setting Doi Metadata Fails")
+    public void handlerReturnsInternalServerErrorWhenSettingDoiMetadataFails() throws IOException, URISyntaxException,
+            InterruptedException {
 
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
+        HttpResponse<String> httpResponsePostMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.UNAUTHORIZED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockDataCiteMdsConnection.postMetadata(any(), any())).thenReturn(mockCloseableHttpResponse);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
-                + CHARACTER_PARENTHESES_START + Response.Status.UNAUTHORIZED.getStatusCode()
-                + CHARACTER_PARENTHESES_STOP);
+        assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
+                + CHARACTER_PARENTHESES_START + SC_UNAUTHORIZED
+                + CHARACTER_PARENTHESES_STOP));
+        assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenThrow(new IOException(""));
 
-        when(mockDataCiteMdsConnection.postMetadata(any(), any()))
-                .thenThrow(new IOException(MOCK_IO_EXCEPTION_MESSAGE));
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
+        problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_SETTING_DOI_METADATA);
-
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
+        assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_METADATA));
     }
 
     @Test
-    @DisplayName("Success setting DOI metadata, error setting DOI URL")
-    public void testFailingRequestErrorSettingDoiUrl() throws IOException, URISyntaxException {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
-
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
+    @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url Fails")
+    public void handlerReturnsInternalServerErrorWhenSettingDoiUrlFails() throws IOException, URISyntaxException,
+            InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
-        HttpEntity mockEntity = mock(HttpEntity.class);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockEntity.getContent()).thenReturn(postMetadataResponseStream);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockDataCiteMdsConnection.postMetadata(any(), any())).thenReturn(mockCloseableHttpResponse);
+        HttpResponse<String> httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        CloseableHttpResponse mockCloseableHttpResponse2 = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine2 = mock(StatusLine.class);
-        when(mockStatusLine2.getStatusCode()).thenReturn(Response.Status.UNAUTHORIZED.getStatusCode());
-        when(mockCloseableHttpResponse2.getStatusLine()).thenReturn(mockStatusLine2);
-        when(mockDataCiteMdsConnection.postDoi(any(), any())).thenReturn(mockCloseableHttpResponse2);
+        HttpResponse<String> httpResponsePostDoi = createHttpResponse(null, SC_UNAUTHORIZED);
+        when(dataCiteMdsConnection.postDoi(any(), any())).thenReturn(httpResponsePostDoi);
 
-        CloseableHttpResponse mockCloseableHttpResponse3 = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine3 = mock(StatusLine.class);
-        when(mockStatusLine3.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse3.getStatusLine()).thenReturn(mockStatusLine3);
-        when(mockDataCiteMdsConnection.deleteMetadata(any())).thenReturn(mockCloseableHttpResponse3);
+        HttpResponse<String> httpResponseDeleteMetadata = createHttpResponse(null, SC_OK);
+        when(dataCiteMdsConnection.deleteMetadata(any())).thenReturn(httpResponseDeleteMetadata);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_SETTING_DOI_URL);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
+        assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_URL));
     }
 
     @Test
-    @DisplayName("Success setting DOI metadata, error setting DOI URL and deleting metadata")
-    public void testFailingRequestErrorSettingDoiUrlAndDeletingMetadataError() throws IOException,
-            URISyntaxException {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
-
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
+    @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url And Deleting Metadata Fails")
+    public void handlerReturnsInternalServerErrorWhenSettingDoiUrlAndDeletingMetadataFails() throws IOException,
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
-        HttpEntity mockEntity = mock(HttpEntity.class);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockEntity.getContent()).thenReturn(postMetadataResponseStream);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockDataCiteMdsConnection.postMetadata(any(), any())).thenReturn(mockCloseableHttpResponse);
+        HttpResponse<String> httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
+        when(dataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(""));
 
-        when(mockDataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(MOCK_IO_EXCEPTION_MESSAGE));
+        HttpResponse<String> httpResponseDeleteMetadata = createHttpResponse(null, SC_UNAUTHORIZED);
+        when(dataCiteMdsConnection.deleteMetadata(any())).thenReturn(httpResponseDeleteMetadata);
 
-        CloseableHttpResponse mockCloseableHttpResponse2 = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine2 = mock(StatusLine.class);
-        when(mockStatusLine2.getStatusCode()).thenReturn(Response.Status.UNAUTHORIZED.getStatusCode());
-        when(mockCloseableHttpResponse2.getStatusLine()).thenReturn(mockStatusLine2);
-        when(mockDataCiteMdsConnection.deleteMetadata(any())).thenReturn(mockCloseableHttpResponse2);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA);
+        assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
+        assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA));
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
     }
 
     @Test
-    @DisplayName("Success setting DOI metadata, IOException trying to set DOI URL and delete metadata")
-    public void testFailingRequestErrorSettingDoiUrlAndIOExceptionDeletingMetadata() throws IOException,
-            URISyntaxException {
-        HashMap<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(QUERY_PARAMETER_URL_KEY, MOCK_URL);
-        queryParameters.put(QUERY_PARAMETER_INSTITUTION_ID_KEY, MOCK_KNOWN_INSTITUTION_ID);
-        queryParameters.put(QUERY_PARAMETER_DATACITE_XML_KEY, MOCK_DATACITE_XML);
-        Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put(QUERY_PARAMETERS_KEY, queryParameters);
-
-        when(mockSecretCache.getSecretString(any())).thenReturn(MOCK_SECRET_KNOWN_INSTITUTION);
+    @DisplayName("handler Returns Internal Server Error Response When Setting Doi Url And IOException Deleting "
+            + "Metadata")
+    public void handlerReturnsInternalServerErrorWhenSettingDoiUrlAndIOExceptionDeletingMetadata() throws IOException,
+            URISyntaxException, InterruptedException {
 
         InputStream postMetadataResponseStream =
                 DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
-        CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
-        HttpEntity mockEntity = mock(HttpEntity.class);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockEntity.getContent()).thenReturn(postMetadataResponseStream);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockDataCiteMdsConnection.postMetadata(any(), any())).thenReturn(mockCloseableHttpResponse);
+        HttpResponse<String> httpResponsePostMetadata = createHttpResponse(postMetadataResponseStream, SC_CREATED);
+        when(dataCiteMdsConnection.postMetadata(any(), any())).thenReturn(httpResponsePostMetadata);
 
-        when(mockDataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(MOCK_IO_EXCEPTION_MESSAGE));
-        when(mockDataCiteMdsConnection.deleteMetadata(any())).thenThrow(new IOException(MOCK_IO_EXCEPTION_MESSAGE));
+        when(dataCiteMdsConnection.postDoi(any(), any())).thenThrow(new IOException(""));
+        when(dataCiteMdsConnection.deleteMetadata(any())).thenThrow(new IOException(""));
 
-        DataCiteMdsCreateDoiHandler mockDataCiteMdsCreateDoiHandler =
-                new DataCiteMdsCreateDoiHandler(mockDataCiteMdsConnection, mockSecretCache);
+        dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        GatewayResponse gatewayResponse = mockDataCiteMdsCreateDoiHandler.handleRequest(requestEvent, null);
+        InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
+        dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        expectedResponse.setErrorBody(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
+        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-        assertEquals(expectedResponse.getStatusCode(), gatewayResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
+        assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
+        assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        assertThat(problem.getDetail(), containsString(ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA));
+    }
+
+    private HttpResponse<String> createHttpResponse(InputStream inputStream, int httpStatus) {
+
+        HttpResponse<String> httpResponse = mock(HttpResponse.class);
+        if (inputStream != null) {
+            String body = IoUtils.streamToString(inputStream);
+            when(httpResponse.body()).thenReturn(body);
+        }
+        when(httpResponse.statusCode()).thenReturn(httpStatus);
+
+        return httpResponse;
+    }
+
+    private InputStream requestWithBodyAndHeaders(String url, String institutionId, String dataciteXml)
+            throws JsonProcessingException {
+
+        CreateDoiRequest requestBody = new CreateDoiRequest(url, institutionId, dataciteXml);
+        return new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestBody,
+                TestHeaders.getRequestHeaders());
     }
 
 }
