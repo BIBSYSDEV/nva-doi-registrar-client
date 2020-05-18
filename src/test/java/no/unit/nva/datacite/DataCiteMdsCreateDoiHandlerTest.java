@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestContext;
+import no.unit.nva.testutils.TestHeaders;
 import nva.commons.handlers.GatewayResponse;
 import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
@@ -380,13 +381,8 @@ public class DataCiteMdsCreateDoiHandlerTest {
             throws JsonProcessingException {
 
         CreateDoiRequest requestBody = new CreateDoiRequest(url, institutionId, dataciteXml);
-        return new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestBody, headers());
-    }
-
-    private Map<String,String> headers() {
-        return Map.of(
-                CONTENT_TYPE, APPLICATION_JSON.getMimeType(),
-                ACCEPT, APPLICATION_JSON.getMimeType());
+        return new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestBody,
+                TestHeaders.getRequestHeaders());
     }
 
 }
