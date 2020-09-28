@@ -100,12 +100,6 @@ public class DataCiteMdsCreateDoiHandlerTest {
     }
 
     @Test
-    @DisplayName("handler Default Constructor Throws Exception When Envs Are Not Set")
-    public void defaultConstructorThrowsExceptionWhenEnvsAreNotSet() {
-        assertThrows(IllegalStateException.class, DataCiteMdsCreateDoiHandler::new);
-    }
-
-    @Test
     @DisplayName("handler Returns Created Response With Created DOI In Body When Valid Input")
     public void handlerReturnsCreatedResponseWithCreatedDoiInBodyWhenValidInput() throws IOException,
             URISyntaxException, InterruptedException {

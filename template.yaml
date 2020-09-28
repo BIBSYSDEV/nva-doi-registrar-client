@@ -110,23 +110,24 @@ Resources:
                   type: integer
                 detail:
                   type: string
-  NvaDataciteMdsFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  NvaAssignDoiProxyFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      Environment:
-        Variables:
-          DATACITE_MDS_CONFIGS: !Ref DataciteMdsConfigs
-          ALLOWED_ORIGIN:  '*'
+      CodeUri: assign-doi-proxy-function
       Handler: no.unit.nva.datacite.DataciteMdsCreateDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
+      Environment:
+        Variables:
+          DATACITE_MDS_CONFIGS: !Ref DataciteMdsConfigs
+          ALLOWED_ORIGIN: '*'
       Events:
-        NvaDataciteMdsEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        NvaAssignDoiProxyEvent:
+          Type: Api
           Properties:
             RestApiId: !Ref NvaDataciteMdsApi
             Path: /
-            Method: post
+            Method: POST
 
   NvaDataciteMdsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
