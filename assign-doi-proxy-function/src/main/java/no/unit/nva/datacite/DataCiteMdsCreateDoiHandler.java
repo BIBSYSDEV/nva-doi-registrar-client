@@ -53,10 +53,9 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
     public static final String CHARACTER_PARENTHESES_STOP = ")";
     public static final String CHARACTER_WHITESPACE = " ";
 
-    private final transient Map<String, DataCiteMdsClientConfig> dataCiteMdsClientConfigsMap =
-            new ConcurrentHashMap<>();
-    private transient SecretCache secretCache = new SecretCache();
-    private transient DataCiteMdsConnection dataCiteMdsConnection;
+    private final Map<String, DataCiteMdsClientConfig> dataCiteMdsClientConfigsMap;
+    private final SecretCache secretCache;
+    private final DataCiteMdsConnection dataCiteMdsConnection;
 
     private  static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
@@ -65,7 +64,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
      */
     @JacocoGenerated
     public DataCiteMdsCreateDoiHandler() {
-        this(new Environment(), new DataCiteMdsConnection(), null);
+        this(new Environment(), new DataCiteMdsConnection(), new SecretCache());
     }
 
     /**
@@ -80,11 +79,9 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
                                        SecretCache secretCache) {
         super(CreateDoiRequest.class, environment, LoggerFactory.getLogger(DataCiteMdsCreateDoiHandler.class));
 
+        this.dataCiteMdsClientConfigsMap = new ConcurrentHashMap<>();
         this.dataCiteMdsConnection = dataCiteMdsConnection;
-
-        if (secretCache != null) {
-            this.secretCache = secretCache;
-        }
+        this.secretCache = secretCache;
 
         setDataCiteMdsConfigsFromSecretsManager(environment);
     }
