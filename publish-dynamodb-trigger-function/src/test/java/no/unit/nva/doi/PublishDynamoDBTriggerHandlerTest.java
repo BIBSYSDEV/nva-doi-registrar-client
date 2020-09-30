@@ -30,5 +30,4 @@ public class PublishDynamoDBTriggerHandlerTest {
 
         handler.handleRequest(event, context);
     }
-
 }

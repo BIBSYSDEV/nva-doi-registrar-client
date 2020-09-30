@@ -17,24 +17,32 @@ import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
 public class EventBridgePublisher implements EventPublisher {
 
     private static final ObjectMapper objectMapper = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-    static final String EVENT_SOURCE = "aws-dynamodb-stream-eventbridge-fanout";
-    static final String EVENT_DETAIL_TYPE = "dynamodb-stream-event";
+    public static final String EVENT_SOURCE = "aws-dynamodb-stream-eventbridge-fanout";
+    public static final String EVENT_DETAIL_TYPE = "dynamodb-stream-event";
 
     private final EventBridgeRetryClient eventBridge;
     private final EventPublisher failedEventPublisher;
     private final String eventBusName;
     private final Clock clock;
 
-    private final static Logger logger = LoggerFactory.getLogger(EventBridgePublisher.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventBridgePublisher.class);
 
     public EventBridgePublisher(EventBridgeRetryClient eventBridge,
-                          EventPublisher failedEventPublisher,
-                          String eventBusName) {
+                                EventPublisher failedEventPublisher,
+                                String eventBusName) {
         this(eventBridge, failedEventPublisher, eventBusName, Clock.systemUTC());
     }
 
+    /**
+     * Constructor for EventBridgePublisher.
+     *
+     * @param eventBridge   eventBridge
+     * @param failedEventPublisher  failedEventPublisher
+     * @param eventBusName  eventBusName
+     * @param clock clock
+     */
     public EventBridgePublisher(EventBridgeRetryClient eventBridge,
                                 EventPublisher failedEventPublisher, String eventBusName, Clock clock) {
         this.eventBridge = eventBridge;
@@ -47,9 +55,9 @@ public class EventBridgePublisher implements EventPublisher {
     public void publish(final DynamodbEvent event) {
         Instant time = Instant.now(clock);
         List<PutEventsRequestEntry> requestEntries = event.getRecords()
-                .stream()
-                .map(record ->
-            PutEventsRequestEntry.builder()
+            .stream()
+            .map(record ->
+                PutEventsRequestEntry.builder()
                     .eventBusName(eventBusName)
                     .time(time)
                     .source(EVENT_SOURCE)
@@ -57,11 +65,11 @@ public class EventBridgePublisher implements EventPublisher {
                     .detail(toString(record))
                     .resources(record.getEventSourceARN())
                     .build())
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
         List<PutEventsRequestEntry> failedEntries = eventBridge.putEvents(PutEventsRequest.builder()
-                .entries(requestEntries)
-                .build());
+            .entries(requestEntries)
+            .build());
 
         if (!failedEntries.isEmpty()) {
             logger.debug("Sending failed events {} to failed event publisher", failedEntries);

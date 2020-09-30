@@ -13,12 +13,16 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 public class SqsPublisherTest {
+
     private static final String QUEUE_URL = UUID.randomUUID().toString();
     @Mock
     private SqsClient sqs;
 
     private EventPublisher publisher;
 
+    /**
+     * Set up environment for test.
+     */
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -36,9 +40,9 @@ public class SqsPublisherTest {
 
         String expectedBody = "{\"records\":[{\"eventName\":\"test\"}]}";
         SendMessageRequest expected = SendMessageRequest.builder()
-                .queueUrl(QUEUE_URL)
-                .messageBody(expectedBody)
-                .build();
+            .queueUrl(QUEUE_URL)
+            .messageBody(expectedBody)
+            .build();
         verify(sqs).sendMessage(expected);
     }
 }

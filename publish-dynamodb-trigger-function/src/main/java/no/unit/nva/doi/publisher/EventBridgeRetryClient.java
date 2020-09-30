@@ -14,42 +14,54 @@ import software.amazon.awssdk.services.eventbridge.model.PutEventsResultEntry;
 
 public class EventBridgeRetryClient {
 
-  private final EventBridgeClient eventBridge;
-  private final int maxAttempt;
+    private final EventBridgeClient eventBridge;
+    private final int maxAttempt;
 
-  private final static Logger logger = LoggerFactory.getLogger(EventBridgeRetryClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventBridgeRetryClient.class);
 
-  public EventBridgeRetryClient(EventBridgeClient eventBridge, int maxAttempt) {
-    this.eventBridge = eventBridge;
-    this.maxAttempt = maxAttempt;
-  }
-
-  public List<PutEventsRequestEntry> putEvents(final PutEventsRequest request) {
-    PutEventsRequest requestCopy = request;
-    int attemptCount = 0;
-    while(attemptCount < maxAttempt) {
-      logger.debug("Attempt {} to put events {}", attemptCount + 1, requestCopy);
-      PutEventsResponse response = eventBridge.putEvents(requestCopy);
-
-      if (response.failedEntryCount() == 0) {
-        return Collections.emptyList();
-      }
-
-      List<PutEventsRequestEntry> requestEntries = requestCopy.entries();
-      List<PutEventsResultEntry> resultEntries = response.entries();
-
-      List<PutEventsRequestEntry> failedEntries = IntStream
-              .range(0, resultEntries.size())
-              .filter(i -> resultEntries.get(i).errorCode() != null)
-              .mapToObj(requestEntries::get)
-              .collect(Collectors.toList());
-
-      requestCopy = PutEventsRequest.builder()
-              .entries(failedEntries)
-              .build();
-
-      attemptCount++;
+    /**
+     * Constructor for EventBridgeRetryClient.
+     *
+     * @param eventBridge   eventBridge
+     * @param maxAttempt    maxAttempt
+     */
+    public EventBridgeRetryClient(EventBridgeClient eventBridge, int maxAttempt) {
+        this.eventBridge = eventBridge;
+        this.maxAttempt = maxAttempt;
     }
-    return requestCopy.entries();
-  }
+
+    /**
+     * Put events on EventBridge EventBus.
+     *
+     * @param request   request
+     * @return  list of PutEventsRequestEntry
+     */
+    public List<PutEventsRequestEntry> putEvents(final PutEventsRequest request) {
+        PutEventsRequest requestCopy = request;
+        int attemptCount = 0;
+        while (attemptCount < maxAttempt) {
+            logger.debug("Attempt {} to put events {}", attemptCount + 1, requestCopy);
+            PutEventsResponse response = eventBridge.putEvents(requestCopy);
+
+            if (response.failedEntryCount() == 0) {
+                return Collections.emptyList();
+            }
+
+            List<PutEventsRequestEntry> requestEntries = requestCopy.entries();
+            List<PutEventsResultEntry> resultEntries = response.entries();
+
+            List<PutEventsRequestEntry> failedEntries = IntStream
+                .range(0, resultEntries.size())
+                .filter(i -> resultEntries.get(i).errorCode() != null)
+                .mapToObj(requestEntries::get)
+                .collect(Collectors.toList());
+
+            requestCopy = PutEventsRequest.builder()
+                .entries(failedEntries)
+                .build();
+
+            attemptCount++;
+        }
+        return requestCopy.entries();
+    }
 }

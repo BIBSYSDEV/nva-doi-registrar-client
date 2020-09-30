@@ -10,29 +10,30 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 public class SqsEventPublisher implements EventPublisher {
-  private static final ObjectMapper objectMapper = new ObjectMapper()
-          .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-  private static final Logger logger = LoggerFactory.getLogger(SqsEventPublisher.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-  private final SqsClient sqs;
-  private final String queueUrl;
+    private static final Logger logger = LoggerFactory.getLogger(SqsEventPublisher.class);
 
-  public SqsEventPublisher(SqsClient sqs, String queueUrl) {
-    this.sqs = sqs;
-    this.queueUrl = queueUrl;
-  }
+    private final SqsClient sqs;
+    private final String queueUrl;
 
-  @Override
-  public void publish(final DynamodbEvent event) {
-    logger.debug("Sending events {} to SQS queue {}", event, queueUrl);
-    try {
-      sqs.sendMessage(SendMessageRequest.builder()
-                      .queueUrl(queueUrl)
-                      .messageBody(objectMapper.writeValueAsString(event))
-                      .build());
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e.getMessage(), e);
+    public SqsEventPublisher(SqsClient sqs, String queueUrl) {
+        this.sqs = sqs;
+        this.queueUrl = queueUrl;
     }
-  }
+
+    @Override
+    public void publish(final DynamodbEvent event) {
+        logger.debug("Sending events {} to SQS queue {}", event, queueUrl);
+        try {
+            sqs.sendMessage(SendMessageRequest.builder()
+                .queueUrl(queueUrl)
+                .messageBody(objectMapper.writeValueAsString(event))
+                .build());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }
