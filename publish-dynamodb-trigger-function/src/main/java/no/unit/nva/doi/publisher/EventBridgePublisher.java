@@ -86,7 +86,7 @@ public class EventBridgePublisher implements EventPublisher {
     }
 
     private void publishFailedEvent(PutEventsRequestEntry entry) {
-        DynamodbEvent.DynamodbStreamRecord record = null;
+        DynamodbEvent.DynamodbStreamRecord record;
         try {
             record = objectMapper.readValue(entry.detail(), DynamodbEvent.DynamodbStreamRecord.class);
         } catch (JsonProcessingException e) {
