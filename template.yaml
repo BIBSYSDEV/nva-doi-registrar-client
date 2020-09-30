@@ -150,7 +150,7 @@ Resources:
       Tracing: Active
       Environment:
         Variables:
-          DLQ_URL: !Ref PublishDynamoDBTriggerDLQ
+          DLQ_URL: !Ref PublishPublicationUpdateTriggerDLQ
           MAX_ATTEMPT: !Ref EventBridgeMaxAttempt
           EVENT_BUS_NAME: !Ref EventBusName
       Policies:
