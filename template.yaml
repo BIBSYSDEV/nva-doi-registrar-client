@@ -187,4 +187,4 @@ Outputs:
     Value: !Ref PublishPublicationUpdateTriggerLambda
   PublishPublicationUpdateTriggerUrl:
     Description: "PublishPublicationUpdateTriggerUrl SQS DLQ URL"
-    Value: !Ref PublishPublicationUpdateTriggerUrlDLQ
+    Value: !Ref PublishPublicationUpdateTriggerDLQ
