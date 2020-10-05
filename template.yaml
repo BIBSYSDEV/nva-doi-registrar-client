@@ -143,7 +143,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: publish-dynamodb-trigger-function
-      Handler: no.unit.nva.doi.lambda.PublishDynamoDBTriggerHandler:handleRequest
+      Handler: no.unit.nva.doi.lambda.PublishDynamoDBTriggerHandler::handleRequest
       MemorySize: 768
       Timeout: 360
       Runtime: java11
