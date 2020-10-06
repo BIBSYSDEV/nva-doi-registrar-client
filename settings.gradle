@@ -1,3 +1,3 @@
 rootProject.name = 'nva-datacite-mds'
 include 'assign-doi-proxy-function'
-include 'publish-dynamodb-trigger-function'
+include 'dynamodb-stream-eventbridge-fanout'

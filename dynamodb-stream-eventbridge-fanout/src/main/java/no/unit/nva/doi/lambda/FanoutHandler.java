@@ -16,12 +16,12 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
-public class PublishDynamoDBTriggerHandler implements RequestHandler<DynamodbEvent, Void> {
+public class FanoutHandler implements RequestHandler<DynamodbEvent, Void> {
 
     public static final String AWS_REGION = "AWS_REGION";
     private final EventPublisher eventPublisher;
 
-    public PublishDynamoDBTriggerHandler() {
+    public FanoutHandler() {
         this(defaultEventBridgePublisher());
     }
 
@@ -61,7 +61,7 @@ public class PublishDynamoDBTriggerHandler implements RequestHandler<DynamodbEve
             .build();
     }
 
-    public PublishDynamoDBTriggerHandler(EventPublisher eventPublisher) {
+    public FanoutHandler(EventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }
 

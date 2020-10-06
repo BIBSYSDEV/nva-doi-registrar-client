@@ -5,12 +5,12 @@ import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
-import no.unit.nva.doi.lambda.PublishDynamoDBTriggerHandler;
+import no.unit.nva.doi.lambda.FanoutHandler;
 import no.unit.nva.doi.publisher.EventPublisher;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class PublishDynamoDBTriggerHandlerTest {
+public class FanoutHandlerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -23,7 +23,7 @@ public class PublishDynamoDBTriggerHandlerTest {
                 e.printStackTrace();
             }
         };
-        PublishDynamoDBTriggerHandler handler = new PublishDynamoDBTriggerHandler(eventPublisher);
+        FanoutHandler handler = new FanoutHandler(eventPublisher);
         Context context = Mockito.mock(Context.class);
         File eventFile = new File("src/test/resources/event.json");
         DynamodbEvent event = objectMapper.readValue(eventFile, DynamodbEvent.class);
