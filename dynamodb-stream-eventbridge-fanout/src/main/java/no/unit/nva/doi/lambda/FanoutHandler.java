@@ -8,6 +8,7 @@ import no.unit.nva.doi.publisher.EventBridgePublisher;
 import no.unit.nva.doi.publisher.EventBridgeRetryClient;
 import no.unit.nva.doi.publisher.EventPublisher;
 import no.unit.nva.doi.publisher.SqsEventPublisher;
+import no.unit.nva.doi.utils.JacocoGenerated;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.retry.RetryPolicy;
@@ -21,10 +22,12 @@ public class FanoutHandler implements RequestHandler<DynamodbEvent, Void> {
     public static final String AWS_REGION = "AWS_REGION";
     private final EventPublisher eventPublisher;
 
+    @JacocoGenerated
     public FanoutHandler() {
         this(defaultEventBridgePublisher());
     }
 
+    @JacocoGenerated
     private static EventPublisher defaultEventBridgePublisher() {
         return new EventBridgePublisher(
             defaultEventBridgeRetryClient(),
@@ -33,10 +36,12 @@ public class FanoutHandler implements RequestHandler<DynamodbEvent, Void> {
         );
     }
 
+    @JacocoGenerated
     private static EventPublisher defaultFailedEventPublisher() {
         return new SqsEventPublisher(defaultSqsClient(), Env.getDlqUrl());
     }
 
+    @JacocoGenerated
     private static SqsClient defaultSqsClient() {
         return SqsClient.builder()
             .region(Region.of(System.getenv(AWS_REGION)))
@@ -45,10 +50,12 @@ public class FanoutHandler implements RequestHandler<DynamodbEvent, Void> {
             .build();
     }
 
+    @JacocoGenerated
     private static EventBridgeRetryClient defaultEventBridgeRetryClient() {
         return new EventBridgeRetryClient(defaultEventBridgeClient(), Env.getMaxAttempt());
     }
 
+    @JacocoGenerated
     private static EventBridgeClient defaultEventBridgeClient() {
         return EventBridgeClient.builder()
             .region(Region.of(System.getenv(AWS_REGION)))

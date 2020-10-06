@@ -1,6 +1,7 @@
 package no.unit.nva.doi.publisher;
 
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
+import com.amazonaws.services.lambda.runtime.events.DynamodbEvent.DynamodbStreamRecord;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import no.unit.nva.doi.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
@@ -29,6 +31,7 @@ public class EventBridgePublisher implements EventPublisher {
 
     private static final Logger logger = LoggerFactory.getLogger(EventBridgePublisher.class);
 
+    @JacocoGenerated
     public EventBridgePublisher(EventBridgeRetryClient eventBridge,
                                 EventPublisher failedEventPublisher,
                                 String eventBusName) {
@@ -77,6 +80,14 @@ public class EventBridgePublisher implements EventPublisher {
         }
     }
 
+    private void publishFailedEvent(PutEventsRequestEntry entry) {
+        DynamodbEvent.DynamodbStreamRecord record = parseDynamodbStreamRecord(entry);
+        DynamodbEvent failedEvent = new DynamodbEvent();
+        failedEvent.setRecords(Collections.singletonList(record));
+        failedEventPublisher.publish(failedEvent);
+    }
+
+    @JacocoGenerated
     private String toString(DynamodbEvent.DynamodbStreamRecord record) {
         try {
             return objectMapper.writeValueAsString(record);
@@ -85,15 +96,12 @@ public class EventBridgePublisher implements EventPublisher {
         }
     }
 
-    private void publishFailedEvent(PutEventsRequestEntry entry) {
-        DynamodbEvent.DynamodbStreamRecord record;
+    @JacocoGenerated
+    private DynamodbStreamRecord parseDynamodbStreamRecord(PutEventsRequestEntry entry) {
         try {
-            record = objectMapper.readValue(entry.detail(), DynamodbEvent.DynamodbStreamRecord.class);
+            return objectMapper.readValue(entry.detail(), DynamodbStreamRecord.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        DynamodbEvent failedEvent = new DynamodbEvent();
-        failedEvent.setRecords(Collections.singletonList(record));
-        failedEventPublisher.publish(failedEvent);
     }
 }
