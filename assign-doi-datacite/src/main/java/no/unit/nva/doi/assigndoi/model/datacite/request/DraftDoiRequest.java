@@ -18,7 +18,7 @@ public class DraftDoiRequest {
 
     static class Data {
         private static final String TYPE = "dois";
-        private Attributes attributes;
+        private final Attributes attributes;
 
         @JsonCreator
         public Data(Attributes attributes) {
