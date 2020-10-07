@@ -2,6 +2,7 @@ package no.unit.nva.doi.publisher;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.slf4j.Logger;
@@ -38,8 +39,8 @@ public class EventBridgeRetryClient {
      */
     public List<PutEventsRequestEntry> putEvents(final PutEventsRequest request) {
         PutEventsRequest requestCopy = request;
-        int attemptCount = 0;
-        while (attemptCount < maxAttempt) {
+
+        for (int attemptCount = 0; attemptCount < maxAttempt; attemptCount++) {
             logger.debug("Attempt {} to put events {}", attemptCount + 1, requestCopy);
             PutEventsResponse response = eventBridge.putEvents(requestCopy);
 
@@ -47,21 +48,33 @@ public class EventBridgeRetryClient {
                 return Collections.emptyList();
             }
 
-            List<PutEventsRequestEntry> requestEntries = requestCopy.entries();
-            List<PutEventsResultEntry> resultEntries = response.entries();
-
-            List<PutEventsRequestEntry> failedEntries = IntStream
-                .range(0, resultEntries.size())
-                .filter(i -> resultEntries.get(i).errorCode() != null)
-                .mapToObj(requestEntries::get)
-                .collect(Collectors.toList());
-
-            requestCopy = PutEventsRequest.builder()
-                .entries(failedEntries)
-                .build();
-
-            attemptCount++;
+            List<PutEventsRequestEntry> failedEntries = getFailedEntries(requestCopy, response);
+            requestCopy = createEventWithFailedEntries(failedEntries);
         }
+
         return requestCopy.entries();
+    }
+
+    private PutEventsRequest createEventWithFailedEntries(List<PutEventsRequestEntry> failedEntries) {
+        PutEventsRequest requestCopy;
+        requestCopy = PutEventsRequest.builder()
+            .entries(failedEntries)
+            .build();
+        return requestCopy;
+    }
+
+    private List<PutEventsRequestEntry> getFailedEntries(PutEventsRequest request,
+                                                         PutEventsResponse response) {
+        List<PutEventsRequestEntry> requestEntries = request.entries();
+        List<PutEventsResultEntry> resultEntries = response.entries();
+        return IntStream
+            .range(0, resultEntries.size())
+            .filter(containsFailingResult(resultEntries))
+            .mapToObj(requestEntries::get)
+            .collect(Collectors.toList());
+    }
+
+    private IntPredicate containsFailingResult(List<PutEventsResultEntry> resultEntries) {
+        return i -> resultEntries.get(i).errorCode() != null;
     }
 }

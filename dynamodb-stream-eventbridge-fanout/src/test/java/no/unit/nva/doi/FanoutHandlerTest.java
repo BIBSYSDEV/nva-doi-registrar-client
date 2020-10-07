@@ -12,10 +12,11 @@ import org.mockito.Mockito;
 
 public class FanoutHandlerTest {
 
+    public static final String DYNAMODB_STREAM_EVENT = "src/test/resources/event.json";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void test() throws Exception {
+    public void handleRequestWritesToConsoleOnValidEvent() throws Exception {
         EventPublisher eventPublisher = event -> {
             try {
                 new ObjectMapper().writeValue(System.out, event);
@@ -25,7 +26,7 @@ public class FanoutHandlerTest {
         };
         FanoutHandler handler = new FanoutHandler(eventPublisher);
         Context context = Mockito.mock(Context.class);
-        File eventFile = new File("src/test/resources/event.json");
+        File eventFile = new File(DYNAMODB_STREAM_EVENT);
         DynamodbEvent event = objectMapper.readValue(eventFile, DynamodbEvent.class);
 
         handler.handleRequest(event, context);

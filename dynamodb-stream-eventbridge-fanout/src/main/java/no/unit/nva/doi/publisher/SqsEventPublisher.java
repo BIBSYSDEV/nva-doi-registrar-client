@@ -28,12 +28,17 @@ public class SqsEventPublisher implements EventPublisher {
     public void publish(final DynamodbEvent event) {
         logger.debug("Sending events {} to SQS queue {}", event, queueUrl);
         try {
-            sqs.sendMessage(SendMessageRequest.builder()
-                .queueUrl(queueUrl)
-                .messageBody(objectMapper.writeValueAsString(event))
-                .build());
+            SendMessageRequest message = createSendMessageRequest(event);
+            sqs.sendMessage(message);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private SendMessageRequest createSendMessageRequest(DynamodbEvent event) throws JsonProcessingException {
+        return SendMessageRequest.builder()
+            .queueUrl(queueUrl)
+            .messageBody(objectMapper.writeValueAsString(event))
+            .build();
     }
 }

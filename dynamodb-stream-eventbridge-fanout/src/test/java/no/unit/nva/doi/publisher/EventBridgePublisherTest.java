@@ -2,14 +2,15 @@ package no.unit.nva.doi.publisher;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
+import com.amazonaws.services.lambda.runtime.events.DynamodbEvent.DynamodbStreamRecord;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +20,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry.Builder;
 
 public class EventBridgePublisherTest {
 
     private static final String EVENT_BUS = UUID.randomUUID().toString();
     private static final Instant NOW = Instant.now();
+    public static final String EXPECTED_DETAIL_TEMPLATE = "{\"eventSourceARN\":\"%s\"}";
+    public static final String FAILED_EVENT_NAME = "Failed";
+    public static final String SUCCESS_EVENT_NAME = "Success";
+    public static final String RECORD_STRING_TEMPLATE = "{\"eventName\":\"%s\",\"eventSourceARN\":\"%s\"}";
 
     @Mock
     private EventBridgeRetryClient eventBridge;
@@ -43,18 +49,75 @@ public class EventBridgePublisherTest {
     }
 
     @Test
-    public void publish() {
+    public void publishCanPutEventsToEventBridge() {
         String eventSourceARN = UUID.randomUUID().toString();
-        when(eventBridge.putEvents(any(PutEventsRequest.class))).thenReturn(Collections.emptyList());
-        DynamodbEvent event = new DynamodbEvent();
-        DynamodbEvent.DynamodbStreamRecord record = new DynamodbEvent.DynamodbStreamRecord();
-        record.setEventSourceARN(eventSourceARN);
-        event.setRecords(Collections.singletonList(record));
+        DynamodbEvent event = createDynamodbEvent(eventSourceARN);
+        prepareMocksWithSuccessfulPutEvents();
 
         publisher.publish(event);
 
-        String expectedDetail = "{\"eventSourceARN\":\"" + eventSourceARN + "\"}";
-        PutEventsRequest expected = PutEventsRequest.builder()
+        PutEventsRequest expected = createPutEventsRequest(eventSourceARN);
+        verify(eventBridge).putEvents(expected);
+        verifyNoMoreInteractions(failedEventPublisher);
+    }
+
+    @Test
+    public void publishFailedEventWhenPutEventsToEventBridgehasFailures() {
+        String eventSourceARN = UUID.randomUUID().toString();
+        Builder putEventsRequestEntryBuilder = createPutEventsRequestEntryBuilder(eventSourceARN);
+        List<PutEventsRequestEntry> failedEntries = createFailedEntries(putEventsRequestEntryBuilder, eventSourceARN);
+        prepareMocksWithFailingPutEventEntries(failedEntries);
+
+        DynamodbStreamRecord successRecord = createDynamodbStreamRecord(eventSourceARN, SUCCESS_EVENT_NAME);
+        DynamodbEvent.DynamodbStreamRecord failedRecord = createDynamodbStreamRecord(eventSourceARN, FAILED_EVENT_NAME);
+        DynamodbEvent event = createDynamodbEvent(successRecord, failedRecord);
+        publisher.publish(event);
+
+        PutEventsRequest expected = createFailingPutEventsRequest(putEventsRequestEntryBuilder, eventSourceARN);
+        verify(eventBridge).putEvents(expected);
+        DynamodbEvent failedEvent = createDynamodbEvent(failedRecord);
+        verify(failedEventPublisher).publish(failedEvent);
+    }
+
+    private PutEventsRequest createFailingPutEventsRequest(Builder builder, String eventSourceARN) {
+        String successRecordString = String.format(RECORD_STRING_TEMPLATE, SUCCESS_EVENT_NAME, eventSourceARN);
+        String failedRecordString = String.format(RECORD_STRING_TEMPLATE, FAILED_EVENT_NAME, eventSourceARN);
+        return PutEventsRequest.builder()
+            .entries(builder.detail(successRecordString).build(),
+                builder.detail(failedRecordString).build())
+            .build();
+    }
+
+    private Builder createPutEventsRequestEntryBuilder(String eventSourceARN) {
+        Builder builder = PutEventsRequestEntry.builder()
+            .eventBusName(EVENT_BUS)
+            .time(NOW)
+            .source(EventBridgePublisher.EVENT_SOURCE)
+            .detailType(EventBridgePublisher.EVENT_DETAIL_TYPE)
+            .resources(eventSourceARN);
+        return builder;
+    }
+
+    private List<PutEventsRequestEntry> createFailedEntries(
+        PutEventsRequestEntry.Builder builder,
+        String eventSourceARN) {
+        String failedRecordString = String.format(RECORD_STRING_TEMPLATE, FAILED_EVENT_NAME, eventSourceARN);
+        List<PutEventsRequestEntry> failedEntries = Collections.singletonList(builder
+            .detail(failedRecordString)
+            .build());
+        return failedEntries;
+    }
+
+    private DynamodbEvent.DynamodbStreamRecord createDynamodbStreamRecord(String eventSourceARN, String eventName) {
+        DynamodbEvent.DynamodbStreamRecord record = new DynamodbEvent.DynamodbStreamRecord();
+        record.setEventSourceARN(eventSourceARN);
+        record.setEventName(eventName);
+        return record;
+    }
+
+    private PutEventsRequest createPutEventsRequest(String eventSourceARN) {
+        String expectedDetail = String.format(EXPECTED_DETAIL_TEMPLATE, eventSourceARN);
+        return PutEventsRequest.builder()
             .entries(PutEventsRequestEntry.builder()
                 .eventBusName(EVENT_BUS)
                 .time(NOW)
@@ -64,53 +127,25 @@ public class EventBridgePublisherTest {
                 .resources(eventSourceARN)
                 .build())
             .build();
-
-        verify(eventBridge).putEvents(expected);
-        verifyZeroInteractions(failedEventPublisher);
     }
 
-    @Test
-    public void publish_failedEvents() {
-        String eventSourceARN = UUID.randomUUID().toString();
-        List<DynamodbEvent.DynamodbStreamRecord> records = new ArrayList<>();
+    private DynamodbEvent createDynamodbEvent(String eventSourceARN) {
+        DynamodbEvent.DynamodbStreamRecord record = new DynamodbEvent.DynamodbStreamRecord();
+        record.setEventSourceARN(eventSourceARN);
+        return createDynamodbEvent(record);
+    }
 
-        DynamodbEvent.DynamodbStreamRecord successRecord = new DynamodbEvent.DynamodbStreamRecord();
-        successRecord.setEventSourceARN(eventSourceARN);
-        successRecord.setEventName("Success");
-        records.add(successRecord);
-
-
-        DynamodbEvent.DynamodbStreamRecord failedRecord = new DynamodbEvent.DynamodbStreamRecord();
-        failedRecord.setEventSourceARN(eventSourceARN);
-        failedRecord.setEventName("Failed");
-        records.add(failedRecord);
-        String failedRecordString = "{\"eventName\":\"Failed\","
-            + "\"eventSourceARN\":\"" + eventSourceARN + "\"}";
+    private DynamodbEvent createDynamodbEvent(DynamodbStreamRecord... records) {
         DynamodbEvent event = new DynamodbEvent();
-        event.setRecords(records);
-        DynamodbEvent failedEvent = new DynamodbEvent();
-        failedEvent.setRecords(Collections.singletonList(failedRecord));
+        event.setRecords(Arrays.asList(records));
+        return event;
+    }
 
-        PutEventsRequestEntry.Builder builder = PutEventsRequestEntry.builder()
-            .eventBusName(EVENT_BUS)
-            .time(NOW)
-            .source(EventBridgePublisher.EVENT_SOURCE)
-            .detailType(EventBridgePublisher.EVENT_DETAIL_TYPE)
-            .resources(eventSourceARN);
-        List<PutEventsRequestEntry> failedEntries = Collections.singletonList(builder
-            .detail(failedRecordString)
-            .build());
+    private void prepareMocksWithSuccessfulPutEvents() {
+        when(eventBridge.putEvents(any(PutEventsRequest.class))).thenReturn(Collections.emptyList());
+    }
+
+    private void prepareMocksWithFailingPutEventEntries(List<PutEventsRequestEntry> failedEntries) {
         when(eventBridge.putEvents(any(PutEventsRequest.class))).thenReturn(failedEntries);
-
-        publisher.publish(event);
-
-        String successRecordString = "{\"eventName\":\"Success\","
-            + "\"eventSourceARN\":\"" + eventSourceARN + "\"}";
-        PutEventsRequest expected = PutEventsRequest.builder()
-            .entries(builder.detail(successRecordString).build(),
-                builder.detail(failedRecordString).build())
-            .build();
-        verify(eventBridge).putEvents(expected);
-        verify(failedEventPublisher).publish(failedEvent);
     }
 }

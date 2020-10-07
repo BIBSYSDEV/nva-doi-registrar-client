@@ -1,6 +1,6 @@
 package no.unit.nva.doi.lambda;
 
-import no.unit.nva.doi.utils.JacocoGenerated;
+import nva.commons.utils.JacocoGenerated;
 
 public final class Env {
 
