@@ -1,4 +1,4 @@
-package no.unit.nva.doi.assigndoi;
+package no.unit.nva.doi.updatedoi;
 
 public class Environment {
 

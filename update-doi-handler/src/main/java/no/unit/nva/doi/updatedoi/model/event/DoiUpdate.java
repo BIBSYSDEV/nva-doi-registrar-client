@@ -1,4 +1,4 @@
-package no.unit.nva.doi.assigndoi.model.event;
+package no.unit.nva.doi.updatedoi.model.event;
 
 import java.net.URI;
 

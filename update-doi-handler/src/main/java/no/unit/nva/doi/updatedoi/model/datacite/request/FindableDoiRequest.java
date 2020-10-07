@@ -1,4 +1,4 @@
-package no.unit.nva.doi.assigndoi.model.datacite.request;
+package no.unit.nva.doi.updatedoi.model.datacite.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;

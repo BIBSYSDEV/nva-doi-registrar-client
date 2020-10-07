@@ -1,12 +1,12 @@
-package no.unit.nva.doi.assigndoi.model.datacite.request;
+package no.unit.nva.doi.updatedoi.model.datacite.request;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import no.unit.nva.doi.assigndoi.model.datacite.request.RegisterDoiRequest.Attributes;
-import no.unit.nva.doi.assigndoi.model.datacite.request.RegisterDoiRequest.Builder;
-import no.unit.nva.doi.assigndoi.model.datacite.request.RegisterDoiRequest.Data;
+import no.unit.nva.doi.updatedoi.model.datacite.request.RegisterDoiRequest.Attributes;
+import no.unit.nva.doi.updatedoi.model.datacite.request.RegisterDoiRequest.Builder;
+import no.unit.nva.doi.updatedoi.model.datacite.request.RegisterDoiRequest.Data;
 import org.junit.jupiter.api.Test;
 
 class RegisterDoiRequestTest {

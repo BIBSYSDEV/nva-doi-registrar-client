@@ -1,13 +1,13 @@
-package no.unit.nva.doi.assigndoi.model.datacite.request;
+package no.unit.nva.doi.updatedoi.model.datacite.request;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import java.net.URI;
-import no.unit.nva.doi.assigndoi.model.datacite.request.FindableDoiRequest.Attributes;
-import no.unit.nva.doi.assigndoi.model.datacite.request.FindableDoiRequest.AttributesBuilder;
-import no.unit.nva.doi.assigndoi.model.datacite.request.FindableDoiRequest.Data;
+import no.unit.nva.doi.updatedoi.model.datacite.request.FindableDoiRequest.Attributes;
+import no.unit.nva.doi.updatedoi.model.datacite.request.FindableDoiRequest.AttributesBuilder;
+import no.unit.nva.doi.updatedoi.model.datacite.request.FindableDoiRequest.Data;
 import org.junit.jupiter.api.Test;
 
 class FindableDoiRequestTest {
