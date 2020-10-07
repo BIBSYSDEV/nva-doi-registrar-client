@@ -15,6 +15,8 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 public class SqsPublisherTest {
 
     private static final String QUEUE_URL = UUID.randomUUID().toString();
+    public static final String EVENT_NAME = "test";
+    public static final String EVENT_BODY = "{\"records\":[{\"eventName\":\"test\"}]}";
     @Mock
     private SqsClient sqs;
 
@@ -30,15 +32,15 @@ public class SqsPublisherTest {
     }
 
     @Test
-    public void publish() {
+    public void publishCanSendMessage() {
         DynamodbEvent event = new DynamodbEvent();
         DynamodbEvent.DynamodbStreamRecord record = new DynamodbEvent.DynamodbStreamRecord();
-        record.setEventName("test");
+        record.setEventName(EVENT_NAME);
         event.setRecords(Collections.singletonList(record));
 
         publisher.publish(event);
 
-        String expectedBody = "{\"records\":[{\"eventName\":\"test\"}]}";
+        String expectedBody = EVENT_BODY;
         SendMessageRequest expected = SendMessageRequest.builder()
             .queueUrl(QUEUE_URL)
             .messageBody(expectedBody)

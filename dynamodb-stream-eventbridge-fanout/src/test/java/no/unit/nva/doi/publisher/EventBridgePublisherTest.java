@@ -62,7 +62,7 @@ public class EventBridgePublisherTest {
     }
 
     @Test
-    public void publishFailedEventWhenPutEventsToEventBridgehasFailures() {
+    public void publishFailedEventWhenPutEventsToEventBridgeHasFailures() {
         String eventSourceARN = UUID.randomUUID().toString();
         Builder putEventsRequestEntryBuilder = createPutEventsRequestEntryBuilder(eventSourceARN);
         List<PutEventsRequestEntry> failedEntries = createFailedEntries(putEventsRequestEntryBuilder, eventSourceARN);
