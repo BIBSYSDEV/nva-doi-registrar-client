@@ -3,10 +3,15 @@ package no.unit.nva.doi.assigndoi.model.datacite.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.net.URI;
+import java.util.Objects;
 
 public class FindableDoiRequest {
 
     private Data data;
+
+    public Data getData() {
+        return data;
+    }
 
     @JsonCreator
     public FindableDoiRequest(Data data) {
@@ -26,14 +31,40 @@ public class FindableDoiRequest {
             this.attributes = attributes;
         }
 
+        public static String getEventType() {
+            return TYPE;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Data data = (Data) o;
+            return Objects.equals(getId(), data.getId()) &&
+                getAttributes().equals(data.getAttributes());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getId(), getAttributes());
+        }
+
         /**
          * Landing page URL.
          */
-        private URI url; // TODO needed? not duplicated of Attributes.url ?
+        //private URI url; // TODO needed? not duplicated of Attributes.url ?
         /**
          * Base64 encoded metadata from the detail of the consumed event
          */
-        private String xml; // TODO needed? not duplicated of Attributes.xml?
+        //private String xml; // TODO needed? not duplicated of Attributes.xml?
 
         public Attributes getAttributes() {
             return attributes;
@@ -69,6 +100,25 @@ public class FindableDoiRequest {
 
         public String getXml() {
             return xml;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Attributes that = (Attributes) o;
+            return Objects.equals(getDoi(), that.getDoi()) &&
+                Objects.equals(getUrl(), that.getUrl()) &&
+                Objects.equals(getXml(), that.getXml());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getDoi(), getUrl(), getXml());
         }
     }
 

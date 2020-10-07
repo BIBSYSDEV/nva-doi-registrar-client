@@ -1,6 +1,7 @@
 package no.unit.nva.doi.assigndoi.model.datacite.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Objects;
 
 public class RegisterDoiRequest {
     private final Data data;
@@ -10,7 +11,11 @@ public class RegisterDoiRequest {
         this.data = data;
     }
 
-    private static class Data {
+    public Data getData() {
+        return data;
+    }
+
+    static class Data {
         private final String id;
         private final String type;
         private final Attributes attributes;
@@ -21,30 +26,49 @@ public class RegisterDoiRequest {
             this.type = type;
             this.attributes = attributes;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Data data = (Data) o;
+            return Objects.equals(id, data.id) &&
+                Objects.equals(type, data.type) &&
+                Objects.equals(attributes, data.attributes);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, type, attributes);
+        }
     }
 
-    static class DataBuilder {
+    static class Builder {
         private String id;
         private String type;
         private Attributes attributes;
 
-        private DataBuilder() {}
+        private Builder() {}
 
-        public static DataBuilder newBuilder() {
-            return new DataBuilder();
+        public static Builder newBuilder() {
+            return new Builder();
         }
 
-        public DataBuilder withId(String id) {
+        public Builder withId(String id) {
             this.id = id;
             return this;
         }
 
-        public DataBuilder withType(String type) {
+        public Builder withType(String type) {
             this.type = type;
             return this;
         }
 
-        public DataBuilder withAttributes(Attributes attributes) {
+        public Builder withAttributes(Attributes attributes) {
             this.attributes = attributes;
             return this;
         }
@@ -58,7 +82,7 @@ public class RegisterDoiRequest {
         private final String doi;
         private static final String EVENT = "register";
 
-        private Attributes(String doi) {
+        Attributes(String doi) {
             this.doi = doi;
         }
 
@@ -68,6 +92,23 @@ public class RegisterDoiRequest {
 
         public String getEventType() {
             return EVENT;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Attributes that = (Attributes) o;
+            return Objects.equals(getDoi(), that.getDoi());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getDoi());
         }
     }
 
