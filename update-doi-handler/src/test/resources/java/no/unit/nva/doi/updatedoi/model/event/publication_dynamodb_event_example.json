@@ -1,0 +1,197 @@
+{
+  "version": "0",
+  "id": "7cb06021-4f20-815f-2d6b-6864ac847d24",
+  "detail-type": "dynamodb-stream-event",
+  "source": "aws-dynamodb-stream-eventbridge-fanout",
+  "account": "884807050265",
+  "time": "2020-10-06T07:02:50Z",
+  "region": "eu-west-1",
+  "resources": [
+    "arn:aws:dynamodb:eu-west-1:884807050265:table/nva_resources/stream/2020-08-19T09:27:44.804"
+  ],
+  "detail": {
+    "eventID": "f594cf9305d079448945a3fd9a580bd5",
+    "eventName": "INSERT",
+    "eventVersion": "1.1",
+    "eventSource": "aws:dynamodb",
+    "awsRegion": "eu-west-1",
+    "dynamodb": {
+      "approximateCreationDateTime": 1601967770000,
+      "keys": {
+        "identifier": {
+          "s": "dabb64fd-53c2-48ac-a5b7-a45a9572a3b1"
+        },
+        "modifiedDate": {
+          "s": "2020-10-06T07:02:50.805653Z"
+        }
+      },
+      "newImage": {
+        "owner": {
+          "s": "jb@unit.no"
+        },
+        "identifier": {
+          "s": "dabb64fd-53c2-48ac-a5b7-a45a9572a3b1"
+        },
+        "entityDescription": {
+          "m": {
+            "date": {
+              "m": {
+                "year": {
+                  "s": "1999"
+                },
+                "type": {
+                  "s": "PublicationDate"
+                }
+              }
+            },
+            "reference": {
+              "m": {
+                "type": {
+                  "s": "Reference"
+                },
+                "publicationInstance": {
+                  "m": {
+                    "volume": {
+                      "s": "87"
+                    },
+                    "pages": {
+                      "m": {
+                        "end": {
+                          "s": "1227"
+                        },
+                        "type": {
+                          "s": "Range"
+                        },
+                        "begin": {
+                          "s": "1208"
+                        }
+                      }
+                    },
+                    "issue": {
+                      "s": "7"
+                    },
+                    "peerReviewed": {
+                      "bool": false
+                    },
+                    "type": {
+                      "s": "JournalArticle"
+                    }
+                  }
+                },
+                "publicationContext": {
+                  "m": {
+                    "openAccess": {
+                      "bool": false
+                    },
+                    "peerReviewed": {
+                      "bool": false
+                    },
+                    "type": {
+                      "s": "Journal"
+                    },
+                    "title": {
+                      "s": "Proceedings of the IEEE"
+                    },
+                    "printIssn": {
+                      "s": "0018-9219"
+                    }
+                  }
+                },
+                "doi": {
+                  "s": "https://doi.org/10.1109/5.771073"
+                }
+              }
+            },
+            "metadataSource": {
+              "s": "https://www.crossref.org/"
+            },
+            "mainTitle": {
+              "s": "Toward unique identifiers"
+            },
+            "language": {
+              "s": ""
+            },
+            "contributors": {
+              "l": [
+                {
+                  "m": {
+                    "sequence": {
+                      "n": "1"
+                    },
+                    "identity": {
+                      "m": {
+                        "name": {
+                          "s": "Paskin, N."
+                        },
+                        "type": {
+                          "s": "Identity"
+                        }
+                      }
+                    },
+                    "correspondingAuthor": {
+                      "bool": false
+                    },
+                    "type": {
+                      "s": "Contributor"
+                    }
+                  }
+                }
+              ]
+            },
+            "type": {
+              "s": "EntityDescription"
+            },
+            "alternativeTitles": {
+              "m": {}
+            },
+            "tags": {
+              "l": []
+            }
+          }
+        },
+        "publisherId": {
+          "s": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
+        },
+        "createdDate": {
+          "s": "2020-10-06T06:47:03.884802Z"
+        },
+        "publisherOwnerDate": {
+          "s": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934#jb@unit.no#2020-10-06T07:02:50.805653Z"
+        },
+        "modifiedDate": {
+          "s": "2020-10-06T07:02:50.805653Z"
+        },
+        "publisher": {
+          "m": {
+            "id": {
+              "s": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
+            },
+            "type": {
+              "s": "Organization"
+            }
+          }
+        },
+        "type": {
+          "s": "Publication"
+        },
+        "fileSet": {
+          "m": {
+            "files": {
+              "l": []
+            },
+            "type": {
+              "s": "FileSet"
+            }
+          }
+        },
+        "status": {
+          "s": "Draft"
+        }
+      },
+      "sequenceNumber": "856482600000000015831746210",
+      "sizeBytes": 1191,
+      "streamViewType": "NEW_IMAGE"
+    },
+    "eventSourceARN": "arn:aws:dynamodb:eu-west-1:884807050265:table/nva_resources/stream/2020-08-19T09:27:44.804"
+  }
+}
