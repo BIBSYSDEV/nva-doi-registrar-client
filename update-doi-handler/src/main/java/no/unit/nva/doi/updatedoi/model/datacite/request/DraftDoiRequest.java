@@ -24,6 +24,14 @@ public class DraftDoiRequest {
         public Data(Attributes attributes) {
             this.attributes = attributes;
         }
+
+        public static String getType() {
+            return TYPE;
+        }
+
+        public Attributes getAttributes() {
+            return attributes;
+        }
     }
 
     public static final class DataBuilder {

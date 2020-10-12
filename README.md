@@ -33,3 +33,7 @@ Value of secret should be stored in JSON format like this:
     ...
 ]
 ```
+
+## Other links
+
+- https://blog.libscie.org/doi-primer - Nice blog that explains the DOI system, inlcuding what the numbers in a DOI actually mean, and the DOI history.
