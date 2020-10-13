@@ -70,9 +70,10 @@ public class EventBridgePublisher implements EventPublisher {
     }
 
     private List<PutEventsRequestEntry> putEventsToEventBus(List<PutEventsRequestEntry> requestEntries) {
-        List<PutEventsRequestEntry> failedEntries = eventBridge.putEvents(PutEventsRequest.builder()
+        PutEventsRequest putEventsRequest = PutEventsRequest.builder()
             .entries(requestEntries)
-            .build());
+            .build();
+        List<PutEventsRequestEntry> failedEntries = eventBridge.putEvents(putEventsRequest);
         return failedEntries;
     }
 

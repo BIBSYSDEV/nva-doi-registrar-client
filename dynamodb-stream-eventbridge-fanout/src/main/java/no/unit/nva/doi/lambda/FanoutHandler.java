@@ -17,6 +17,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
+/**
+ * Listens on DynamodbEvents from DynamoDB Stream trigger and forwards the DynamoDbStreamRecords to EventBridge.
+ */
 public class FanoutHandler implements RequestHandler<DynamodbEvent, Void> {
 
     public static final String AWS_REGION = "AWS_REGION";

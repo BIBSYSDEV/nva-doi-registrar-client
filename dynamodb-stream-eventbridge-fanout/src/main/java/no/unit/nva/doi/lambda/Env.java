@@ -1,5 +1,6 @@
 package no.unit.nva.doi.lambda;
 
+import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
 
 public final class Env {
@@ -30,6 +31,6 @@ public final class Env {
 
     @JacocoGenerated
     private static String getEnvValue(final String name) {
-        return System.getenv(name);
+        return new Environment().readEnv(name);
     }
 }

@@ -1,5 +1,8 @@
 package no.unit.nva.doi.publisher;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -38,7 +41,7 @@ public class EventBridgeRetryClientTest {
     }
 
     @Test
-    public void putEventsHasNoFailure() {
+    public void putEventsIsSuccessReturnsNoFailingEntries() {
         prepareMocksWithSuccessfulResponse();
 
         PutEventsRequest request = PutEventsRequest.builder()
@@ -48,6 +51,48 @@ public class EventBridgeRetryClientTest {
         assertEquals(0, result.size());
         verify(eventBridge).putEvents(request);
     }
+
+    @Test
+    public void putEventsFailureReturnsFailingEntry() {
+        var failedResponseEntry = createFailedPutEventsResultEntry();
+        List<PutEventsResultEntry> resultEntries = asList(failedResponseEntry);
+        var response = createPutEventsResponse(1, resultEntries);
+
+        when(eventBridge.putEvents(any(PutEventsRequest.class))).thenReturn(response);
+
+        var failedEntry = createPutEventsRequestEntry("failed entry");
+        List<PutEventsRequestEntry> requestEntries = asList(failedEntry);
+        var request = createPutEventsRequest(requestEntries);
+
+        List<PutEventsRequestEntry> result = client.putEvents(request);
+
+        assertEquals(1, result.size());
+        verify(eventBridge, times(3)).putEvents(request);
+    }
+
+    @Test
+    public void putEventsPartialFailureReturnsFailingEntry() {
+        var responseEntry = createPutEventsResultEntry();
+        var failedResponseEntry = createFailedPutEventsResultEntry();
+        List<PutEventsResultEntry> resultEntries = asList(responseEntry, failedResponseEntry);
+
+        var firstResponse = createPutEventsResponse(1, resultEntries);
+        var secondResponse = createPutEventsResponse(1, singletonList(failedResponseEntry));
+        var thirdResponse = createPutEventsResponse(1, singletonList(failedResponseEntry));
+
+        prepareMocksWithConsecutiveResponses(firstResponse, secondResponse, thirdResponse);
+
+        var successEntry = createPutEventsRequestEntry("success entry");
+        var failedEntry = createPutEventsRequestEntry("failed entry");
+        List<PutEventsRequestEntry> requestEntries = asList(successEntry, failedEntry);
+        var request = createPutEventsRequest(requestEntries);
+
+        List<PutEventsRequestEntry> result = client.putEvents(request);
+
+        assertEquals(1, result.size());
+        verify(eventBridge).putEvents(request);
+    }
+
 
     private void prepareMocksWithSuccessfulResponse() {
         PutEventsResponse response = PutEventsResponse.builder()
@@ -60,14 +105,14 @@ public class EventBridgeRetryClientTest {
     public void putEventsRetriesOnFailure() {
         var successEntry = createPutEventsRequestEntry("success entry");
         var failedEntry = createPutEventsRequestEntry("failed entry");
-        List<PutEventsRequestEntry> requestEntries = Arrays.asList(successEntry, failedEntry);
+        List<PutEventsRequestEntry> requestEntries = asList(successEntry, failedEntry);
 
         var responseEntry = createPutEventsResultEntry();
         var failedResponseEntry = createFailedPutEventsResultEntry();
-        List<PutEventsResultEntry> resultEntries = Arrays.asList(responseEntry, failedResponseEntry);
+        List<PutEventsResultEntry> resultEntries = asList(responseEntry, failedResponseEntry);
 
         var firstResponse = createPutEventsResponse(1, resultEntries);
-        var secondResponse = createPutEventsResponse(0, Collections.emptyList());
+        var secondResponse = createPutEventsResponse(0, emptyList());
 
         prepareMocksWithConsecutiveResponses(firstResponse, secondResponse);
 
@@ -79,8 +124,8 @@ public class EventBridgeRetryClientTest {
             PutEventsRequest.class);
         verify(eventBridge, times(2)).putEvents(putEventsRequestArgumentCaptor.capture());
 
-        var secondRequest = createPutEventsRequest(Collections.singletonList(failedEntry));
-        List<PutEventsRequest> expected = Arrays.asList(request, secondRequest);
+        var secondRequest = createPutEventsRequest(singletonList(failedEntry));
+        List<PutEventsRequest> expected = asList(request, secondRequest);
         assertEquals(putEventsRequestArgumentCaptor.getAllValues(), expected);
     }
 
@@ -88,25 +133,25 @@ public class EventBridgeRetryClientTest {
     public void putEventsRetriesAndReachesMaxAttempt() {
         var successEntry = createPutEventsRequestEntry("success entry");
         var failedEntry = createPutEventsRequestEntry("failed entry");
-        List<PutEventsRequestEntry> requestEntries = Arrays.asList(successEntry, failedEntry);
+        List<PutEventsRequestEntry> requestEntries = asList(successEntry, failedEntry);
 
         var responseEntry = createPutEventsResultEntry();
         var failedResponseEntry = createFailedPutEventsResultEntry();
-        List<PutEventsResultEntry> resultEntries = Arrays.asList(responseEntry, failedResponseEntry);
+        List<PutEventsResultEntry> resultEntries = asList(responseEntry, failedResponseEntry);
 
         var response = createPutEventsResponse(1, resultEntries);
-        var failedResponse = createPutEventsResponse(1, Collections.singletonList(failedResponseEntry));
+        var failedResponse = createPutEventsResponse(1, singletonList(failedResponseEntry));
         prepareMocksWithConsecutiveResponses(response, failedResponse, failedResponse);
 
         var request = createPutEventsRequest(requestEntries);
         List<PutEventsRequestEntry> result = client.putEvents(request);
 
-        var failedRequest = createPutEventsRequest(Collections.singletonList(failedEntry));
+        var failedRequest = createPutEventsRequest(singletonList(failedEntry));
         assertEquals(result, failedRequest.entries());
         ArgumentCaptor<PutEventsRequest> putEventsRequestArgumentCaptor = ArgumentCaptor.forClass(
             PutEventsRequest.class);
         verify(eventBridge, times(3)).putEvents(putEventsRequestArgumentCaptor.capture());
-        List<PutEventsRequest> expected = Arrays.asList(request, failedRequest, failedRequest);
+        List<PutEventsRequest> expected = asList(request, failedRequest, failedRequest);
         assertEquals(putEventsRequestArgumentCaptor.getAllValues(), expected);
     }
 
