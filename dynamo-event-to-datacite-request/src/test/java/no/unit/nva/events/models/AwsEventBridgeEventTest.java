@@ -2,6 +2,7 @@ package no.unit.nva.events.models;
 
 import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 public class AwsEventBridgeEventTest {
 
-    private final String detailJson = IoUtils.stringFromResources(Path.of("validEventBridgeEvent.json"));
+    private static final String EVENT_JSON = IoUtils.stringFromResources(Path.of("validEventBridgeEvent.json"));
 
     @Test
     public void objectMapperReturnsAwsEverBridgeDetailObjectForValidJson() throws JsonProcessingException {
@@ -32,10 +33,30 @@ public class AwsEventBridgeEventTest {
         assertThat(event, doesNotHaveNullOrEmptyFields());
     }
 
+    @Test
+    public void equalsReturnsTrueForEquivalentFields() throws JsonProcessingException {
+        var left = parseEvent();
+        var right = parseEvent();
+        assertThat(left, is(equalTo(right)));
+    }
+
+    @Test
+    public void toStringIsValidJsonString() throws JsonProcessingException {
+        var expected = parseEvent();
+        var actual = parseEvent(expected.toString());
+        assertThat(actual, is(equalTo(expected)));
+    }
+
     private AwsEventBridgeEvent<AwsEventBridgeDetail<DataciteDoiRequest>> parseEvent()
+        throws JsonProcessingException {
+
+        return parseEvent(EVENT_JSON);
+    }
+
+    private AwsEventBridgeEvent<AwsEventBridgeDetail<DataciteDoiRequest>> parseEvent(String eventString)
         throws JsonProcessingException {
         TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<DataciteDoiRequest>>> detailTypeReference =
             new TypeReference<>() {};
-        return JsonUtils.objectMapper.readValue(detailJson, detailTypeReference);
+        return JsonUtils.objectMapper.readValue(eventString, detailTypeReference);
     }
 }

@@ -8,18 +8,22 @@ public class AwsEventBridgeResponseContext {
     private Integer statusCode;
     private String executedVersion;
 
+    @JacocoGenerated
     public Integer getStatusCode() {
         return statusCode;
     }
 
+    @JacocoGenerated
     public void setStatusCode(Integer statusCode) {
         this.statusCode = statusCode;
     }
 
+    @JacocoGenerated
     public String getExecutedVersion() {
         return executedVersion;
     }
 
+    @JacocoGenerated
     public void setExecutedVersion(String executedVersion) {
         this.executedVersion = executedVersion;
     }
