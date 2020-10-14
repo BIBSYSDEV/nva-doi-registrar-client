@@ -1,4 +1,4 @@
-package no.unit.nva.events.handlers;
+package no.unit.nva.events.examples;
 
 import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,7 +9,6 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.IsSame.sameInstance;
 
 import java.net.URI;
-import no.unit.nva.events.examples.DataciteDoiRequest;
 import org.junit.jupiter.api.Test;
 
 public class DataciteDoiRequestTest {
