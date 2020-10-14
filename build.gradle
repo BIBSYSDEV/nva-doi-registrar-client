@@ -13,7 +13,14 @@ allprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
+
+    project.ext {
+        awsSdkVersion = '1.11.875'
+        nvaCommonsVersion = '15742b1e9d4d600'
+        nvaTestUtilsVersion = "08abf8f09916c572"
+    }
 }
+
 
 subprojects {
     apply plugin: 'java-library'
@@ -78,7 +85,7 @@ subprojects {
                 limit {
                     counter = 'METHOD'
                     value = 'COVEREDRATIO'
-                    minimum = 1.00
+                    minimum = 1.000
                 }
             }
 
@@ -86,7 +93,7 @@ subprojects {
                 limit {
                     counter = 'CLASS'
                     value = 'COVEREDRATIO'
-                    minimum = 1.00
+                    minimum = 1.000
                 }
             }
         }
