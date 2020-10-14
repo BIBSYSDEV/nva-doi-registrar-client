@@ -5,6 +5,9 @@ import java.util.Objects;
 import no.unit.nva.events.handlers.JsonSerializable;
 import nva.commons.utils.JacocoGenerated;
 
+/**
+ * Example class. Will be deleted.
+ */
 public class DataciteDoiRequest implements JsonSerializable {
 
     private URI publicationId;
@@ -16,6 +19,7 @@ public class DataciteDoiRequest implements JsonSerializable {
     public DataciteDoiRequest() {
     }
 
+    @JacocoGenerated
     private DataciteDoiRequest(Builder builder) {
         setPublicationId(builder.publicationId);
         setExistingDoi(builder.existingDoi);
@@ -23,38 +27,47 @@ public class DataciteDoiRequest implements JsonSerializable {
         setType(builder.type);
     }
 
+    @JacocoGenerated
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    @JacocoGenerated
     public String getType() {
         return type;
     }
 
+    @JacocoGenerated
     public void setType(String type) {
         this.type = type;
     }
 
+    @JacocoGenerated
     public URI getPublicationId() {
         return publicationId;
     }
 
+    @JacocoGenerated
     public void setPublicationId(URI publicationId) {
         this.publicationId = publicationId;
     }
 
+    @JacocoGenerated
     public URI getExistingDoi() {
         return existingDoi;
     }
 
+    @JacocoGenerated
     public void setExistingDoi(URI existingDoi) {
         this.existingDoi = existingDoi;
     }
 
+    @JacocoGenerated
     public String getXml() {
         return xml;
     }
 
+    @JacocoGenerated
     public void setXml(String xml) {
         this.xml = xml;
     }
@@ -66,6 +79,7 @@ public class DataciteDoiRequest implements JsonSerializable {
     }
 
     @Override
+    @JacocoGenerated
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -91,6 +105,7 @@ public class DataciteDoiRequest implements JsonSerializable {
      *
      * @return a builder.
      */
+    @JacocoGenerated
     public DataciteDoiRequest.Builder copy() {
         return DataciteDoiRequest.newBuilder()
             .withExistingDoi(getExistingDoi())
@@ -99,6 +114,7 @@ public class DataciteDoiRequest implements JsonSerializable {
             .withType(getType());
     }
 
+    @JacocoGenerated
     public static final class Builder {
 
         private URI publicationId;
@@ -109,26 +125,31 @@ public class DataciteDoiRequest implements JsonSerializable {
         private Builder() {
         }
 
+        @JacocoGenerated
         public Builder withPublicationId(URI publicationId) {
             this.publicationId = publicationId;
             return this;
         }
 
+        @JacocoGenerated
         public Builder withExistingDoi(URI existingDoi) {
             this.existingDoi = existingDoi;
             return this;
         }
 
+        @JacocoGenerated
         public Builder withXml(String xml) {
             this.xml = xml;
             return this;
         }
 
+        @JacocoGenerated
         public Builder withType(String type) {
             this.type = type;
             return this;
         }
 
+        @JacocoGenerated
         public DataciteDoiRequest build() {
             return new DataciteDoiRequest(this);
         }
