@@ -11,7 +11,7 @@ import nva.commons.utils.attempt.Failure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventParser<I> {
+public class EventParser<InputType> {
 
     public static final String ERROR_PARSING_INPUT = "Could not parse input: ";
     public static final int SKIP_BOTTOM_TYPE = 2;
@@ -23,16 +23,27 @@ public class EventParser<I> {
         this.input = input;
     }
 
-    public AwsEventBridgeEvent<I> parse(Class<I> iclass) {
+    public AwsEventBridgeEvent<InputType> parse(Class<InputType> iclass) {
         return attempt(() -> parseJson(iclass)).orElseThrow(this::handleParsingError);
     }
 
+    /**
+     * Given the nested parameter classes ClassA,ClassB,ClassC,...,ClassZ, this method returns the an
+     * AwsEventBridgeEvent where the detail object in of type {@literal ClassA<ClassB<ClassC<...ClassZ>>..>}.
+     *
+     * @param nestedParameterClasses the classes of the nested generic type of the detail object.
+     * @return an AwsEventBridgeEvent with a nested generic type as detail object.
+     */
+    /*
+      Using raw types because of Java's type erasure for nested generic classes.
+      I.e. one cannot retrieve the java.lang.Class instance for the type ClassA<ClassB>.
+    */
     @SuppressWarnings(RAWTYPES)
-    public AwsEventBridgeEvent parse(Class... parameterClasses) {
-        return attempt(() -> parseJson(parameterClasses)).orElseThrow(this::handleParsingError);
+    public AwsEventBridgeEvent parse(Class... nestedParameterClasses) {
+        return attempt(() -> parseJson(nestedParameterClasses)).orElseThrow(this::handleParsingError);
     }
 
-    private AwsEventBridgeEvent<I> parseJson(Class<I> iclass) throws JsonProcessingException {
+    private AwsEventBridgeEvent<InputType> parseJson(Class<InputType> iclass) throws JsonProcessingException {
         JavaType javaType = objectMapper.getTypeFactory().constructParametricType(AwsEventBridgeEvent.class, iclass);
         return objectMapper.readValue(input, javaType);
     }
@@ -40,12 +51,12 @@ public class EventParser<I> {
     @SuppressWarnings(RAWTYPES)
     private AwsEventBridgeEvent parseJson(Class... nestedClasses)
         throws JsonProcessingException {
-        JavaType nestedJavaTypes = nestedClassesToJavaType(nestedClasses);
-        JavaType eventBridgeJavaType = constuctParametricType(AwsEventBridgeEvent.class, nestedJavaTypes);
+        JavaType nestedJavaTypes = nestedGenericTypesToJavaType(nestedClasses);
+        JavaType eventBridgeJavaType = constructParametricType(AwsEventBridgeEvent.class, nestedJavaTypes);
         return objectMapper.readValue(input, eventBridgeJavaType);
     }
 
-    private <S> RuntimeException handleParsingError(Failure<S> fail) {
+    private <OutputType> RuntimeException handleParsingError(Failure<OutputType> fail) {
         logger.error(ERROR_PARSING_INPUT + input);
         logger.error(stackTraceInSingleLine(fail.getException()));
         return new RuntimeException(fail.getException());
@@ -56,21 +67,21 @@ public class EventParser<I> {
      * it creates a {@link JavaType} for the object  ClassA<ClassB<ClassC...<ClassZ>>>>
      */
     @SuppressWarnings(RAWTYPES)
-    private JavaType nestedClassesToJavaType(Class[] classes) {
+    private JavaType nestedGenericTypesToJavaType(Class[] classes) {
+
         JavaType bottomType = constructNonParametricType(classes[classes.length - 1]);
         JavaType mostRecentType = bottomType;
         for (int index = classes.length - SKIP_BOTTOM_TYPE; index >= 0; index--) {
             Class currentClass = classes[index];
-            JavaType newType = constuctParametricType(currentClass, mostRecentType);
+            JavaType newType = constructParametricType(currentClass, mostRecentType);
             mostRecentType = newType;
         }
         return mostRecentType;
     }
 
     @SuppressWarnings(RAWTYPES)
-    private JavaType constuctParametricType(Class currentClass, JavaType mostRecentType) {
-        return objectMapper.getTypeFactory()
-            .constructParametricType(currentClass, mostRecentType);
+    private JavaType constructParametricType(Class currentClass, JavaType mostRecentType) {
+        return objectMapper.getTypeFactory().constructParametricType(currentClass, mostRecentType);
     }
 
     @SuppressWarnings(RAWTYPES)
