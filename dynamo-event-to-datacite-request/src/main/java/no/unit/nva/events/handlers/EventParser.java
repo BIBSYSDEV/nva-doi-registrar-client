@@ -1,7 +1,7 @@
 package no.unit.nva.events.handlers;
 
+import static nva.commons.utils.ExceptionUtils.stackTraceInSingleLine;
 import static nva.commons.utils.JsonUtils.objectMapper;
-import static nva.commons.utils.StringUtils.stackTraceInSingleLine;
 import static nva.commons.utils.attempt.Try.attempt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

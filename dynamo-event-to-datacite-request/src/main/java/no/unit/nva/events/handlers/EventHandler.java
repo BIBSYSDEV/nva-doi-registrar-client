@@ -1,6 +1,6 @@
 package no.unit.nva.events.handlers;
 
-import static nva.commons.utils.StringUtils.stackTraceInSingleLine;
+import static nva.commons.utils.ExceptionUtils.stackTraceInSingleLine;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
