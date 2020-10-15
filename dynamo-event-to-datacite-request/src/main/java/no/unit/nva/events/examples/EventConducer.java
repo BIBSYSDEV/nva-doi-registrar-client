@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Demo class it will be deleted.
  */
-public class CustomEventConsumer extends EventHandler<DataciteDoiRequest, DataciteDoiRequest> {
+public class EventConducer extends EventHandler<DataciteDoiRequest, DataciteDoiRequest> {
 
-    private final Logger logger = LoggerFactory.getLogger(CustomEventConsumer.class);
+    private final Logger logger = LoggerFactory.getLogger(EventConducer.class);
 
     @JacocoGenerated
-    public CustomEventConsumer() {
+    public EventConducer() {
         super(DataciteDoiRequest.class);
     }
 
