@@ -8,7 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Demo class it will be deleted.
+ * This class is an event Consumer and Producer. It consumes an event that was not created by Lambda destinations and it
+ * produces an event through Lambda Destinations.
+ *
+ * <p>Demo class. it will be deleted.
  */
 public class EventConducer extends EventHandler<DataciteDoiRequest, DataciteDoiRequest> {
 

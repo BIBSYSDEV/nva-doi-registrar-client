@@ -25,6 +25,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helper class for publishing custom messages at will. Will be deleted
+ *
+ * <p>The classes {@link EventProducer}, {@link EventConducer} ,and {@link DestinationsEventConsumer} are a demo of the
+ * usage of the LambdaBridge events.
+ *
+ * <p>When {@link EventProducer} is run, {@link EventConducer} reads the emitted message
+ * and {@link DestinationsEventConsumer} reads the message from {@link EventConducer}
+ *
+ * <p>To run {@link EventProducer}, run from the command line the script "lambda.sh" (requires login via
+ * aws-cli-tools). The script runs the {@link EventProducer} with input the file "requestPayload.json". The file
+ * contains a field with name "request" and the whole payload is send to the {@link EventConducer}. <br/> If the
+ * "request" field in the payload contains the word "success" then the {@link EventConducer} sends a message to
+ * EventBridge. <br/> If it contains the word "failure" then the {@link EventConducer} throws an Exception and the
+ * failed execution details appear in the attached SQL queue.
  */
 public class EventProducer implements RequestStreamHandler {
 
