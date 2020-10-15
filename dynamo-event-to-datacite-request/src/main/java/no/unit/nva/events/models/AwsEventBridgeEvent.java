@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
-import no.unit.nva.events.handlers.JsonSerializable;
 import nva.commons.utils.JacocoGenerated;
 
 public class AwsEventBridgeEvent<I> implements JsonSerializable {

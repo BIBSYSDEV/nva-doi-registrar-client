@@ -2,7 +2,7 @@ package no.unit.nva.events.examples;
 
 import java.net.URI;
 import java.util.Objects;
-import no.unit.nva.events.handlers.JsonSerializable;
+import no.unit.nva.events.models.JsonSerializable;
 import nva.commons.utils.JacocoGenerated;
 
 /**

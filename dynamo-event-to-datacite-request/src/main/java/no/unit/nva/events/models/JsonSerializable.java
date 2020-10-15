@@ -1,4 +1,4 @@
-package no.unit.nva.events.handlers;
+package no.unit.nva.events.models;
 
 import nva.commons.utils.JsonUtils;
 

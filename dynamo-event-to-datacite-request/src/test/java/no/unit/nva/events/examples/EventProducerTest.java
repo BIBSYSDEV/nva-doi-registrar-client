@@ -11,7 +11,6 @@ import com.amazonaws.services.eventbridge.model.PutEventsRequest;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
-import no.unit.nva.events.handlers.EventProducer;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.utils.Environment;
 import org.junit.jupiter.api.BeforeEach;

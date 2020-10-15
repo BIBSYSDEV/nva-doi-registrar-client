@@ -1,4 +1,4 @@
-package no.unit.nva.events.handlers;
+package no.unit.nva.events.examples;
 
 import static nva.commons.utils.JsonUtils.objectMapper;
 
@@ -15,7 +15,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Optional;
-import no.unit.nva.events.examples.DataciteDoiRequest;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
 import nva.commons.utils.StringUtils;
