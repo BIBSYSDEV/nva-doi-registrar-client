@@ -11,8 +11,10 @@ import com.amazonaws.services.eventbridge.model.PutEventsRequest;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.utils.Environment;
+import nva.commons.utils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -37,6 +39,20 @@ class EventProducerTest {
 
         EventProducer eventConducer = new EventProducer(env, mockClient);
         Executable action = () -> eventConducer.handleRequest(null, outputStream, context);
+        assertDoesNotThrow(action);
+    }
+
+    @Test
+    public void testCoverage2() {
+        Context context = new FakeContext();
+        AmazonEventBridge mockClient = mock(AmazonEventBridge.class);
+        when(mockClient.putEvents(any(PutEventsRequest.class)))
+            .thenReturn(new PutEventsResult().withFailedEntryCount(0));
+        Environment env = mock(Environment.class);
+        when(env.readEnv(anyString())).thenReturn("anything");
+        InputStream inputStream = IoUtils.stringToStream("success");
+        EventProducer eventConducer = new EventProducer(env, mockClient);
+        Executable action = () -> eventConducer.handleRequest(inputStream, outputStream, context);
         assertDoesNotThrow(action);
     }
 }

@@ -1,6 +1,7 @@
 package no.unit.nva.events.examples;
 
 import static nva.commons.utils.JsonUtils.objectMapper;
+import static nva.commons.utils.attempt.Try.attempt;
 
 import com.amazonaws.services.eventbridge.AmazonEventBridge;
 import com.amazonaws.services.eventbridge.AmazonEventBridgeClientBuilder;
@@ -49,7 +50,7 @@ public class EventProducer implements RequestStreamHandler {
     @JacocoGenerated
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        String inputString = IoUtils.streamToString(input);
+        String inputString = readInputStream(input);
         String message = "success";
         if (inputString.contains("failure")) {
             message = "failure";
@@ -62,6 +63,11 @@ public class EventProducer implements RequestStreamHandler {
         //        DataciteDoiRequest sentThroughLambdaDestination =
         //            sentDirectly.copy().withPublicationId(URI.create("https://localhost/fromOutputStream")).build();
         writeOutput(null, output);
+    }
+
+    @JacocoGenerated
+    private String readInputStream(InputStream input) {
+        return attempt(() -> IoUtils.streamToString(input)).orElse(fail -> "success");
     }
 
     @JacocoGenerated
