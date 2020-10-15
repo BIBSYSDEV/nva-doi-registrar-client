@@ -16,6 +16,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Optional;
 import nva.commons.utils.Environment;
+import nva.commons.utils.IoUtils;
 import nva.commons.utils.JacocoGenerated;
 import nva.commons.utils.StringUtils;
 import org.slf4j.Logger;
@@ -48,7 +49,14 @@ public class EventProducer implements RequestStreamHandler {
     @JacocoGenerated
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        DataciteDoiRequest sentDirectly = newDataciteDoiRequest();
+        String inputString = IoUtils.streamToString(input);
+        String message = "success";
+        if (inputString.contains("failure")) {
+            message = "failure";
+        }
+
+        DataciteDoiRequest sentDirectly = newDataciteDoiRequest(message);
+
         logger.info(LOG_HANDLER_HAS_RUN);
         putEventDirectlyToEventBridge(sentDirectly);
         //        DataciteDoiRequest sentThroughLambdaDestination =
@@ -83,11 +91,11 @@ public class EventProducer implements RequestStreamHandler {
     }
 
     @JacocoGenerated
-    private DataciteDoiRequest newDataciteDoiRequest() {
+    private DataciteDoiRequest newDataciteDoiRequest(String message) {
         return DataciteDoiRequest.newBuilder()
             .withExistingDoi(URI.create("http://somedoi.org"))
             .withPublicationId(URI.create("https://somepublication.com"))
-            .withXml("Somexml")
+            .withXml(message)
             .withType("MyType")
             .build();
     }

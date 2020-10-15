@@ -28,6 +28,10 @@ public class EventConducer extends EventHandler<DataciteDoiRequest, DataciteDoiR
         logger.info(input.toString());
         logger.info("Event");
         logger.info(event.toString());
-        return input;
+        if (input.getXml().contains("failure")) {
+            throw new RuntimeException("Hard coded exception");
+        } else {
+            return input;
+        }
     }
 }
