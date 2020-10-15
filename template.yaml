@@ -229,7 +229,7 @@ Resources:
       - EventBus
       - FailQueue
       - DestinationsEventConsumer
-      - CustomEventConsumer
+      - EventConducer
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: dynamo-event-to-datacite-request
