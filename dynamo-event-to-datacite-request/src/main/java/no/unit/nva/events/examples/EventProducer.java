@@ -53,7 +53,7 @@ public class EventProducer implements RequestStreamHandler {
         putEventDirectlyToEventBridge(sentDirectly);
         DataciteDoiRequest sentThroughLambdaDestination =
             sentDirectly.copy().withPublicationId(URI.create("https://localhost/fromOutputStream")).build();
-        writeOutput(sentThroughLambdaDestination, output);
+        writeOutput(null, output);
     }
 
     @JacocoGenerated
