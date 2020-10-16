@@ -1,0 +1,625 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MDS",
+    "version": "1.3"
+  },
+  "servers": [
+    {
+      "url": "https://mds.test.datacite.org"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "schemas": {}
+  },
+  "security": [
+    {
+      "sec0": []
+    }
+  ],
+  "paths": {
+    "/metadata/{doi}": {
+      "get": {
+        "tags": [],
+        "summary": "Get Metadata for DOI",
+        "description": "This request returns the most recent version of metadata associated with a given DOI.",
+        "operationId": "create-metadata-record-1",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "10.5438/0000-03VC"
+            }
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "application/xml"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [],
+        "summary": "Create Metadata for DOI",
+        "description": "This request stores a new version of metadata. The request body must contain valid DataCite XML, or another supported metadata format. Authentication credentials are required.",
+        "operationId": "create-metadata-record-2",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "application/xml"
+            }
+          },
+          {
+            "name": "charset",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "UTF-8"
+            }
+          },
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "DOI. Auto-generates random DOI if only prefix is provided.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "RAW_BODY": {
+                    "type": "string",
+                    "description": "Metadata in DataCite XML, or another supported metadata format."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [],
+        "summary": "Delete Metadata for DOI",
+        "description": "This request marks a dataset as `inactive`. To activate it again, PUT new metadata.",
+        "operationId": "delete-metadata-record-for-doi-name",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "10.5072/0000-03VC"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/doi/{doi}": {
+      "put": {
+        "tags": [],
+        "summary": "Create DOI",
+        "description": "Will register a new DOI if the specified DOI doesn’t exist. This method will attempt to update the URL if you specify an existing DOI. Creating a DOI requires authentication credentials.\nNote that metadata must be registered for a DOI first, using the [create metadata call](metadata#create-metadata-record-2)",
+        "operationId": "create-doi-name",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "text/plain"
+            }
+          },
+          {
+            "name": "charset",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "UTF-8"
+            }
+          },
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "RAW_BODY": {
+                    "type": "string",
+                    "description": "doi and url separated by newline, e.g. \"doi=10.5072/0000-03VC\\nurl=http://example.org/\""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [],
+        "summary": "Get URL for DOI",
+        "description": "This request returns an URL associated with a given DOI.",
+        "operationId": "list-doi-name",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "10.5438/0012"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [],
+        "summary": "Delete DOI",
+        "description": "Deletes a DOI if DOI is in **draft** status.",
+        "operationId": "delete-doi-1",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "text/plain"
+            }
+          },
+          {
+            "name": "charset",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "UTF-8"
+            }
+          },
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/media/{doi}": {
+      "post": {
+        "tags": [],
+        "summary": "Create Media for DOI",
+        "description": "POST will add media type/URLs pairs to a DOI. Standard domain restrictions check will be performed.",
+        "operationId": "list-media-for-doi-name-1",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "10.5072/0000-03VC"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "text/plain"
+            }
+          },
+          {
+            "name": "charset",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "UTF-8"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [],
+        "summary": "Get Media for DOI",
+        "description": "This request returns list of pairs of media type and URLs associated with a given DOI.",
+        "operationId": "list-media-for-doi-name",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "10.5438/0012"
+            }
+          },
+          {
+            "name": "head",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/doi": {
+      "get": {
+        "tags": [],
+        "summary": "List all DOIs",
+        "description": "This request returns a list of all DOIs for the requesting datacentre. There is no guaranteed order.",
+        "operationId": "list-all-dois",
+        "parameters": [],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/doi/{doi}/media/{id}": {
+      "delete": {
+        "tags": [],
+        "summary": "Delete Media for DOI",
+        "description": "DELETE will delete media type/URLs pair for a DOI.",
+        "operationId": "delete-media-for-doi",
+        "parameters": [
+          {
+            "name": "doi",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "text/plain"
+            }
+          }
+        ],
+        "deprecated": false,
+        "responses": {
+          "200": {
+            "description": "OK - operation successful"
+          },
+          "201": {
+            "description": "OK - content created"
+          },
+          "204": {
+            "description": "No Content - DOI is known to MDS, but is not registered"
+          },
+          "401": {
+            "description": "Unauthroized - no login provided"
+          },
+          "403": {
+            "description": "Forbidden - login problem or ODI belongs to another party"
+          },
+          "404": {
+            "description": "Not found - DOI does not exist in our database or you are not authorized with your username/password combination."
+          },
+          "422": {
+            "description": "Unprocessable Entity - metadata not validating against DataCite schema"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "x-headers": [],
+  "x-explorer-enabled": true,
+  "x-proxy-enabled": true,
+  "x-samples-enabled": true
+}
