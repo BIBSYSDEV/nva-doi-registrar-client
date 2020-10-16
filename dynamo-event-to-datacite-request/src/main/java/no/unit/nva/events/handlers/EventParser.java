@@ -48,8 +48,7 @@ public class EventParser<InputType> {
         return objectMapper.readValue(input, javaType);
     }
 
-    @SuppressWarnings(RAWTYPES)
-    private AwsEventBridgeEvent parseJson(Class... nestedClasses)
+    private AwsEventBridgeEvent<?> parseJson(Class<?>... nestedClasses)
         throws JsonProcessingException {
         JavaType nestedJavaTypes = nestedGenericTypesToJavaType(nestedClasses);
         JavaType eventBridgeJavaType = constructParametricType(AwsEventBridgeEvent.class, nestedJavaTypes);
@@ -72,15 +71,14 @@ public class EventParser<InputType> {
         JavaType bottomType = constructNonParametricType(classes[classes.length - 1]);
         JavaType mostRecentType = bottomType;
         for (int index = classes.length - SKIP_BOTTOM_TYPE; index >= 0; index--) {
-            Class currentClass = classes[index];
+            Class<?> currentClass = classes[index];
             JavaType newType = constructParametricType(currentClass, mostRecentType);
             mostRecentType = newType;
         }
         return mostRecentType;
     }
 
-    @SuppressWarnings(RAWTYPES)
-    private JavaType constructParametricType(Class currentClass, JavaType mostRecentType) {
+    private JavaType constructParametricType(Class<?> currentClass, JavaType mostRecentType) {
         return objectMapper.getTypeFactory().constructParametricType(currentClass, mostRecentType);
     }
 

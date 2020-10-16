@@ -38,7 +38,7 @@ public class EventHandlerTest {
     }
 
     @Test
-    public void handleRequestDoesNotThrowExceptionForValidEvent() throws JsonProcessingException {
+    public void handleRequestAcceptsValidEvent() throws JsonProcessingException {
         EventHandlerTestClass handler = new EventHandlerTestClass();
         handler.handleRequest(sampleInputStream(), outputStream, context);
         AwsEventBridgeEvent<SampleHandlerInput> expectedEvent = parseEvent();
@@ -60,7 +60,6 @@ public class EventHandlerTest {
 
     @Test
     public void handleRequestReThrowsExceptionWhenExceptionIsThrown() {
-        TestAppender appender = LogUtils.getTestingAppender(EventHandler.class);
         var handler = new EventHandlerThrowingException();
         Executable action = () -> handler.handleRequest(sampleInputStream(), outputStream, context);
         RuntimeException exception = assertThrows(RuntimeException.class, action);

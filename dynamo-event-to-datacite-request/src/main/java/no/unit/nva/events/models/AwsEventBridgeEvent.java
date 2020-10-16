@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import nva.commons.utils.JacocoGenerated;
 
 public class AwsEventBridgeEvent<I> implements JsonSerializable {
@@ -38,12 +39,12 @@ public class AwsEventBridgeEvent<I> implements JsonSerializable {
     @JacocoGenerated
     @JsonProperty("region")
     public String getRegion() {
-        return region.getName();
+        return Optional.ofNullable(region).map(Regions::getName).orElse(null);
     }
 
     @JacocoGenerated
     public void setRegion(String region) {
-        this.region = Regions.fromName(region);
+        this.region = Optional.ofNullable(region).map(Regions::fromName).orElse(null);
     }
 
     @JacocoGenerated
