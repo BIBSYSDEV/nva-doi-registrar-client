@@ -181,7 +181,6 @@ Resources:
       RestApiId: !Ref NvaDataciteMdsApi
       Stage: !Ref NvaDataciteMdsApi.Stage
 
-<<<<<<< HEAD
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -295,7 +294,7 @@ Resources:
     Properties:
       MaximumMessageSize: 262144
       QueueName: orestis-failure-queue
-=======
+
 Outputs:
   FanoutLambdaName:
     Description: "Fanout Lambda Function Name"
@@ -303,4 +302,3 @@ Outputs:
   FanoutUrl:
     Description: "FanoutUrl SQS DLQ URL"
     Value: !Ref FanoutDLQ
->>>>>>> 3803622be27e3cc552462f6c7f9b1ae591fdc466
