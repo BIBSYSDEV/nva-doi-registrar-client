@@ -13,7 +13,14 @@ allprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
+
+    project.ext {
+        awsSdkVersion = '1.11.875'
+        nvaCommonsVersion = '0.10.4'
+        nvaTestUtilsVersion = "0.1.15"
+    }
 }
+
 
 subprojects {
     apply plugin: 'java-library'
