@@ -14,7 +14,6 @@ Metadata:
     SpdxLicenseId: MIT
     LicenseUrl: LICENSE
 
-
 Globals:
   Function:
     Timeout: 20
@@ -23,7 +22,6 @@ Globals:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
       AllowMethods: "'OPTIONS, POST'"
       AllowOrigin: "'*'"
-
 
 Parameters:
   CognitoAuthorizerArn:
@@ -39,6 +37,19 @@ Parameters:
     Type: String
     Description: Institution configs for Datacite MDS API
     Default: '{{resolve:secretsmanager:dataciteMdsConfigs:SecretString}}'
+  DynamoDBStreamArn:
+    Type: String
+    Description: Amazon DynamoDB Stream ARN.
+  EventBusName:
+    Type: String
+    Default: "default"
+    Description: AWS EventBridge Event Bus Name.
+  EventBridgeMaxAttempt:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 5
+    Description: Max attempt to put events into AWS EventBridge Event Bus. Default is 1.
 
 Resources:
   NvaDataciteMdsApi:
@@ -59,10 +70,9 @@ Resources:
           /:
             post:
               summary:  Create DOI
-              parameters:
               x-amazon-apigateway-integration:
                 uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDataciteMdsFunction.Arn}/invocations
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaAssignDoiProxyFunction.Arn}/invocations
                 responses: {}
                 httpMethod: POST
                 type: AWS_PROXY
@@ -129,6 +139,40 @@ Resources:
             Path: /
             Method: POST
 
+  FanoutLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dynamodb-stream-eventbridge-fanout
+      Handler: no.unit.nva.doi.lambda.FanoutHandler::handleRequest
+      MemorySize: 768
+      Timeout: 360
+      Runtime: java11
+      Tracing: Active
+      Environment:
+        Variables:
+          DLQ_URL: !Ref FanoutDLQ
+          MAX_ATTEMPT: !Ref EventBridgeMaxAttempt
+          EVENT_BUS_NAME: !Ref EventBusName
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt FanoutDLQ.QueueName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: '*'
+      Events:
+        FanoutSource:
+          Type: DynamoDB
+          Properties:
+            Stream: !Ref DynamoDBStreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 10
+            Enabled: true
+  FanoutDLQ:
+    Type: "AWS::SQS::Queue"
+
   NvaDataciteMdsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
@@ -136,3 +180,11 @@ Resources:
       DomainName: !Ref CustomDomain
       RestApiId: !Ref NvaDataciteMdsApi
       Stage: !Ref NvaDataciteMdsApi.Stage
+
+Outputs:
+  FanoutLambdaName:
+    Description: "Fanout Lambda Function Name"
+    Value: !Ref FanoutLambda
+  FanoutUrl:
+    Description: "FanoutUrl SQS DLQ URL"
+    Value: !Ref FanoutDLQ
