@@ -8,5 +8,7 @@ dependencies {
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-eventbridge', version: project.ext.awsSdkVersion
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: project.ext.awsSdkVersion
     implementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: project.ext.nvaTestUtilsVersion
-    testImplementation group: 'com.github.javafaker', name: 'javafaker', version: '1.0.2'
+    testImplementation(group: 'com.github.javafaker', name: 'javafaker', version: '1.0.2') {
+        because: 'For generating test data in tests. Another alternative is jfairy'
+    }
 }
