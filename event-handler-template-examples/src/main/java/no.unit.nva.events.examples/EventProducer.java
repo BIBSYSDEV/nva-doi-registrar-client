@@ -73,8 +73,6 @@ public class EventProducer implements RequestStreamHandler {
 
         logger.info(LOG_HANDLER_HAS_RUN);
         putEventDirectlyToEventBridge(sentDirectly);
-        //        DataciteDoiRequest sentThroughLambdaDestination =
-        //            sentDirectly.copy().withPublicationId(URI.create("https://localhost/fromOutputStream")).build();
         writeOutput(null, output);
     }
 
