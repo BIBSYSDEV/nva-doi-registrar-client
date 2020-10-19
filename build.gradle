@@ -18,6 +18,7 @@ allprojects {
         awsSdkVersion = '1.11.875'
         nvaCommonsVersion = '0.10.4'
         nvaTestUtilsVersion = "0.1.15"
+        junit5Version = '5.6.0'
     }
 }
 
@@ -32,14 +33,19 @@ subprojects {
     // source-code version and must be <= targetCompatibility
     targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
 
-    def junit5Version = '5.6.0'
-
     dependencies {
         testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: 'v0.1.7'
         testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
-        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
-        testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
+        testImplementation group: 'org.junit.jupiter',
+                name: 'junit-jupiter-engine',
+                version: project.junit5Version
+        testRuntimeOnly group: 'org.junit.jupiter',
+                name: 'junit-jupiter-engine',
+                version: project.junit5Version
+        testImplementation group: 'org.junit.jupiter',
+                name: 'junit-jupiter-params',
+                version: project.junit5Version
     }
 
     test {
