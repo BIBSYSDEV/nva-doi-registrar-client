@@ -1,11 +1,10 @@
 package no.unit.nva.events.models.doi;
 
-import static java.util.Objects.nonNull;
-
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,17 +63,25 @@ public final class PublicationMapper {
         }
         var publicationBuilder = PublicationBuilder.newBuilder();
         publicationBuilder
-            .withId(URI.create(publicationIdPrefix + textFromNode(record, PUBLICATION_IDENTIFIER_POINTER)))
+            .withId(transformIdentifierToId(publicationIdPrefix, record))
             .withType(PublicationType.findByName(textFromNode(record, PUBLICATION_TYPE_POINTER)))
             .withPublicationDate(new PublicationDate(record.at(PUBLICATION_ENTITY_DESCRIPTION_POINTER)))
             .withTitle(textFromNode(record, MAIN_TITLE_POINTER))
             .withInstitutionOwner(URI.create(textFromNode(record, INSTITUTION_OWNER_POINTER)))
-            .withContributor(toStream(record.at(CONTRIBUTORS_LIST_POINTER))
-                .map(PublicationMapper::extractContributor)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
+            .withContributor(extractContributors(record));
         extractDoiUrl(record).ifPresent(publicationBuilder::withDoi);
         return publicationBuilder.build();
+    }
+
+    private static URI transformIdentifierToId(String publicationIdPrefix, JsonNode record) {
+        return URI.create(publicationIdPrefix + textFromNode(record, PUBLICATION_IDENTIFIER_POINTER));
+    }
+
+    private static List<Contributor> extractContributors(JsonNode record) {
+        return toStream(record.at(CONTRIBUTORS_LIST_POINTER))
+            .map(PublicationMapper::extractContributor)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     private static Optional<URI> extractDoiUrl(JsonNode record) {
@@ -87,18 +94,25 @@ public final class PublicationMapper {
     }
 
     private static Contributor extractContributor(JsonNode jsonNode) {
-        String identifier = textFromNode(jsonNode, CONTRIBUTOR_ARP_ID_JSON_POINTER);
-        String name = textFromNode(jsonNode, CONTRIBUTOR_NAME_JSON_POINTER);
-        Builder builder = new Builder();
-        if (identifier != null) {
-            builder.withId(URI.create(identifier));
+        var arpId = optionalTextFromNode(jsonNode, CONTRIBUTOR_ARP_ID_JSON_POINTER);
+        var name = optionalTextFromNode(jsonNode, CONTRIBUTOR_NAME_JSON_POINTER);
+        if (name.isEmpty()) {
+            return null;
         }
-        return nonNull(name) ? builder.withName(name).build() : null;
+        Builder builder = new Builder();
+        name.ifPresent(builder::withName);
+        arpId.ifPresent(id -> builder.withId(URI.create(id)));
+        return builder.build();
     }
 
     private static String textFromNode(JsonNode jsonNode, JsonPointer jsonPointer) {
         JsonNode json = jsonNode.at(jsonPointer);
         return isPopulatedJsonPointer(json) ? json.asText() : null;
+    }
+
+    private static Optional<String> optionalTextFromNode(JsonNode jsonNode, JsonPointer jsonPointer) {
+        JsonNode json = jsonNode.at(jsonPointer);
+        return isPopulatedJsonPointer(json) ? Optional.of(json.asText()) : Optional.empty();
     }
 
     private static boolean isPopulatedJsonPointer(JsonNode json) {
