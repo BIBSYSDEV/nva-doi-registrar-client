@@ -225,7 +225,7 @@ Resources:
       - FailQueue
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: dynamo-event-to-datacite-request
+      CodeUri: event-handler-template-examples
       Handler: no.unit.nva.events.examples.DestinationsEventConsumer::handleRequest
       Runtime: java11
       MemorySize: 1400
@@ -246,7 +246,7 @@ Resources:
       - FailQueue
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: dynamo-event-to-datacite-request
+      CodeUri: event-handler-template-examples
       Handler: no.unit.nva.events.examples.EventConducer::handleRequest
       Runtime: java11
       MemorySize: 1400
@@ -277,7 +277,7 @@ Resources:
       - EventConducer
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: dynamo-event-to-datacite-request
+      CodeUri: event-handler-template-examples
       Handler: no.unit.nva.events.examples.EventProducer::handleRequest
       Runtime: java11
       MemorySize: 1400

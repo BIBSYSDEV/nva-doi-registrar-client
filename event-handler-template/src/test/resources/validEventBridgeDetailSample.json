@@ -16,9 +16,9 @@
     "executedVersion": "$LATEST"
   },
   "responsePayload": {
-    "publicationId": "https://somepublication.com",
-    "existingDoi": "http://somedoi.org",
-    "xml": "Somexml",
-    "type": "MyType"
+    "name": "Orestis",
+    "message": "The message",
+    "identifier": 1,
+    "type": "SampleHandlerInput"
   }
 }

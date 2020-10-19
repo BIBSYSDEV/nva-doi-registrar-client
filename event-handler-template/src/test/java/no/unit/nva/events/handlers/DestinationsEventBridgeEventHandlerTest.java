@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import no.unit.nva.events.examples.DataciteDoiRequest;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.stubs.FakeContext;
@@ -39,32 +38,31 @@ public class DestinationsEventBridgeEventHandlerTest {
     public void handleRequestAcceptsValidEvent() throws JsonProcessingException {
         DestinationsHandlerTestClass handler = new DestinationsHandlerTestClass();
         handler.handleRequest(IoUtils.stringToStream(VALID_AWS_EVENT_BRIDGE_EVENT), outputStream, context);
-        DataciteDoiRequest expectedInput = parseInput();
+        SampleHandlerInput expectedInput = parseInput();
         assertThat(handler.inputBuffer.get(), is(equalTo(expectedInput)));
     }
 
-
-    private DataciteDoiRequest parseInput() throws JsonProcessingException {
+    private SampleHandlerInput parseInput() throws JsonProcessingException {
         JsonNode tree = JsonUtils.objectMapper.readTree(VALID_AWS_EVENT_BRIDGE_EVENT);
         JsonNode inputNode = tree.at(RESPONSE_PAYLOAD_POINTER);
-        DataciteDoiRequest input = JsonUtils.objectMapper.convertValue(inputNode, DataciteDoiRequest.class);
+        SampleHandlerInput input = JsonUtils.objectMapper.convertValue(inputNode, SampleHandlerInput.class);
         return input;
     }
 
     private static class DestinationsHandlerTestClass
-        extends DestinationsEventBridgeEventHandler<DataciteDoiRequest, Void> {
+        extends DestinationsEventBridgeEventHandler<SampleHandlerInput, Void> {
 
-        private final AtomicReference<DataciteDoiRequest> inputBuffer = new AtomicReference<>();
-        private final AtomicReference<AwsEventBridgeEvent<AwsEventBridgeDetail<DataciteDoiRequest>>> eventBuffer =
+        private final AtomicReference<SampleHandlerInput> inputBuffer = new AtomicReference<>();
+        private final AtomicReference<AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>>> eventBuffer =
             new AtomicReference<>();
 
         protected DestinationsHandlerTestClass() {
-            super(DataciteDoiRequest.class);
+            super(SampleHandlerInput.class);
         }
 
         @Override
-        protected Void processInputPayload(DataciteDoiRequest input,
-                                           AwsEventBridgeEvent<AwsEventBridgeDetail<DataciteDoiRequest>> event,
+        protected Void processInputPayload(SampleHandlerInput input,
+                                           AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>> event,
                                            Context context) {
             this.inputBuffer.set(input);
             this.eventBuffer.set(event);

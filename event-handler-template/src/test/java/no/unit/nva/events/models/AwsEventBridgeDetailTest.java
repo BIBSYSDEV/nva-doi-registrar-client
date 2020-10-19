@@ -11,7 +11,7 @@ import static org.hamcrest.core.IsNot.not;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.file.Path;
-import no.unit.nva.events.examples.DataciteDoiRequest;
+import no.unit.nva.events.handlers.SampleHandlerInput;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
@@ -42,9 +42,9 @@ public class AwsEventBridgeDetailTest {
         assertThat(copy, is(not(sameInstance(original))));
     }
 
-    private AwsEventBridgeDetail<DataciteDoiRequest> parseDetail()
+    private AwsEventBridgeDetail<SampleHandlerInput> parseDetail()
         throws JsonProcessingException {
-        TypeReference<AwsEventBridgeDetail<DataciteDoiRequest>> detailTypeReference = new TypeReference<>() {};
+        TypeReference<AwsEventBridgeDetail<SampleHandlerInput>> detailTypeReference = new TypeReference<>() {};
         return JsonUtils.objectMapper.readValue(detailJson, detailTypeReference);
     }
 }

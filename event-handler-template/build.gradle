@@ -1,4 +1,3 @@
-def awsSdkVersion = '1.11.875'
 
 dependencies {
     implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
