@@ -33,7 +33,7 @@ class PublicationTypeTest {
         "REPORT_WORKING_PAPER,ReportWorkingPaper",
         "CHAPTER_ARTICLE,ChapterArticle"
     })
-    void testToString(PublicationType enumValue, String expectedToString) {
+    void toStringReturnsCorrespondingNameValue(PublicationType enumValue, String expectedToString) {
         assertThat(enumValue.toString(), is(equalTo(expectedToString)));
     }
 
@@ -55,12 +55,13 @@ class PublicationTypeTest {
         "REPORT_WORKING_PAPER,ReportWorkingPaper",
         "CHAPTER_ARTICLE,ChapterArticle"
     })
-    void testFindByName(PublicationType expectedEnum, String findByNameValue) {
+    void findByNameReturnsPublicationTyupeWithCorrespondingNameValue(PublicationType expectedEnum,
+                                                                     String findByNameValue) {
         assertThat(PublicationType.findByName(findByNameValue), is(equalTo(expectedEnum)));
     }
 
     @Test
-    void testWhenUnknownTypeFindByNameThenThrowsIllegalArgumentException() {
+    void findByNameThrowsExceptionWhenUnknownTypeInserted() {
         var actualException = assertThrows(IllegalArgumentException.class,
             () -> PublicationType.findByName(UNDEFINED));
         assertThat(actualException.getMessage(), containsString(NO_ENUM_CONSTANT_FOR));

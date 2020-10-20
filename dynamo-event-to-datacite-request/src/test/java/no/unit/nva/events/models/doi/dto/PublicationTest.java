@@ -4,8 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
-import no.unit.nva.events.models.doi.dto.Publication.PublicationBuilder;
+import no.unit.nva.events.models.doi.dto.Publication.Builder;
 
 import java.net.URI;
 import java.util.List;
@@ -22,13 +23,13 @@ class PublicationTest {
 
     @Test
     public void testBuilder() {
-        var publication = PublicationBuilder.newBuilder()
+        var publication = Builder.newBuilder()
             .withId(URI.create(EXAMPLE_ID))
             .withDoi(URI.create(EXAMPLE_DOI_ID))
             .withInstitutionOwner(URI.create(EXAMPLE_INSTITUTION_OWNER))
             .withPublicationDate(new PublicationDate("1999", "07", "09"))
             .withType(PublicationType.BOOK_ANTHOLOGY)
-            .withTitle(EXAMPLE_TITLE)
+            .withMainTitle(EXAMPLE_TITLE)
             .withContributor(List.of(new Contributor.Builder()
                 .withId(URI.create(EXAMPLE_CONTRIBUTOR_ID))
                 .withName(EXAMPLE_CONTRIBUTOR_NAME)

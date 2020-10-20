@@ -1,7 +1,9 @@
 package no.unit.nva.events.models.doi;
 
 import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -11,36 +13,51 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import no.unit.nva.events.models.doi.dto.Contributor;
-import no.unit.nva.events.models.doi.dto.Contributor.Builder;
 import no.unit.nva.events.models.doi.dto.Publication;
-import no.unit.nva.events.models.doi.dto.Publication.PublicationBuilder;
+import no.unit.nva.events.models.doi.dto.Publication.Builder;
 import no.unit.nva.events.models.doi.dto.PublicationDate;
 import no.unit.nva.events.models.doi.dto.PublicationType;
 import nva.commons.utils.JsonUtils;
 
-public final class PublicationMapper {
+public class PublicationMapper {
 
-    public static final String ROOT = "/detail/dynamodb";
+    public static final String DEFAULT_ROOT = "/dynamodb";
     public static final String PUBLICATION_TYPE = "Publication";
-    private static final JsonPointer CONTRIBUTORS_LIST_POINTER = JsonPointer.compile(
-        ROOT + "/newImage/entityDescription/m/contributors/l");
+    protected static final ObjectMapper objectMapper = JsonUtils.objectMapper;
+
+    private final String root;
+
     private static final JsonPointer CONTRIBUTOR_ARP_ID_JSON_POINTER = JsonPointer.compile("/m/identity/m/arpId/s");
     private static final JsonPointer CONTRIBUTOR_NAME_JSON_POINTER = JsonPointer.compile("/m/identity/m/name/s");
-    private static final JsonPointer PUBLICATION_IDENTIFIER_POINTER
-        = JsonPointer.compile(ROOT + "/newImage/identifier/s");
-    private static final JsonPointer PUBLICATION_TYPE_POINTER = JsonPointer.compile(
-        ROOT + "/newImage/entityDescription/m/reference/m/publicationInstance/m/type/s");
-    private static final JsonPointer PUBLICATION_ENTITY_DESCRIPTION_POINTER = JsonPointer.compile(
-        ROOT + "/newImage/entityDescription/m");
-    private static final JsonPointer DOI_POINTER = JsonPointer.compile(
-        ROOT + "/newImage/entityDescription/m/reference/m/doi/s");
-    private static final JsonPointer MAIN_TITLE_POINTER = JsonPointer.compile(
-        ROOT + "/newImage/entityDescription/m/mainTitle/s");
-    private static final JsonPointer TYPE_POINTER = JsonPointer.compile(ROOT + "/newImage/type/s");
-    private static final JsonPointer INSTITUTION_OWNER_POINTER = JsonPointer.compile(ROOT + "/newImage/publisherId/s");
 
-    private PublicationMapper() {
+    private final JsonPointer CONTRIBUTORS_LIST_POINTER = JsonPointer.compile(
+         "/newImage/entityDescription/m/contributors/l");
 
+    private final JsonPointer PUBLICATION_IDENTIFIER_POINTER
+        = JsonPointer.compile( "/newImage/identifier/s");
+    private final JsonPointer PUBLICATION_TYPE_POINTER = JsonPointer.compile(
+         "/newImage/entityDescription/m/reference/m/publicationInstance/m/type/s");
+    private final JsonPointer PUBLICATION_ENTITY_DESCRIPTION_POINTER = JsonPointer.compile(
+        "/newImage/entityDescription/m");
+    private final JsonPointer DOI_POINTER = JsonPointer.compile(
+        "/newImage/entityDescription/m/reference/m/doi/s");
+    private final JsonPointer MAIN_TITLE_POINTER = JsonPointer.compile(
+        "/newImage/entityDescription/m/mainTitle/s");
+    private final JsonPointer TYPE_POINTER = JsonPointer.compile("/newImage/type/s");
+    private final JsonPointer INSTITUTION_OWNER_POINTER = JsonPointer.compile("/newImage/publisherId/s");
+
+
+    public PublicationMapper() {
+        this(DEFAULT_ROOT);
+    }
+
+    /**
+     * Construct a PublicationMapper where json pointer for data lookups is prefixed with ROOT.
+     * (because a Publication DTO payload can be wrapped under other json structures)
+     * @param root root for Publication Dynamodb Event or Stream Record.
+     */
+    public PublicationMapper(String root) {
+        this.root = root;
     }
 
     /**
@@ -48,43 +65,58 @@ public final class PublicationMapper {
      *
      * @param publicationIdPrefix                        prefix for a publication, from running environment
      *                                                   (https://nva.unit.no/publication)
-     * @param dynamodbStreamRecordSerializedAsJsonString detail.dynamodb serialized as a string
+     * @param json detail.dynamodb serialized as a string
      * @return Publication doi.Publication
      * @throws IOException on IO exception
      */
-    public static Publication fromDynamodbStreamRecord(String publicationIdPrefix,
-                                                       String dynamodbStreamRecordSerializedAsJsonString)
+    public Publication fromDynamodbStreamRecord(String publicationIdPrefix,
+                                                       String json)
         throws IOException {
-        var record = JsonUtils.objectMapper.readTree(dynamodbStreamRecordSerializedAsJsonString);
+        var record = JsonUtils.objectMapper.readTree(json);
 
+        return parseDynamodbStreamRecord(publicationIdPrefix, record.at(root));
+    }
+
+    public Publication fromDynamodbEventStreamRecordWrappedInEventBridge(String eventBridgeAsJsonString)
+        throws JsonProcessingException {
+        var record = objectMapper.readTree(eventBridgeAsJsonString);
+        if (record.has("detail-type") && record.has("source")) {
+            return parseDynamodbStreamRecord("https://example.net/publication/todo",
+                record.get("detail"));
+        }
+        throw new IllegalArgumentException(
+            "Does not look like a EventBridge event that contains a DynamodbStreamRecord!");
+    }
+
+    private Publication parseDynamodbStreamRecord(String publicationIdPrefix, JsonNode record) {
         var typeAttribute = textFromNode(record, TYPE_POINTER);
         if (typeAttribute == null || !typeAttribute.equals(PUBLICATION_TYPE)) {
             throw new IllegalArgumentException("Must be a dynamodb stream record of type Publication");
         }
-        var publicationBuilder = PublicationBuilder.newBuilder();
+        var publicationBuilder = Builder.newBuilder();
         publicationBuilder
             .withId(transformIdentifierToId(publicationIdPrefix, record))
             .withType(PublicationType.findByName(textFromNode(record, PUBLICATION_TYPE_POINTER)))
             .withPublicationDate(new PublicationDate(record.at(PUBLICATION_ENTITY_DESCRIPTION_POINTER)))
-            .withTitle(textFromNode(record, MAIN_TITLE_POINTER))
+            .withMainTitle(textFromNode(record, MAIN_TITLE_POINTER))
             .withInstitutionOwner(URI.create(textFromNode(record, INSTITUTION_OWNER_POINTER)))
             .withContributor(extractContributors(record));
         extractDoiUrl(record).ifPresent(publicationBuilder::withDoi);
         return publicationBuilder.build();
     }
 
-    private static URI transformIdentifierToId(String publicationIdPrefix, JsonNode record) {
+    private URI transformIdentifierToId(String publicationIdPrefix, JsonNode record) {
         return URI.create(publicationIdPrefix + textFromNode(record, PUBLICATION_IDENTIFIER_POINTER));
     }
 
-    private static List<Contributor> extractContributors(JsonNode record) {
+    private List<Contributor> extractContributors(JsonNode record) {
         return toStream(record.at(CONTRIBUTORS_LIST_POINTER))
             .map(PublicationMapper::extractContributor)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 
-    private static Optional<URI> extractDoiUrl(JsonNode record) {
+    private Optional<URI> extractDoiUrl(JsonNode record) {
         return Optional.ofNullable(textFromNode(record, DOI_POINTER))
             .map(URI::create);
     }
@@ -99,8 +131,8 @@ public final class PublicationMapper {
         if (name.isEmpty()) {
             return null;
         }
-        Builder builder = new Builder();
-        name.ifPresent(builder::withName);
+        Contributor.Builder builder = new Contributor.Builder();
+        builder.withName(name.get());
         arpId.ifPresent(id -> builder.withId(URI.create(id)));
         return builder.build();
     }
