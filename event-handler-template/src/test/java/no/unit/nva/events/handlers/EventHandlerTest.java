@@ -41,8 +41,9 @@ public class EventHandlerTest {
     public void handleRequestAcceptsValidEvent() throws JsonProcessingException {
         EventHandlerTestClass handler = new EventHandlerTestClass();
         handler.handleRequest(sampleInputStream(), outputStream, context);
-        AwsEventBridgeEvent<SampleHandlerInput> expectedEvent = parseEvent();
-        assertThat(handler.eventBuffer.get(), is(equalTo(expectedEvent)));
+        AwsEventBridgeEvent<SampleEventDetail> expectedEvent = parseEventFromSampleEventString();
+        AwsEventBridgeEvent<SampleEventDetail> actualEvent = handler.eventBuffer.get();
+        assertThat(actualEvent, is(equalTo(expectedEvent)));
     }
 
     private InputStream sampleInputStream() {
@@ -66,25 +67,25 @@ public class EventHandlerTest {
         assertThat(exception.getMessage(), is(equalTo(EXCEPTION_MESSAGE)));
     }
 
-    private AwsEventBridgeEvent<SampleHandlerInput> parseEvent() throws JsonProcessingException {
+    private AwsEventBridgeEvent<SampleEventDetail> parseEventFromSampleEventString() throws JsonProcessingException {
         JavaType javatype = JsonUtils.objectMapper.getTypeFactory()
-            .constructParametricType(AwsEventBridgeEvent.class, SampleHandlerInput.class);
+            .constructParametricType(AwsEventBridgeEvent.class, SampleEventDetail.class);
         return JsonUtils.objectMapper.readValue(AWS_EVENT_BRIDGE_EVENT, javatype);
     }
 
-    private static class EventHandlerTestClass extends EventHandler<SampleHandlerInput, SampleHandlerInput> {
+    private static class EventHandlerTestClass extends EventHandler<SampleEventDetail, SampleEventDetail> {
 
-        private AtomicReference<AwsEventBridgeEvent<SampleHandlerInput>> eventBuffer = new AtomicReference<>();
-        private AtomicReference<SampleHandlerInput> inputBuffer = new AtomicReference<>();
+        private AtomicReference<AwsEventBridgeEvent<SampleEventDetail>> eventBuffer = new AtomicReference<>();
+        private AtomicReference<SampleEventDetail> inputBuffer = new AtomicReference<>();
 
         protected EventHandlerTestClass() {
-            super(SampleHandlerInput.class);
+            super(SampleEventDetail.class);
         }
 
         @Override
-        protected SampleHandlerInput processInput(SampleHandlerInput input,
-                                                  AwsEventBridgeEvent<SampleHandlerInput> event,
-                                                  Context context) {
+        protected SampleEventDetail processInput(SampleEventDetail input,
+                                                 AwsEventBridgeEvent<SampleEventDetail> event,
+                                                 Context context) {
             eventBuffer.set(event);
             inputBuffer.set(input);
 
@@ -92,14 +93,14 @@ public class EventHandlerTest {
         }
     }
 
-    private static class EventHandlerThrowingException extends EventHandler<SampleHandlerInput, Void> {
+    private static class EventHandlerThrowingException extends EventHandler<SampleEventDetail, Void> {
 
         protected EventHandlerThrowingException() {
-            super(SampleHandlerInput.class);
+            super(SampleEventDetail.class);
         }
 
         @Override
-        protected Void processInput(SampleHandlerInput input, AwsEventBridgeEvent<SampleHandlerInput> event,
+        protected Void processInput(SampleEventDetail input, AwsEventBridgeEvent<SampleEventDetail> event,
                                     Context context) {
             throw new RuntimeException(EXCEPTION_MESSAGE);
         }

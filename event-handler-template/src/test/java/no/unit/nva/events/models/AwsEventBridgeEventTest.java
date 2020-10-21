@@ -10,7 +10,7 @@ import static org.hamcrest.core.IsNot.not;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.file.Path;
-import no.unit.nva.events.handlers.SampleHandlerInput;
+import no.unit.nva.events.handlers.SampleEventDetail;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
@@ -47,15 +47,15 @@ public class AwsEventBridgeEventTest {
         assertThat(actual, is(equalTo(expected)));
     }
 
-    private AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>> parseEvent()
+    private AwsEventBridgeEvent<AwsEventBridgeDetail<SampleEventDetail>> parseEvent()
         throws JsonProcessingException {
 
         return parseEvent(EVENT_JSON);
     }
 
-    private AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>> parseEvent(String eventString)
+    private AwsEventBridgeEvent<AwsEventBridgeDetail<SampleEventDetail>> parseEvent(String eventString)
         throws JsonProcessingException {
-        TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>>> detailTypeReference =
+        TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<SampleEventDetail>>> detailTypeReference =
             new TypeReference<>() {};
         return JsonUtils.objectMapper.readValue(eventString, detailTypeReference);
     }

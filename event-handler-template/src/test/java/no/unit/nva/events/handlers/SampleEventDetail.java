@@ -1,12 +1,8 @@
 package no.unit.nva.events.handlers;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import java.util.Objects;
 
-@JsonTypeInfo(use = Id.NAME, include = As.PROPERTY, property = "type")
-public class SampleHandlerInput {
+public class SampleEventDetail implements WithType {
 
     private String name;
     private String message;
@@ -44,7 +40,7 @@ public class SampleHandlerInput {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SampleHandlerInput that = (SampleHandlerInput) o;
+        SampleEventDetail that = (SampleEventDetail) o;
         return Objects.equals(getName(), that.getName())
             && Objects.equals(getMessage(), that.getMessage())
             && Objects.equals(getIdentifier(), that.getIdentifier());

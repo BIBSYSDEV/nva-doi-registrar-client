@@ -40,30 +40,30 @@ public class DestinationsEventBridgeEventHandlerTest {
         DestinationsHandlerTestClass handler = new DestinationsHandlerTestClass();
         InputStream requestInput = IoUtils.stringToStream(VALID_AWS_EVENT_BRIDGE_EVENT);
         handler.handleRequest(requestInput, outputStream, context);
-        SampleHandlerInput expectedInput = extractInputFromValidAwsEventBridgeEvent();
+        SampleEventDetail expectedInput = extractInputFromValidAwsEventBridgeEvent();
         assertThat(handler.inputBuffer.get(), is(equalTo(expectedInput)));
     }
 
-    private SampleHandlerInput extractInputFromValidAwsEventBridgeEvent() throws JsonProcessingException {
+    private SampleEventDetail extractInputFromValidAwsEventBridgeEvent() throws JsonProcessingException {
         JsonNode tree = objectMapper.readTree(VALID_AWS_EVENT_BRIDGE_EVENT);
         JsonNode inputNode = tree.at(RESPONSE_PAYLOAD_POINTER);
-        return objectMapper.convertValue(inputNode, SampleHandlerInput.class);
+        return objectMapper.convertValue(inputNode, SampleEventDetail.class);
     }
 
     private static class DestinationsHandlerTestClass
-        extends DestinationsEventBridgeEventHandler<SampleHandlerInput, Void> {
+        extends DestinationsEventBridgeEventHandler<SampleEventDetail, Void> {
 
-        private final AtomicReference<SampleHandlerInput> inputBuffer = new AtomicReference<>();
-        private final AtomicReference<AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>>> eventBuffer =
+        private final AtomicReference<SampleEventDetail> inputBuffer = new AtomicReference<>();
+        private final AtomicReference<AwsEventBridgeEvent<AwsEventBridgeDetail<SampleEventDetail>>> eventBuffer =
             new AtomicReference<>();
 
         protected DestinationsHandlerTestClass() {
-            super(SampleHandlerInput.class);
+            super(SampleEventDetail.class);
         }
 
         @Override
-        protected Void processInputPayload(SampleHandlerInput input,
-                                           AwsEventBridgeEvent<AwsEventBridgeDetail<SampleHandlerInput>> event,
+        protected Void processInputPayload(SampleEventDetail input,
+                                           AwsEventBridgeEvent<AwsEventBridgeDetail<SampleEventDetail>> event,
                                            Context context) {
             this.inputBuffer.set(input);
             this.eventBuffer.set(event);

@@ -19,47 +19,47 @@ public class EventMessageParserTest {
     @Test
     public void parseThrowsRuntimeExceptionWhenParsingFails() {
         String invalidJson = "invalidJson";
-        EventParser<SampleHandlerInput> eventParser = new EventParser<>(invalidJson);
-        Executable action = () -> eventParser.parse(SampleHandlerInput.class);
+        EventParser<SampleEventDetail> eventParser = new EventParser<>(invalidJson);
+        Executable action = () -> eventParser.parse(SampleEventDetail.class);
         RuntimeException exception = assertThrows(RuntimeException.class, action);
         assertThat(exception.getCause(), is(instanceOf(JsonParseException.class)));
     }
 
     @Test
     public void parseParsesCorrectlyNestedGenericTypes() throws JsonProcessingException {
-        ClassA<ClassB<ClassC<String>>> expectedDetail = createdNestedGenericsObject();
-        AwsEventBridgeEvent<ClassA<ClassB<ClassC<String>>>> event = createEventWithDetail(expectedDetail);
+        OuterClass<MiddleClass<InnerClass<String>>> expectedDetail = createdNestedGenericsObject();
+        AwsEventBridgeEvent<OuterClass<MiddleClass<InnerClass<String>>>> event = createEventWithDetail(expectedDetail);
 
         String eventJson = JsonUtils.objectMapper.writeValueAsString(event);
 
-        EventParser<ClassA<ClassB<ClassC<String>>>> parser = new EventParser<>(eventJson);
+        EventParser<OuterClass<MiddleClass<InnerClass<String>>>> parser = new EventParser<>(eventJson);
 
-        AwsEventBridgeEvent<ClassA<ClassB<ClassC<String>>>> parsedEvent =
-            parser.parse(ClassA.class, ClassB.class, ClassC.class, String.class);
+        AwsEventBridgeEvent<OuterClass<MiddleClass<InnerClass<String>>>> eventWithNestedTypes =
+            parser.parse(OuterClass.class, MiddleClass.class, InnerClass.class, String.class);
 
-        assertThat(parsedEvent.getDetail(), is(equalTo(expectedDetail)));
+        assertThat(eventWithNestedTypes.getDetail(), is(equalTo(expectedDetail)));
     }
 
-    private AwsEventBridgeEvent<ClassA<ClassB<ClassC<String>>>> createEventWithDetail(
-        ClassA<ClassB<ClassC<String>>> expectedDetail) {
-        AwsEventBridgeEvent<ClassA<ClassB<ClassC<String>>>> event = new AwsEventBridgeEvent<>();
+    private AwsEventBridgeEvent<OuterClass<MiddleClass<InnerClass<String>>>> createEventWithDetail(
+        OuterClass<MiddleClass<InnerClass<String>>> expectedDetail) {
+        AwsEventBridgeEvent<OuterClass<MiddleClass<InnerClass<String>>>> event = new AwsEventBridgeEvent<>();
         event.setDetail(expectedDetail);
         event.setAccount("someAccount");
         event.setId("SomeId");
         return event;
     }
 
-    private ClassA<ClassB<ClassC<String>>> createdNestedGenericsObject() {
-        ClassC<String> bottom = new ClassC<>();
+    private OuterClass<MiddleClass<InnerClass<String>>> createdNestedGenericsObject() {
+        InnerClass<String> bottom = new InnerClass<>();
         bottom.setFieldC("Hello");
-        ClassB<ClassC<String>> middle = new ClassB<>();
+        MiddleClass<InnerClass<String>> middle = new MiddleClass<>();
         middle.setFieldB(bottom);
-        ClassA<ClassB<ClassC<String>>> top = new ClassA<>();
+        OuterClass<MiddleClass<InnerClass<String>>> top = new OuterClass<>();
         top.setFieldA(middle);
         return top;
     }
 
-    private static class ClassA<InputType> implements WithType {
+    private static class OuterClass<InputType> implements WithType {
 
         private InputType fieldA;
 
@@ -79,8 +79,8 @@ public class EventMessageParserTest {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            ClassA<?> classA = (ClassA<?>) o;
-            return Objects.equals(getFieldA(), classA.getFieldA());
+            OuterClass<?> outerClass = (OuterClass<?>) o;
+            return Objects.equals(getFieldA(), outerClass.getFieldA());
         }
 
         @Override
@@ -89,7 +89,7 @@ public class EventMessageParserTest {
         }
     }
 
-    private static class ClassB<InputType> implements WithType {
+    private static class MiddleClass<InputType> implements WithType {
 
         private InputType fieldB;
 
@@ -109,8 +109,8 @@ public class EventMessageParserTest {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            ClassB<?> classB = (ClassB<?>) o;
-            return Objects.equals(getFieldB(), classB.getFieldB());
+            MiddleClass<?> middleClass = (MiddleClass<?>) o;
+            return Objects.equals(getFieldB(), middleClass.getFieldB());
         }
 
         @Override
@@ -119,7 +119,7 @@ public class EventMessageParserTest {
         }
     }
 
-    private static class ClassC<InputType> implements WithType {
+    private static class InnerClass<InputType> implements WithType {
 
         private InputType fieldC;
 
@@ -139,8 +139,8 @@ public class EventMessageParserTest {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            ClassC<?> classC = (ClassC<?>) o;
-            return Objects.equals(getFieldC(), classC.getFieldC());
+            InnerClass<?> innerClass = (InnerClass<?>) o;
+            return Objects.equals(getFieldC(), innerClass.getFieldC());
         }
 
         @Override

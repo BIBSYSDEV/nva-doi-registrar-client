@@ -11,40 +11,41 @@ import static org.hamcrest.core.IsNot.not;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.file.Path;
-import no.unit.nva.events.handlers.SampleHandlerInput;
+import no.unit.nva.events.handlers.SampleEventDetail;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
 
 public class AwsEventBridgeDetailTest {
 
-    private final String detailJson = IoUtils.stringFromResources(Path.of("validEventBridgeDetailSample.json"));
+    private final static String SAMPLE_EVENT_DETAIL = IoUtils.stringFromResources(
+        Path.of("validEventBridgeDetailSample.json"));
 
     @Test
     public void objectMapperReturnsAwsEverBridgeDetailObjectForValidJson() throws JsonProcessingException {
-        var detail = parseDetail();
+        var detail = parseSampleEventDetail();
         assertThat(detail, is(not(nullValue())));
         assertThat(detail, doesNotHaveNullOrEmptyFields());
     }
 
     @Test
     public void objectMapperSerialized() throws JsonProcessingException {
-        var detail = parseDetail();
+        var detail = parseSampleEventDetail();
         assertThat(detail, is(not(nullValue())));
         assertThat(detail, doesNotHaveNullOrEmptyFields());
     }
 
     @Test
     public void copyCreatesEqualObject() throws JsonProcessingException {
-        var original = parseDetail();
+        var original = parseSampleEventDetail();
         var copy = original.copy().build();
         assertThat(copy, is(equalTo(original)));
         assertThat(copy, is(not(sameInstance(original))));
     }
 
-    private AwsEventBridgeDetail<SampleHandlerInput> parseDetail()
+    private AwsEventBridgeDetail<SampleEventDetail> parseSampleEventDetail()
         throws JsonProcessingException {
-        TypeReference<AwsEventBridgeDetail<SampleHandlerInput>> detailTypeReference = new TypeReference<>() {};
-        return JsonUtils.objectMapper.readValue(detailJson, detailTypeReference);
+        TypeReference<AwsEventBridgeDetail<SampleEventDetail>> detailTypeReference = new TypeReference<>() {};
+        return JsonUtils.objectMapper.readValue(SAMPLE_EVENT_DETAIL, detailTypeReference);
     }
 }
