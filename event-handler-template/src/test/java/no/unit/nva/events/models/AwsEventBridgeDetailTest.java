@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 public class AwsEventBridgeDetailTest {
 
-    private final static String SAMPLE_EVENT_DETAIL = IoUtils.stringFromResources(
+    private static final String SAMPLE_EVENT_DETAIL = IoUtils.stringFromResources(
         Path.of("validEventBridgeDetailSample.json"));
 
     @Test
