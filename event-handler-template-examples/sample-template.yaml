@@ -3,6 +3,10 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Sample template for demonstrating EventHandlers.
 
+  ATTENTION. This template is not being currently deployed. It serves only as a working example of
+  a template that creates the event handlers.
+
+
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: NvaDataciteMds
