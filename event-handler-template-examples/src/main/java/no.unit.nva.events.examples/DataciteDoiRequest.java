@@ -6,7 +6,7 @@ import no.unit.nva.events.models.JsonSerializable;
 import nva.commons.utils.JacocoGenerated;
 
 /**
- * Example class.
+ * Example class of a "details" object.
  */
 public class DataciteDoiRequest implements JsonSerializable {
 
