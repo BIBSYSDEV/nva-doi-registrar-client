@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
  * This class is an event Consumer and Producer. It consumes an event that was not created by Lambda destinations and it
  * produces an event through Lambda Destinations.
  *
- * <p>Demo class. it will be deleted.
  */
 public class EventConducer extends EventHandler<DataciteDoiRequest, DataciteDoiRequest> {
 
@@ -31,7 +30,7 @@ public class EventConducer extends EventHandler<DataciteDoiRequest, DataciteDoiR
         logger.info(input.toString());
         logger.info("Event");
         logger.info(event.toString());
-        if (input.getXml().contains("failure")) {
+        if (input.getSomeData().contains("failure")) {
             throw new RuntimeException("Hard coded exception");
         } else {
             return input;

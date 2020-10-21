@@ -8,9 +8,6 @@ import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Demo class. Will be deleted.
- */
 public class DestinationsEventConsumer
     extends DestinationsEventBridgeEventHandler<DataciteDoiRequest, DataciteDoiRequest> {
 

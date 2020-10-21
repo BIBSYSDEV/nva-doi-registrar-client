@@ -29,7 +29,7 @@ class EventProducerTest {
     }
 
     @Test
-    public void testCoverage() {
+    public void handleRequestDoesNotThrowExceptionWhenInputIsNull() {
         Context context = new FakeContext();
         AmazonEventBridge mockClient = mock(AmazonEventBridge.class);
         when(mockClient.putEvents(any(PutEventsRequest.class)))
@@ -43,7 +43,7 @@ class EventProducerTest {
     }
 
     @Test
-    public void testCoverage2() {
+    public void handleRequestDoesNotThrowExceptionWhenInputIsNotNull() {
         Context context = new FakeContext();
         AmazonEventBridge mockClient = mock(AmazonEventBridge.class);
         when(mockClient.putEvents(any(PutEventsRequest.class)))

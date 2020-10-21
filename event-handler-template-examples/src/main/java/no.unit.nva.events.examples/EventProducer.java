@@ -24,9 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Helper class for publishing custom messages at will. Will be deleted
- *
- * <p>The classes {@link EventProducer}, {@link EventConducer} ,and {@link DestinationsEventConsumer} are a demo of the
+ * The classes {@link EventProducer}, {@link EventConducer} ,and {@link DestinationsEventConsumer} are a demo of the
  * usage of the LambdaBridge events.
  *
  * <p>When {@link EventProducer} is run, {@link EventConducer} reads the emitted message

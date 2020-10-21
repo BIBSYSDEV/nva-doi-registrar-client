@@ -30,7 +30,7 @@
     "responsePayload": {
       "publicationId": "https://somepublication.com",
       "existingDoi": "http://somedoi.org",
-      "xml": "Somexml",
+      "someData": "SomeData",
       "type": "MyType"
     }
   }

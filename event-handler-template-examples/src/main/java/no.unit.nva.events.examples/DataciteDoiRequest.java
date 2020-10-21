@@ -6,13 +6,13 @@ import no.unit.nva.events.models.JsonSerializable;
 import nva.commons.utils.JacocoGenerated;
 
 /**
- * Example class. Will be deleted.
+ * Example class.
  */
 public class DataciteDoiRequest implements JsonSerializable {
 
     private URI publicationId;
     private URI existingDoi;
-    private String xml;
+    private String someData;
     private String type;
 
     @JacocoGenerated
@@ -23,7 +23,7 @@ public class DataciteDoiRequest implements JsonSerializable {
     private DataciteDoiRequest(Builder builder) {
         setPublicationId(builder.publicationId);
         setExistingDoi(builder.existingDoi);
-        setXml(builder.xml);
+        setSomeData(builder.xml);
         setType(builder.type);
     }
 
@@ -63,13 +63,13 @@ public class DataciteDoiRequest implements JsonSerializable {
     }
 
     @JacocoGenerated
-    public String getXml() {
-        return xml;
+    public String getSomeData() {
+        return someData;
     }
 
     @JacocoGenerated
-    public void setXml(String xml) {
-        this.xml = xml;
+    public void setSomeData(String someData) {
+        this.someData = someData;
     }
 
     @Override
@@ -90,14 +90,14 @@ public class DataciteDoiRequest implements JsonSerializable {
         DataciteDoiRequest that = (DataciteDoiRequest) o;
         return Objects.equals(getPublicationId(), that.getPublicationId())
             && Objects.equals(getExistingDoi(), that.getExistingDoi())
-            && Objects.equals(getXml(), that.getXml())
+            && Objects.equals(getSomeData(), that.getSomeData())
             && Objects.equals(getType(), that.getType());
     }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(getPublicationId(), getExistingDoi(), getXml(), getType());
+        return Objects.hash(getPublicationId(), getExistingDoi(), getSomeData(), getType());
     }
 
     /**
@@ -110,7 +110,7 @@ public class DataciteDoiRequest implements JsonSerializable {
         return DataciteDoiRequest.newBuilder()
             .withExistingDoi(getExistingDoi())
             .withPublicationId(getPublicationId())
-            .withXml(getXml())
+            .withXml(getSomeData())
             .withType(getType());
     }
 

@@ -1,5 +1,6 @@
 package no.unit.nva.events.handlers;
 
+import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -9,13 +10,13 @@ import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.stubs.FakeContext;
 import nva.commons.utils.IoUtils;
-import nva.commons.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,16 +38,16 @@ public class DestinationsEventBridgeEventHandlerTest {
     @Test
     public void handleRequestAcceptsValidEvent() throws JsonProcessingException {
         DestinationsHandlerTestClass handler = new DestinationsHandlerTestClass();
-        handler.handleRequest(IoUtils.stringToStream(VALID_AWS_EVENT_BRIDGE_EVENT), outputStream, context);
-        SampleHandlerInput expectedInput = parseInput();
+        InputStream requestInput = IoUtils.stringToStream(VALID_AWS_EVENT_BRIDGE_EVENT);
+        handler.handleRequest(requestInput, outputStream, context);
+        SampleHandlerInput expectedInput = extractInputFromValidAwsEventBridgeEvent();
         assertThat(handler.inputBuffer.get(), is(equalTo(expectedInput)));
     }
 
-    private SampleHandlerInput parseInput() throws JsonProcessingException {
-        JsonNode tree = JsonUtils.objectMapper.readTree(VALID_AWS_EVENT_BRIDGE_EVENT);
+    private SampleHandlerInput extractInputFromValidAwsEventBridgeEvent() throws JsonProcessingException {
+        JsonNode tree = objectMapper.readTree(VALID_AWS_EVENT_BRIDGE_EVENT);
         JsonNode inputNode = tree.at(RESPONSE_PAYLOAD_POINTER);
-        SampleHandlerInput input = JsonUtils.objectMapper.convertValue(inputNode, SampleHandlerInput.class);
-        return input;
+        return objectMapper.convertValue(inputNode, SampleHandlerInput.class);
     }
 
     private static class DestinationsHandlerTestClass
