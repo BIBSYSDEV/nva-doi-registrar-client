@@ -43,6 +43,7 @@ public class EventProducer implements RequestStreamHandler {
     public static final String SOURCE = "SomeSource";
     public static final String LOG_HANDLER_HAS_RUN = "Event Producer has been called!!!";
     private static final Logger logger = LoggerFactory.getLogger(EventProducer.class);
+    public static final String DEFAULT_MESSAGE = "success";
 
     private final Environment environment;
     private final AmazonEventBridge eventBridgeClient;
@@ -76,7 +77,7 @@ public class EventProducer implements RequestStreamHandler {
 
     @JacocoGenerated
     private String readInputStream(InputStream input) {
-        return attempt(() -> IoUtils.streamToString(input)).orElse(fail -> "success");
+        return attempt(() -> IoUtils.streamToString(input)).orElse(fail -> DEFAULT_MESSAGE);
     }
 
     @JacocoGenerated
