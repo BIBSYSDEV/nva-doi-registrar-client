@@ -1,0 +1,33 @@
+plugins {
+    id "org.openapi.generator" version "4.3.0"
+}
+
+task prepareDirs {
+    mustRunAfter clean
+    doLast {
+        mkdir "$buildDir/generated"
+    }
+}
+
+task buildDataciteMds(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+
+    generatorName = "java"
+    inputSpec = "$rootDir/datacite-mds-client/openapi_datacite_mds.json".toString()
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "no.unit.nva.doi.datacite.client.api"
+    invokerPackage = "no.unit.nva.doi.datacite.client.invoker"
+    modelPackage = "no.unit.nva.doi.datacite.client.model"
+
+    generateModelTests = false
+    generateApiTests = false
+    library = "native"
+
+
+    configOptions = [
+        dateLibrary: "java8",
+        java8: "true",
+        hideGenerationTimestamp: "true",
+    ]
+}
+
+compileJava.dependsOn buildDataciteMds
