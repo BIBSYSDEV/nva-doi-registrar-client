@@ -20,6 +20,8 @@ import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JacocoGenerated;
 import nva.commons.utils.StringUtils;
+import nva.commons.utils.attempt.Failure;
+import nva.commons.utils.attempt.FunctionWithException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,11 @@ public class EventProducer implements RequestStreamHandler {
 
     @JacocoGenerated
     private String readInputStream(InputStream input) {
-        return attempt(() -> IoUtils.streamToString(input)).orElse(fail -> DEFAULT_MESSAGE);
+        return attempt(() -> IoUtils.streamToString(input)).orElse(sendSuccessOnEmptyInput());
+    }
+
+    private FunctionWithException<Failure<String>, String, RuntimeException> sendSuccessOnEmptyInput() {
+        return fail -> DEFAULT_MESSAGE;
     }
 
     @JacocoGenerated
