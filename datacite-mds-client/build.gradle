@@ -12,7 +12,7 @@ task prepareDirs {
 task buildDataciteMds(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 
     generatorName = "java"
-    inputSpec = "$rootDir/datacite-mds-client/openapi_datacite_mds.json".toString()
+    inputSpec = "$rootDir/datacite-mds-client/datacite_openapi.yaml".toString()
     outputDir = "$buildDir/generated".toString()
     apiPackage = "no.unit.nva.doi.datacite.client.api"
     invokerPackage = "no.unit.nva.doi.datacite.client.invoker"
