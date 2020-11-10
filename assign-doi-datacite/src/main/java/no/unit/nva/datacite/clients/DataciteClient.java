@@ -19,15 +19,14 @@ import org.slf4j.LoggerFactory;
  */
 public class DataciteClient implements DoiClient {
 
-    public static final String CHARACTER_PARENTHESES_START = "(";
-    public static final String CHARACTER_PARENTHESES_STOP = ")";
-    public static final String CHARACTER_WHITESPACE = " ";
-
     public static final String ERROR_SETTING_DOI_METADATA = "Error setting DOI metadata";
     public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
     public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
     public static final String ERROR_DELETING_DOI = "Error deleting DOI";
-    public static final String FORWARD_SLASH = "/";
+    protected static final char CHARACTER_PARENTHESES_START = '(';
+    protected static final char CHARACTER_PARENTHESES_STOP = ')';
+    protected static final char CHARACTER_WHITESPACE = ' ';
+    protected static final char FORWARD_SLASH = '/';
     private static final Logger logger = LoggerFactory.getLogger(DataciteClient.class);
     private final DataciteMdsConnectionFactory mdsConnectionFactory;
     private final DataciteConfigurationFactory configFactory;
