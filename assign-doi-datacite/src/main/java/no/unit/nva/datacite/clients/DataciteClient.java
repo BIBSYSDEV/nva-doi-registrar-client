@@ -1,6 +1,5 @@
 package no.unit.nva.datacite.clients;
 
-import static org.apache.http.HttpStatus.SC_OK;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -111,6 +110,7 @@ public class DataciteClient implements DoiClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deleteMetadata(String customerId, Doi doi) throws ClientException {
         try {
             HttpResponse<String> deleteDoiMetadata = mdsConnectionFactory.getAuthenticatedConnection(customerId)
@@ -136,8 +136,8 @@ public class DataciteClient implements DoiClient {
         try {
             HttpResponse<String> deleteDoi = mdsConnectionFactory.getAuthenticatedConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
-            if (deleteDoi.statusCode() == SC_OK) {
-                throw new ClientException(ERROR_SETTING_DOI_URL);
+            if (!isSucessfullApiResponse(deleteDoi)) {
+                throw new ClientException(ERROR_DELETING_DOI);
             } else {
                 logger.error(ERROR_DELETING_DOI
                     + CHARACTER_WHITESPACE
@@ -157,6 +157,6 @@ public class DataciteClient implements DoiClient {
     }
 
     private boolean isSucessfullApiResponse(HttpResponse<String> createDoiResponse) {
-        return (createDoiResponse.statusCode() / 100) == 2;
+        return createDoiResponse.statusCode() / 100 == 2;
     }
 }

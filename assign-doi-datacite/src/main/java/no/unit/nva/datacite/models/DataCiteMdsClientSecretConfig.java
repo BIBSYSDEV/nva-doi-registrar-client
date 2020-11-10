@@ -9,6 +9,7 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
 
     @JacocoGenerated
     public DataCiteMdsClientSecretConfig() {
+        super();
     }
 
     /**

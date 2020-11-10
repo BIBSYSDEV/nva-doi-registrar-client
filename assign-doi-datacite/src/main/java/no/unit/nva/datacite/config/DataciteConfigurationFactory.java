@@ -13,7 +13,7 @@ public class DataciteConfigurationFactory {
     public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
     private Map<String, DataCiteMdsClientSecretConfig> dataCiteMdsClientConfigsMap = new ConcurrentHashMap<>();
-    private final SecretCache secretCache;
+    private SecretCache secretCache;
 
     // Replace SecretCache with AWSSecretsManagerClientBuilder.standard() , we dont reload configuration..
     public DataciteConfigurationFactory(SecretCache secretCache, String secretId) {
@@ -22,7 +22,6 @@ public class DataciteConfigurationFactory {
     }
 
     protected DataciteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {
-        this.secretCache = null;
         this.dataCiteMdsClientConfigsMap = testSecretConfigs;
     }
 

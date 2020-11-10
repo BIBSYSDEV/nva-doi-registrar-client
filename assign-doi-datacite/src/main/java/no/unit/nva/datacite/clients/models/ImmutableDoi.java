@@ -194,7 +194,11 @@ public final class ImmutableDoi extends Doi {
         }
 
         public final Builder identifier(String identifier) {
+            Objects.requireNonNull(identifier, "identifier");
             int indexOfDivider = identifier.indexOf(FORWARD_SLASH);
+            if (indexOfDivider == -1) {
+                throw new IllegalArgumentException("Invalid DOI identifier");
+            }
             prefix(identifier.substring(0, indexOfDivider));
             suffix(identifier.substring(++indexOfDivider));
             return this;

@@ -2,6 +2,8 @@ package no.unit.nva.datacite.clients;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -59,16 +61,16 @@ class DataciteClientTest {
     public static final String DEMO_PREFIX = "10.5072";
     public static final String INSTITUTION_PREFIX = DEMO_PREFIX;
     public static final char FORWARD_SLASH = '/';
-    public static final String updateMetadataPathPrefix =
-        FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA + FORWARD_SLASH;
+    public static final String metadataPathPrefix =
+        FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA;
     public static final URI EXAMPLE_LANDING_PAGE = URI.create("https://example.net/nva/publication/203124124");
     public static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     public static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
-    private static final String EXAMPLE_DOI_SUFFIX = "1942810412sadsfgffds";
     public static final String HTTP_RESPONSE_OK = "OK";
+    private static final String EXAMPLE_DOI_SUFFIX = "1942810412sadsfgffds";
+    private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     public String mdsHost;
     public DataCiteMdsClientSecretConfig validSecretConfig;
-    private final String updateDoiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     private int mdsPort;
     private DataCiteMdsClientConfig validConfig;
 
@@ -125,18 +127,18 @@ class DataciteClientTest {
     @Test
     void testCreateDoiWithPrefixAndMetadataReturnsDoiIdentifier() throws ClientException {
         var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
-        stubFor(post(urlEqualTo(updateMetadataPathPrefix + DEMO_PREFIX))
+        stubFor(post(urlEqualTo(metadataPathPrefix + FORWARD_SLASH + DEMO_PREFIX))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_CREATED)
-                .withBody(successfullyPostMetadataResponse(expectedCreatedServerDoi))));
+                .withBody(successfullyCreateMetadataResponse(expectedCreatedServerDoi))));
 
         Doi actual = sut.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
         assertThat(actual, is(instanceOf(Doi.class)));
         assertThat(actual.prefix(), is(equalTo(expectedCreatedServerDoi.prefix())));
         assertThat(actual.suffix(), is(equalTo(expectedCreatedServerDoi.suffix())));
 
-        verify(postRequestedFor(urlEqualTo(updateMetadataPathPrefix + actual.prefix()))
+        verify(postRequestedFor(urlEqualTo(metadataPathPrefix + FORWARD_SLASH + actual.prefix()))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
             .withHeader("Content-Type", WireMock.equalTo("application/xml; charset=UTF-8")));
@@ -145,12 +147,12 @@ class DataciteClientTest {
     @Test
     void updateMetadataWithCustomerSuccessfully() throws ClientException {
         Doi doi = getDoi();
-        String expectedPathForUpdatingMetadata = updateMetadataPathPrefix + doi.toIdentifier();
+        String expectedPathForUpdatingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
         stubFor(post(urlEqualTo(expectedPathForUpdatingMetadata))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
-                .withStatus(HttpStatus.SC_CREATED)
-                .withBody(successfullyPostMetadataResponse(doi))));
+                .withStatus(HttpStatus.SC_OK)
+                .withBody(HTTP_RESPONSE_OK)));
 
         sut.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
 
@@ -164,7 +166,7 @@ class DataciteClientTest {
     void setLandingPage() throws ClientException {
         Doi doi = getDoi();
 
-        stubFor(put(urlEqualTo(updateDoiPath))
+        stubFor(put(urlEqualTo(doiPath))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_CREATED)
@@ -172,9 +174,10 @@ class DataciteClientTest {
 
         sut.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
 
-        verify(putRequestedFor(urlEqualTo(updateDoiPath))
+        verify(putRequestedFor(urlEqualTo(doiPath))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
-            .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
+            .withHeader(HttpHeaders.CONTENT_TYPE,
+                WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
 
             .withRequestBody(matchingJsonPath("$.[?(@.url == '" + EXAMPLE_LANDING_PAGE + "')]"))
             .withRequestBody(matchingJsonPath("$.[?(@.doi == '" + doi.toIdentifier() + "')]"))
@@ -182,14 +185,38 @@ class DataciteClientTest {
     }
 
     @Test
-    void deleteMetadata() {
+    void deleteMetadata() throws ClientException {
+        Doi doi = getDoi();
+        String expectedPathForDeletingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        stubFor(delete(urlEqualTo(expectedPathForDeletingMetadata))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpStatus.SC_OK)
+                .withBody(HTTP_RESPONSE_OK)));
+
+        sut.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
+
+        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingMetadata))
+            .withBasicAuth(getExpectedAuthenticatedCredentials()));
     }
 
     @Test
-    void deleteDraftDoi() {
+    void deleteDraftDoi() throws ClientException {
+        Doi doi = getDoi();
+        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpStatus.SC_OK)
+                .withBody(HTTP_RESPONSE_OK)));
+
+        sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
+
+        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+            .withBasicAuth(getExpectedAuthenticatedCredentials()));
     }
 
-    private String successfullyPostMetadataResponse(Doi doi) {
+    private String successfullyCreateMetadataResponse(Doi doi) {
         return String.format("OK (%s)", doi.toIdentifier());
     }
 
@@ -215,7 +242,7 @@ class DataciteClientTest {
             e.printStackTrace();
             Assertions.fail(
                 "Failed to configure the trust everything rule for the http client, which is required to connect to "
-                    + "wiremock server and local signed SSL certificate.");
+                    + "wiremock server and local signed SSL certificate for now.");
             return null;
         }
     }
