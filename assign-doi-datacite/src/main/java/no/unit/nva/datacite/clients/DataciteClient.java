@@ -23,9 +23,9 @@ public class DataciteClient implements DoiClient {
     public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
     public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
     public static final String ERROR_DELETING_DOI = "Error deleting DOI";
-    protected static final char CHARACTER_PARENTHESES_START = '(';
-    protected static final char CHARACTER_PARENTHESES_STOP = ')';
-    protected static final char CHARACTER_WHITESPACE = ' ';
+    protected static final String CHARACTER_PARENTHESES_START = "(";
+    protected static final String CHARACTER_PARENTHESES_STOP = ")";
+    protected static final String CHARACTER_WHITESPACE = " ";
     protected static final char FORWARD_SLASH = '/';
     private static final Logger logger = LoggerFactory.getLogger(DataciteClient.class);
     private final DataciteMdsConnectionFactory mdsConnectionFactory;
