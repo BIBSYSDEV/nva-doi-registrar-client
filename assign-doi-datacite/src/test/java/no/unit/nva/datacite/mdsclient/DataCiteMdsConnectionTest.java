@@ -1,22 +1,19 @@
-package no.unit.nva.datacite;
+package no.unit.nva.datacite.mdsclient;
 
-import no.unit.nva.datacite.mdsclient.DataCiteMdsConnection;
-import nva.commons.utils.IoUtils;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import nva.commons.utils.IoUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class DataCiteMdsConnectionTest {
 
@@ -32,12 +29,13 @@ public class DataCiteMdsConnectionTest {
     public static final String MOCK_DATACITE_XML = "mock-xml";
     public static final String MOCK_USER = "MOCK_USER";
     public static final String MOCK_PASSWORD = "MOCK_PASSWORD";
+    private static final int MOCK_PORT = 8888;
 
     @Mock
     HttpClient httpClient;
 
     @Mock
-    HttpResponse httpResponse;
+    HttpResponse<String> httpResponse;
 
     @BeforeEach
     public void setUp() {
@@ -46,14 +44,13 @@ public class DataCiteMdsConnectionTest {
 
     @Test
     public void testDataCiteMdsConnection() {
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
         assertNotNull(dataCiteMdsConnection);
     }
 
     @Test
     public void testDataCiteMdsConnectionConfigure() {
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection();
-        dataCiteMdsConnection.configure(MOCK_HOST, MOCK_USER, MOCK_PASSWORD);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
         assertNotNull(dataCiteMdsConnection);
     }
 
@@ -62,9 +59,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = dataCiteMdsConnection.postMetadata(MOCK_DOI_PREFIX, MOCK_DATACITE_XML);
 
@@ -77,9 +74,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_XML_RESOURCE_EXAMPLE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = dataCiteMdsConnection.getMetadata(MOCK_DOI);
 
@@ -92,9 +89,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = mockDataCiteMdsConnection.deleteMetadata(MOCK_DOI);
 
@@ -107,9 +104,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_GET_DOI_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = dataCiteMdsConnection.getDoi(MOCK_DOI);
 
@@ -122,9 +119,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = mockDataCiteMdsConnection.postDoi(MOCK_DOI, MOCK_LANDING_PAGE_URL);
 
@@ -137,9 +134,9 @@ public class DataCiteMdsConnectionTest {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_OK_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);
-        when(httpClient.send(any(), any())).thenReturn(httpResponse);
+        when(httpClient.send(any(), ArgumentMatchers.<HttpResponse.BodyHandler<String>>any())).thenReturn(httpResponse);
 
-        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST);
+        DataCiteMdsConnection dataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
         HttpResponse<String> httpResponse = dataCiteMdsConnection.deleteDoi(MOCK_DOI);
 

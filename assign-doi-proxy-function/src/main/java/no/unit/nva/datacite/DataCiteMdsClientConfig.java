@@ -10,6 +10,11 @@ public class DataCiteMdsClientConfig {
     private String dataCiteMdsClientUsername;
     private String dataCiteMdsClientPassword;
 
+    /**
+     * POJO for DataCite MDS API configuration.
+     *
+     * <p>No-arg constructor for that can be used together with setters.
+     */
     @JacocoGenerated
     public DataCiteMdsClientConfig() {
     }
@@ -17,9 +22,9 @@ public class DataCiteMdsClientConfig {
     /**
      * POJO for DataCite MDS API configuration.
      *
-     * @param institution Institution id
-     * @param institutionPrefix Provider assigned prefix
-     * @param dataCiteMdsClientUrl DataCite MDS API host
+     * @param institution               Institution id
+     * @param institutionPrefix         Provider assigned prefix
+     * @param dataCiteMdsClientUrl      DataCite MDS API host
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */

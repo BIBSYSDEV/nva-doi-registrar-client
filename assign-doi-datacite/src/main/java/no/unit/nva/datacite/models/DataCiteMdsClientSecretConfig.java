@@ -22,9 +22,7 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
      */
     public DataCiteMdsClientSecretConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl,
                                          String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
-        this.institution = institution;
-        this.institutionPrefix = institutionPrefix;
-        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
+        super(institution, institutionPrefix, dataCiteMdsClientUrl);
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
     }

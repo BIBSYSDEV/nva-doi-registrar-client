@@ -1,18 +1,23 @@
 package no.unit.nva.datacite.clients;
 
-import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
+import no.unit.nva.datacite.clients.exception.ClientException;
+import no.unit.nva.datacite.clients.models.Doi;
+import no.unit.nva.datacite.clients.models.ImmutableDoi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
-import no.unit.nva.datacite.exception.ClientException;
 import no.unit.nva.datacite.mdsclient.DataciteMdsConnectionFactory;
+import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A DoiClient implementation towards Registry Agency Datacite.
+ */
 public class DataciteClient implements DoiClient {
 
     public static final String CHARACTER_PARENTHESES_START = "(";
@@ -22,8 +27,9 @@ public class DataciteClient implements DoiClient {
     public static final String ERROR_SETTING_DOI_METADATA = "Error setting DOI metadata";
     public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
     public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
+    public static final String ERROR_DELETING_DOI = "Error deleting DOI";
+    public static final String FORWARD_SLASH = "/";
     private static final Logger logger = LoggerFactory.getLogger(DataciteClient.class);
-
     private final DataciteMdsConnectionFactory mdsConnectionFactory;
     private final DataciteConfigurationFactory configFactory;
 
@@ -33,61 +39,109 @@ public class DataciteClient implements DoiClient {
         this.mdsConnectionFactory = mdsConnectionFactory;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String createDoi(String customerId, String metadataDataciteXml) {
-        var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
-        String doi;
+    public Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException {
+        var prefix = configFactory.getConfig(customerId)
+            .map(DataCiteMdsClientConfig::getInstitutionPrefix)
+            .orElseThrow();
+        Doi doi;
         try {
             HttpResponse<String> createMetadataResponse =
                 mdsConnectionFactory.getAuthenticatedConnection(customerId).postMetadata(prefix, metadataDataciteXml);
-            if (createMetadataResponse.statusCode() != SC_CREATED) {
-                throw new RuntimeException(new ClientException(
+            if (!isSucessfullApiResponse(createMetadataResponse)) {
+                throw new ClientException(
                     ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
                         + CHARACTER_PARENTHESES_START
                         + createMetadataResponse.statusCode()
-                        + CHARACTER_PARENTHESES_STOP));
+                        + CHARACTER_PARENTHESES_STOP);
             }
             String createMetadataResponseBody = createMetadataResponse.body();
             doi = extractDoiPrefixAndSuffix(createMetadataResponseBody);
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            throw new RuntimeException(new ClientException(ERROR_SETTING_DOI_METADATA));
+            throw new ClientException(ERROR_SETTING_DOI_METADATA, e);
         }
         return doi;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void updateMetadata(String customerId, String doi, String metadataDataciteXml) {
+    public void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException {
         try {
             HttpResponse<String> createDoiResponse = mdsConnectionFactory.getAuthenticatedConnection(customerId)
-                .postMetadata(doi, metadataDataciteXml);
+                .postMetadata(doi.toIdentifier(), metadataDataciteXml);
             if (!isSucessfullApiResponse(createDoiResponse)) {
-                throw new RuntimeException(new ClientException(ERROR_SETTING_DOI_URL
+                throw new ClientException(ERROR_SETTING_DOI_URL
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
                     + createDoiResponse.statusCode()
-                    + CHARACTER_PARENTHESES_STOP));
+                    + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new ClientException(e);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setLandingPage(String customerId, String doi, URI url) {
-
+    public void setLandingPage(String customerId, Doi doi, URI landingPage) throws ClientException {
+        try {
+            HttpResponse<String> landingPageRequest = mdsConnectionFactory.getAuthenticatedConnection(customerId)
+                .postDoi(doi.toIdentifier(), landingPage.toASCIIString());
+            if (!isSucessfullApiResponse(landingPageRequest)) {
+                logger.error(ERROR_DELETING_DOI_METADATA
+                    + CHARACTER_WHITESPACE
+                    + CHARACTER_PARENTHESES_START
+                    + landingPageRequest.statusCode()
+                    + CHARACTER_PARENTHESES_STOP);
+                throw new ClientException(ERROR_SETTING_DOI_URL);
+            }
+        } catch (IOException | URISyntaxException | InterruptedException e) {
+            logger.error(e.getMessage());
+        }
     }
 
-    public void deleteOrGraveyardDoi(String customerId, String doi) throws ClientException {
+    /**
+     * {@inheritDoc}
+     */
+    public void deleteMetadata(String customerId, Doi doi) throws ClientException {
         try {
             HttpResponse<String> deleteDoiMetadata = mdsConnectionFactory.getAuthenticatedConnection(customerId)
-                .deleteMetadata(doi);
-            if (deleteDoiMetadata.statusCode() == SC_OK) {
-                throw new ClientException(ERROR_SETTING_DOI_URL);
-            } else {
+                .deleteMetadata(doi.toIdentifier());
+            if (!isSucessfullApiResponse(deleteDoiMetadata)) {
                 logger.error(ERROR_DELETING_DOI_METADATA
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
                     + deleteDoiMetadata.statusCode()
+                    + CHARACTER_PARENTHESES_STOP);
+                throw new ClientException(ERROR_SETTING_DOI_URL);
+            }
+        } catch (IOException | URISyntaxException | InterruptedException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteDraftDoi(String customerId, Doi doi) throws ClientException {
+        try {
+            HttpResponse<String> deleteDoi = mdsConnectionFactory.getAuthenticatedConnection(customerId)
+                .deleteDoi(doi.toIdentifier());
+            if (deleteDoi.statusCode() == SC_OK) {
+                throw new ClientException(ERROR_SETTING_DOI_URL);
+            } else {
+                logger.error(ERROR_DELETING_DOI
+                    + CHARACTER_WHITESPACE
+                    + CHARACTER_PARENTHESES_START
+                    + deleteDoi.statusCode()
                     + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -95,9 +149,10 @@ public class DataciteClient implements DoiClient {
         }
     }
 
-    private String extractDoiPrefixAndSuffix(String createMetadataResponseBody) {
-        return StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
+    private Doi extractDoiPrefixAndSuffix(String createMetadataResponseBody) {
+        var identifier = StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
             CHARACTER_PARENTHESES_STOP);
+        return ImmutableDoi.builder().identifier(identifier).build();
     }
 
     private boolean isSucessfullApiResponse(HttpResponse<String> createDoiResponse) {

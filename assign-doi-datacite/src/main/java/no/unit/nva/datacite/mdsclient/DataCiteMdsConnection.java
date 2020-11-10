@@ -12,7 +12,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 
-public class DataCiteMdsConnection  {
+public class DataCiteMdsConnection {
 
     public static final String HTTPS = "https";
     public static final String DATACITE_PATH_DOI = "doi";
@@ -24,68 +24,70 @@ public class DataCiteMdsConnection  {
 
     private final transient HttpClient httpClient;
     private final String host;
-
+    private final int port;
 
     /**
      * Constructor for testability reasons.
      *
      * @param httpClient HttpClient
      */
-    public DataCiteMdsConnection(HttpClient httpClient, String host) {
+    public DataCiteMdsConnection(HttpClient httpClient, String host, int port) {
         this.httpClient = httpClient;
         this.host = host;
+        this.port = port;
     }
 
     /**
      * This request stores a new version of metadata.
      *
-     * @param doi      prefix/suffix
+     * @param doi         prefix/suffix
      * @param dataciteXml resource metadata as Datacite XML
      * @return HttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> postMetadata(String doi, String dataciteXml) throws IOException,
-            URISyntaxException, InterruptedException {
+                                                                                    URISyntaxException,
+                                                                                    InterruptedException {
 
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
-                .build() ;
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
-                .uri(uri)
-                .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=UTF-8")
-                .build();
+            .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
+            .uri(uri)
+            .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=UTF-8")
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
     }
-
 
     /**
      * This request requests the most recent version of metadata associated with a given DOI.
      *
      * @param doi prefix/suffix
      * @return CloseableHttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> getMetadata(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
-                .build();
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .GET()
-                .uri(uri)
-                .build();
+            .GET()
+            .uri(uri)
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -95,25 +97,25 @@ public class DataCiteMdsConnection  {
      *
      * @param doi prefix/suffix
      * @return HttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> deleteMetadata(String doi) throws IOException, URISyntaxException,
-            InterruptedException {
+                                                                  InterruptedException {
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
-                .build();
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .DELETE()
-                .uri(uri)
-                .build();
+            .DELETE()
+            .uri(uri)
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
     }
 
     /**
@@ -121,21 +123,22 @@ public class DataCiteMdsConnection  {
      *
      * @param doi prefix/suffix
      * @return HttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> getDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
-                .build();
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
+            .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .GET()
-                .uri(uri)
-                .build();
+            .GET()
+            .uri(uri)
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -145,44 +148,45 @@ public class DataCiteMdsConnection  {
      *
      * @param doi prefix/suffix
      * @return HttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> deleteDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
-                .build();
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
+            .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .DELETE()
-                .uri(uri)
-                .build();
+            .DELETE()
+            .uri(uri)
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-
     /**
-     * Will register a new DOI if the specified DOI doesn’t exist. This method will attempt to update the
-     * URL if you specify an existing DOI.
+     * Will register a new DOI if the specified DOI doesn’t exist. This method will attempt to update the URL if you
+     * specify an existing DOI.
      *
      * @param doi prefix/suffix
      * @param url landing page url
      * @return HttpResponse
-     * @throws IOException        IOException
-     * @throws URISyntaxException URISyntaxException
+     * @throws IOException          IOException
+     * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> postDoi(String doi, String url) throws IOException, URISyntaxException,
-            InterruptedException {
+                                                                       InterruptedException {
         URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPath(DATACITE_PATH_DOI)
-                .build();
+            .setScheme(HTTPS)
+            .setHost(host)
+            .setPort(port)
+            .setPath(DATACITE_PATH_DOI)
+            .build();
 
         HashMap<String, String> formParams = new HashMap<>();
         formParams.put(FORM_PARAM_DOI, doi);
@@ -191,14 +195,15 @@ public class DataCiteMdsConnection  {
         String requestBody = objectMapper.writeValueAsString(formParams);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .uri(uri)
-                .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType())
-                .build();
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .uri(uri)
+            .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType())
+            .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
     }
 
-
+    protected HttpClient getHttpClient() {
+        return httpClient;
+    }
 }
