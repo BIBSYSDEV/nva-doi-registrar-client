@@ -1,8 +1,12 @@
 package no.unit.nva.datacite.clients;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
@@ -16,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.net.Socket;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.security.KeyManagementException;
@@ -24,11 +29,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.datacite.clients.exception.ClientException;
 import no.unit.nva.datacite.clients.models.Doi;
+import no.unit.nva.datacite.clients.models.ImmutableDoi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
 import no.unit.nva.datacite.config.DataciteConfigurationFactoryForDataciteClientTest;
 import no.unit.nva.datacite.config.PasswordAuthenticationFactory;
@@ -37,7 +44,9 @@ import no.unit.nva.datacite.mdsclient.DataciteMdsConnectionFactory;
 import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.utils.IoUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,12 +59,16 @@ class DataciteClientTest {
     public static final String DEMO_PREFIX = "10.5072";
     public static final String INSTITUTION_PREFIX = DEMO_PREFIX;
     public static final char FORWARD_SLASH = '/';
-    public static final String updateMetadataPath =
-        FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA + FORWARD_SLASH + INSTITUTION_PREFIX;
+    public static final String updateMetadataPathPrefix =
+        FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA + FORWARD_SLASH;
+    public static final URI EXAMPLE_LANDING_PAGE = URI.create("https://example.net/nva/publication/203124124");
     public static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     public static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
+    private static final String EXAMPLE_DOI_SUFFIX = "1942810412sadsfgffds";
+    public static final String HTTP_RESPONSE_OK = "OK";
     public String mdsHost;
     public DataCiteMdsClientSecretConfig validSecretConfig;
+    private final String updateDoiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     private int mdsPort;
     private DataCiteMdsClientConfig validConfig;
 
@@ -66,7 +79,6 @@ class DataciteClientTest {
     private DataciteMdsConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
     private int port;
-    private String postMetadataResponse;
 
     void startProxyToWireMock() {
         wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicHttpsPort());
@@ -82,6 +94,7 @@ class DataciteClientTest {
 
     @AfterEach
     void stopProxyToWireMock() {
+        wireMockServer.resetAll();
         wireMockServer.stop();
         wireMockServer = null;
     }
@@ -89,25 +102,12 @@ class DataciteClientTest {
     @BeforeEach
     void setUp() {
         startProxyToWireMock();
-        postMetadataResponse = IoUtils.stringFromResources(Path.of("dataciteMdsPostMetadataResponse.txt"));
 
         // All unauthenticated request will be responded from the server to ask the client to authenticate itself.
-        stubFor(post(urlEqualTo(updateMetadataPath))
+        stubFor(any(WireMock.anyUrl())
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_UNAUTHORIZED)
                 .withHeader("WWW-Authenticate", "Basic realm=\"" + mdsHost + "\"")));
-        stubFor(post(urlEqualTo(updateMetadataPath))
-            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.SC_CREATED)
-                .withBody(postMetadataResponse)));
-
-        /*
-        HttpRequest request = HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
-            .uri(uri)
-            .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=UTF-8")
-            .build();*/
 
         configurationFactory = new DataciteConfigurationFactoryForDataciteClientTest(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
@@ -123,25 +123,62 @@ class DataciteClientTest {
     }
 
     @Test
-    void testCreateDoiWithPrefixReturnsDoiIdentifier() throws ClientException {
+    void testCreateDoiWithPrefixAndMetadataReturnsDoiIdentifier() throws ClientException {
+        var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
+        stubFor(post(urlEqualTo(updateMetadataPathPrefix + DEMO_PREFIX))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpStatus.SC_CREATED)
+                .withBody(successfullyPostMetadataResponse(expectedCreatedServerDoi))));
+
         Doi actual = sut.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
         assertThat(actual, is(instanceOf(Doi.class)));
-        assertThat(actual.prefix(), is(equalTo("prefix")));
-        assertThat(actual.suffix(), is(equalTo("suffix")));
+        assertThat(actual.prefix(), is(equalTo(expectedCreatedServerDoi.prefix())));
+        assertThat(actual.suffix(), is(equalTo(expectedCreatedServerDoi.suffix())));
 
-        verify(postRequestedFor(urlEqualTo(updateMetadataPath))
+        verify(postRequestedFor(urlEqualTo(updateMetadataPathPrefix + actual.prefix()))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
             .withHeader("Content-Type", WireMock.equalTo("application/xml; charset=UTF-8")));
     }
 
     @Test
-    void updateMetadata() {
+    void updateMetadataWithCustomerSuccessfully() throws ClientException {
+        Doi doi = getDoi();
+        String expectedPathForUpdatingMetadata = updateMetadataPathPrefix + doi.toIdentifier();
+        stubFor(post(urlEqualTo(expectedPathForUpdatingMetadata))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpStatus.SC_CREATED)
+                .withBody(successfullyPostMetadataResponse(doi))));
 
+        sut.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
+
+        verify(postRequestedFor(urlEqualTo(expectedPathForUpdatingMetadata))
+            .withBasicAuth(getExpectedAuthenticatedCredentials())
+            .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
+            .withHeader("Content-Type", WireMock.equalTo("application/xml; charset=UTF-8")));
     }
 
     @Test
-    void setLandingPage() {
+    void setLandingPage() throws ClientException {
+        Doi doi = getDoi();
+
+        stubFor(put(urlEqualTo(updateDoiPath))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpStatus.SC_CREATED)
+                .withBody(HTTP_RESPONSE_OK)));
+
+        sut.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
+
+        verify(putRequestedFor(urlEqualTo(updateDoiPath))
+            .withBasicAuth(getExpectedAuthenticatedCredentials())
+            .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
+
+            .withRequestBody(matchingJsonPath("$.[?(@.url == '" + EXAMPLE_LANDING_PAGE + "')]"))
+            .withRequestBody(matchingJsonPath("$.[?(@.doi == '" + doi.toIdentifier() + "')]"))
+            .withHeader("Content-Type", WireMock.equalTo("application/x-www-form-urlencoded")));
     }
 
     @Test
@@ -150,6 +187,18 @@ class DataciteClientTest {
 
     @Test
     void deleteDraftDoi() {
+    }
+
+    private String successfullyPostMetadataResponse(Doi doi) {
+        return String.format("OK (%s)", doi.toIdentifier());
+    }
+
+    private ImmutableDoi createDoi(String prefix, String suffix) {
+        return ImmutableDoi.builder().prefix(prefix).suffix(suffix).build();
+    }
+
+    private Doi getDoi() {
+        return createDoi(DEMO_PREFIX, EXAMPLE_DOI_SUFFIX);
     }
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {

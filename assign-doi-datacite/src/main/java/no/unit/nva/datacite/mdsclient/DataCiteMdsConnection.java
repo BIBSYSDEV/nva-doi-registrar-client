@@ -173,14 +173,14 @@ public class DataCiteMdsConnection {
      * specify an existing DOI.
      *
      * @param doi prefix/suffix
-     * @param url landing page url
+     * @param landingPage landing page landingPage
      * @return HttpResponse
      * @throws IOException          IOException
      * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
-    public HttpResponse<String> postDoi(String doi, String url) throws IOException, URISyntaxException,
-                                                                       InterruptedException {
+    public HttpResponse<String> registerUrl(String doi, String landingPage) throws IOException, URISyntaxException,
+                                                                           InterruptedException {
         URI uri = new URIBuilder()
             .setScheme(HTTPS)
             .setHost(host)
@@ -190,12 +190,12 @@ public class DataCiteMdsConnection {
 
         HashMap<String, String> formParams = new HashMap<>();
         formParams.put(FORM_PARAM_DOI, doi);
-        formParams.put(FORM_PARAM_URL, url);
+        formParams.put(FORM_PARAM_URL, landingPage);
 
         String requestBody = objectMapper.writeValueAsString(formParams);
 
         HttpRequest request = HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
             .uri(uri)
             .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType())
             .build();

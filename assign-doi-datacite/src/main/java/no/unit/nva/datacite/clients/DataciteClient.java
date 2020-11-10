@@ -72,13 +72,13 @@ public class DataciteClient implements DoiClient {
     @Override
     public void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException {
         try {
-            HttpResponse<String> createDoiResponse = mdsConnectionFactory.getAuthenticatedConnection(customerId)
+            HttpResponse<String> updateMetadataResponse = mdsConnectionFactory.getAuthenticatedConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
-            if (!isSucessfullApiResponse(createDoiResponse)) {
-                throw new ClientException(ERROR_SETTING_DOI_URL
+            if (!isSucessfullApiResponse(updateMetadataResponse)) {
+                throw new ClientException(ERROR_SETTING_DOI_METADATA
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
-                    + createDoiResponse.statusCode()
+                    + updateMetadataResponse.statusCode()
                     + CHARACTER_PARENTHESES_STOP);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -92,10 +92,11 @@ public class DataciteClient implements DoiClient {
     @Override
     public void setLandingPage(String customerId, Doi doi, URI landingPage) throws ClientException {
         try {
-            HttpResponse<String> landingPageRequest = mdsConnectionFactory.getAuthenticatedConnection(customerId)
-                .postDoi(doi.toIdentifier(), landingPage.toASCIIString());
+            HttpResponse<String> landingPageRequest = mdsConnectionFactory
+                .getAuthenticatedConnection(customerId)
+                .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
             if (!isSucessfullApiResponse(landingPageRequest)) {
-                logger.error(ERROR_DELETING_DOI_METADATA
+                logger.error(ERROR_SETTING_DOI_URL
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
                     + landingPageRequest.statusCode()

@@ -123,7 +123,7 @@ public class DataCiteMdsConnectionTest {
 
         DataCiteMdsConnection mockDataCiteMdsConnection = new DataCiteMdsConnection(httpClient, MOCK_HOST, MOCK_PORT);
 
-        HttpResponse<String> httpResponse = mockDataCiteMdsConnection.postDoi(MOCK_DOI, MOCK_LANDING_PAGE_URL);
+        HttpResponse<String> httpResponse = mockDataCiteMdsConnection.registerUrl(MOCK_DOI, MOCK_LANDING_PAGE_URL);
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
