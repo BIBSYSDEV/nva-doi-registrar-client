@@ -64,9 +64,9 @@ public class DataciteConfigurationFactory {
 
     private void loadSecretsFromSecretManager(String secretId) {
         try {
-            String secretASJson =
+            String secretAsJson =
                 secretCache.getSecretString(secretId);
-            var dataCiteMdsClientConfigs = objectMapper.readValue(secretASJson,
+            var dataCiteMdsClientConfigs = objectMapper.readValue(secretAsJson,
                 DataCiteMdsClientSecretConfig[].class);
             if (dataCiteMdsClientConfigs != null) {
                 for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
