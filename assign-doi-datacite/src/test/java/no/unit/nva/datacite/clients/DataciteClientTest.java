@@ -38,7 +38,7 @@ import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.datacite.clients.exception.ClientException;
 import no.unit.nva.datacite.clients.models.Doi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
-import no.unit.nva.datacite.config.DataciteConfigurationFactoryForDataciteClientTest;
+import no.unit.nva.datacite.config.DataciteConfigurationFactoryForSystemTests;
 import no.unit.nva.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.datacite.mdsclient.DataciteMdsConnectionFactory;
@@ -98,7 +98,7 @@ class DataciteClientTest {
         startProxyToWireMock();
         stubRequireAuthenticationForAllApiCalls();
 
-        configurationFactory = new DataciteConfigurationFactoryForDataciteClientTest(
+        configurationFactory = new DataciteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
         authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
 
