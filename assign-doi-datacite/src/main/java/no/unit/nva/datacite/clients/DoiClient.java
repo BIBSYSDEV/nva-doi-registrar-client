@@ -12,7 +12,7 @@ import no.unit.nva.datacite.clients.models.Doi;
  *
  * @see <a href="https://support.datacite.org/docs/landing-pages">Best practices for landing pages</a>
  * @see <a href="https://support.datacite.org/docs/tombstone-pages">Best practices for Tombstone Landing pages</a>
- * @see <a href="https://support.datacite.org/docs/versioning"Best practices about versioning</a>
+ * @see <a href="https://support.datacite.org/docs/versioning">Best practices about versioning</a>
  */
 public interface DoiClient {
 
