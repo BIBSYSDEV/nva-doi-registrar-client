@@ -114,7 +114,7 @@ class DataciteClientTest {
     }
 
     @Test
-    void testCreateDoiWithPrefixAndMetadataReturnsDoiIdentifier() throws ClientException {
+    void createDoiWithPrefixAndMetadataForCustomerReturnsDoiOnSuccess() throws ClientException {
         var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
         stubCreateDoiResponse(expectedCreatedServerDoi);
 
@@ -127,7 +127,7 @@ class DataciteClientTest {
     }
 
     @Test
-    void updateMetadataWithCustomerSuccessfully() throws ClientException {
+    void updateMetadataForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForUpdatingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
@@ -138,7 +138,7 @@ class DataciteClientTest {
     }
 
     @Test
-    void setLandingPage() throws ClientException {
+    void setLandingPageForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
 
         stubSetLandingPageResponse();
@@ -149,7 +149,7 @@ class DataciteClientTest {
     }
 
     @Test
-    void deleteMetadata() throws ClientException {
+    void deleteMetadataForCustomerDoiSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
@@ -160,7 +160,7 @@ class DataciteClientTest {
     }
 
     @Test
-    void deleteDraftDoi() throws ClientException {
+    void deleteDraftDoiForCustomerWhereDoiIsDraftStateSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
