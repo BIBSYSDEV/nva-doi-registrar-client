@@ -51,7 +51,7 @@ public class DataciteClient implements DoiClient {
                 mdsConnectionFactory
                     .getAuthenticatedConnection(customerId)
                     .postMetadata(prefix, metadataDataciteXml);
-            if (!isSucessfullApiResponse(response)) {
+            if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_METADATA_TEMPLATE);
             }
             String createMetadataResponseBody = response.body();
@@ -71,7 +71,7 @@ public class DataciteClient implements DoiClient {
             var response = mdsConnectionFactory
                 .getAuthenticatedConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
-            if (!isSucessfullApiResponse(response)) {
+            if (!isSuccessfulApiResponse(response)) {
                 throw new ClientException(ERROR_SETTING_DOI_METADATA_TEMPLATE
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
@@ -92,7 +92,7 @@ public class DataciteClient implements DoiClient {
             var response = mdsConnectionFactory
                 .getAuthenticatedConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
-            if (!isSucessfullApiResponse(response)) {
+            if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_URL_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -109,7 +109,7 @@ public class DataciteClient implements DoiClient {
             var response = mdsConnectionFactory
                 .getAuthenticatedConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
-            if (!isSucessfullApiResponse(response)) {
+            if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_METADATA_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -126,7 +126,7 @@ public class DataciteClient implements DoiClient {
             var response = mdsConnectionFactory
                 .getAuthenticatedConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
-            if (!isSucessfullApiResponse(response)) {
+            if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -155,7 +155,7 @@ public class DataciteClient implements DoiClient {
         return Doi.builder().identifier(identifier).build();
     }
 
-    private boolean isSucessfullApiResponse(HttpResponse<String> createDoiResponse) {
+    private boolean isSuccessfulApiResponse(HttpResponse<String> createDoiResponse) {
         return createDoiResponse.statusCode() / 100 == 2;
     }
 }
