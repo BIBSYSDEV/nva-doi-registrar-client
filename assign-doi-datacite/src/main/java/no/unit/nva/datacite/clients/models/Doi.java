@@ -7,6 +7,10 @@ public abstract class Doi {
     public static final String DOI_PROXY = "https://doi.org/";
     private static final String FORWARD_SLASH = "/";
 
+    public static ImmutableDoi.Builder builder() {
+        return ImmutableDoi.builder();
+    }
+
     public abstract String prefix();
 
     public abstract String suffix();
