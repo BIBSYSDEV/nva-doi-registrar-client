@@ -16,7 +16,12 @@ import no.unit.nva.datacite.config.PasswordAuthenticationFactory;
  * <p>Configures a {@link DataCiteMdsConnection} with associated {@link Authenticator} to communicate with Datacite
  * MDS API.
  *
+ * <p>Our {@link PasswordAuthentication} will only provide credentials for valid endpoints for the {@link HttpClient}
+ * during server challenge (pre-emptive authentication).
+ *
  * <p>Use {@link #getAuthenticatedConnection(String)} to construct a new authenticated API connection.
+ *
+ * @see #createNvaCustomerAuthenticator(String)
  */
 public class DataciteMdsConnectionFactory {
 
@@ -33,7 +38,8 @@ public class DataciteMdsConnectionFactory {
      * @param mdsHostname           MDS API hostname
      * @param mdsPort               MDS API port
      */
-    public DataciteMdsConnectionFactory(PasswordAuthenticationFactory authenticationFactory, String mdsHostname,
+    public DataciteMdsConnectionFactory(PasswordAuthenticationFactory authenticationFactory,
+                                        String mdsHostname,
                                         int mdsPort) {
         this(HttpClient.newBuilder(), authenticationFactory, mdsHostname, mdsPort);
     }
@@ -60,26 +66,32 @@ public class DataciteMdsConnectionFactory {
         return new DataCiteMdsConnection(httpBuilder
             .version(Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(2))
-            .authenticator(new Authenticator() {
-
-                @Override
-                public PasswordAuthentication requestPasswordAuthenticationInstance(String host, InetAddress addr,
-                                                                                    int port, String protocol,
-                                                                                    String prompt, String scheme,
-                                                                                    URL url, RequestorType reqType) {
-                    if (host.equalsIgnoreCase(mdsHostname) && port == mdsPort) {
-                        return super.requestPasswordAuthenticationInstance(host, addr, port, protocol, prompt, scheme,
-                            url,
-                            reqType);
-                    }
-                    return DO_NOT_SEND_CREDENTIALS;
-                }
-
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return authenticationFactory.getCredentials(customerId).orElseThrow();
-                }
-            })
+            .authenticator(createNvaCustomerAuthenticator(customerId))
             .build(), mdsHostname, mdsPort);
+    }
+
+    private Authenticator createNvaCustomerAuthenticator(String customerId) {
+        return new Authenticator() {
+
+            @Override
+            public PasswordAuthentication requestPasswordAuthenticationInstance(String host, InetAddress addr,
+                                                                                int port, String protocol,
+                                                                                String prompt, String scheme,
+                                                                                URL url, RequestorType reqType) {
+                if (host.equalsIgnoreCase(mdsHostname) && port == mdsPort) {
+                    return super.requestPasswordAuthenticationInstance(host, addr, port, protocol, prompt, scheme,
+                        url,
+                        reqType);
+                }
+                return DO_NOT_SEND_CREDENTIALS;
+            }
+
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return authenticationFactory
+                    .getCredentials(customerId)
+                    .orElseThrow(NoCredentialsForCustomerException::new);
+            }
+        };
     }
 }
