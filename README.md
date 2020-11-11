@@ -1,5 +1,7 @@
 # Nva Datacite MDS
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7998e73fbdfb4b1eb18c761abc0e7499)](https://app.codacy.com/gh/BIBSYSDEV/nva-doi-registrar-client?utm_source=github.com&utm_medium=referral&utm_content=BIBSYSDEV/nva-doi-registrar-client&utm_campaign=Badge_Grade_Settings)
+
 ### Input
 
 ```
