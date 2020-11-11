@@ -17,8 +17,10 @@ import no.unit.nva.datacite.clients.models.Doi;
 public interface DoiClient {
 
     /**
-     * Create a DOI where registry agency (ie datacite) auto generates the suffix under the associated repository for
-     * NVA connected to the customer.
+     * Create a DOI with an auto-generated suffix in the specified customer repository.
+     *
+     * <p>The specified customer repository are configured by the NVA application administrators. Each customer has
+     * their own repository with associated prefix that will be used for NVA.
      *
      * @param customerId          NVAs customerId
      * @param metadataDataciteXml datacite schema serialized xml as string
@@ -28,7 +30,7 @@ public interface DoiClient {
     Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException;
 
     /**
-     * Update metadata for a given DOI.
+     * Update metadata for a DOI.
      *
      * @param customerId          NVAs customerId
      * @param metadataDataciteXml datacite schema serialized xml as string
