@@ -17,6 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -52,11 +53,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteClientSystemTest {
+class DataciteClientSystemTest extends DataciteClientTestBase {
 
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
-    private static final String DEMO_PREFIX = "10.5072";
-    private static final String INSTITUTION_PREFIX = DEMO_PREFIX;
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
         FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA;
@@ -64,7 +63,6 @@ class DataciteClientSystemTest {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
-    private static final String EXAMPLE_DOI_SUFFIX = "1942810412-sadsfgffds";
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
@@ -170,6 +168,18 @@ class DataciteClientSystemTest {
         verifyDeleteDoiResponse(expectedPathForDeletingDoiInDraftStatus);
     }
 
+    @Test
+    void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
+        Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
+        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
+
+        assertThrows(ClientException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+
+    }
+
+
+
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
         verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingMetadata))
             .withBasicAuth(getExpectedAuthenticatedCredentials()));
@@ -208,11 +218,24 @@ class DataciteClientSystemTest {
     }
 
     private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus) {
-        stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
-            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.SC_OK)
-                .withBody(HTTP_RESPONSE_OK)));
+        stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.DRAFT);
+    }
+
+    private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus,
+                                            DoiStateStatus doiStateStatus) {
+        if (doiStateStatus == DoiStateStatus.DRAFT) {
+            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                    .withStatus(HttpStatus.SC_OK)
+                    .withBody(HTTP_RESPONSE_OK)));
+        } else {
+            // TODO: Validate that trying to delete a DOI that is not in draft state, gives us a 403 Forbidden.
+            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                    .withStatus(HttpStatus.SC_FORBIDDEN)));
+        }
     }
 
     private void verifyUpdateMetadataResponse(String expectedPath) {
@@ -254,13 +277,8 @@ class DataciteClientSystemTest {
         return String.format("OK (%s)", newDoi.toIdentifier());
     }
 
-    private Doi createDoi(String prefix, String suffix) {
-        return Doi.builder().prefix(prefix).suffix(suffix).build();
-    }
 
-    private Doi createDoiWithDemoPrefixAndExampleSuffix() {
-        return createDoi(DEMO_PREFIX, EXAMPLE_DOI_SUFFIX);
-    }
+
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {
         return new BasicCredentials(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);

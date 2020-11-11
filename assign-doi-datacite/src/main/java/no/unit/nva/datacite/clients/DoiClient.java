@@ -41,7 +41,7 @@ public interface DoiClient {
     void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException;
 
     /**
-     * Set landing page for a Doi,  this also turns the DOI into findable state!
+     * Set landing page for a Doi. This will also turns the DOI into findable state!
      *
      * <p>Once a DOI is findable, it cannot be deleted!
      *
