@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteClientTest {
+class DataciteClientSystemTest {
 
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
     private static final String DEMO_PREFIX = "10.5072";
