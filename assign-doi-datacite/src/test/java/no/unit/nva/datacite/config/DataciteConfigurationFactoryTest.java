@@ -20,19 +20,19 @@ import org.junit.jupiter.api.Test;
 
 class DataciteConfigurationFactoryTest {
 
-    public static final String DEMO_PREFIX = "10.5072";
-    public static final String INVALID_JSON = "{{";
-    public static final String EMPTY_CREDENTIALS_CONFIGURED = "[]";
+    private static final String INVALID_JSON = "{{";
+    private static final String EMPTY_CREDENTIALS_CONFIGURED = "[]";
+    private static final String DEMO_PREFIX = "10.5072";
     private static final String KNOWN_CUSTOMER_ID = "https://example.net/customer/id/1234";
-    private static final String EXAMPLE_ENDPOINT = "https://example.net/datacite/mds/api";
+    private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/1249423";
     private static final String EXAMPLE_INSTITUTION_PREFIX = DEMO_PREFIX;
     private static final String EXAMPLE_INSTITUTION = KNOWN_CUSTOMER_ID;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
+    private static final String EXAMPLE_ENDPOINT = "https://example.net/datacite/mds/api";
     private static final List<DataCiteMdsClientConfig> FAKE_CLIENT_CONFIGS = List.of(
         new DataCiteMdsClientSecretConfig(EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_ENDPOINT,
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
-    private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/1249423";
     private SecretCache secretCache;
     private DataciteConfigurationFactory sut;
 
@@ -75,12 +75,12 @@ class DataciteConfigurationFactoryTest {
     }
 
     @Test
-    void getSecretWithUnknownCustomerReturnsOptionalEmpty() {
-        assertThat(sut.getConfig(UNKNOWN_CUSTOMER_ID).isEmpty(), is(true));
+    void getCredentialsWithUnknownCustomerReturnsOptionalEmpty() {
+        assertThat(sut.getCredentials(UNKNOWN_CUSTOMER_ID).isEmpty(), is(true));
     }
 
     @Test
-    void constructorThrowsExceptionWithConfigurationError() {
+    void constructorThrowsExceptionWhenConfigurationError() {
         prepareBadCredentialsConfig();
         assertThrows(IllegalStateException.class,
             () -> new DataciteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
