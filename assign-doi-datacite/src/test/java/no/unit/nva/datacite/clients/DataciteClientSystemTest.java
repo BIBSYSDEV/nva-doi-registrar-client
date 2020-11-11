@@ -36,7 +36,6 @@ import java.util.UUID;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
-import javax.net.ssl.X509TrustManager;
 import no.unit.nva.datacite.clients.exception.ClientException;
 import no.unit.nva.datacite.clients.models.Doi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
@@ -295,54 +294,52 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
         }
     }
 
+    @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
     private X509ExtendedTrustManager createTrustEverythingManager() {
-        return new X509ExtendedUntrustedManagerForTests();
+
+        return new X509ExtendedTrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
+
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
+
+            }
+
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
+
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
+
+            }
+
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
     }
 
     private String getValidMetadataPayload() {
         return IoUtils.stringFromResources(Path.of("dataciteXmlResourceExample.xml"));
-    }
-
-    private static class X509ExtendedUntrustedManagerForTests extends X509ExtendedTrustManager implements
-                                                                                               X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
-            throws CertificateException {
-
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
-            throws CertificateException {
-
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-            throws CertificateException {
-
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-            throws CertificateException {
-
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
     }
 }
