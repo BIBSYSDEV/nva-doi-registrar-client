@@ -10,6 +10,14 @@ import java.net.http.HttpClient.Version;
 import java.time.Duration;
 import no.unit.nva.datacite.config.PasswordAuthenticationFactory;
 
+/**
+ * Datacite MDS API Connection factory
+ *
+ * <p>Configures a {@link DataCiteMdsConnection} with associated {@link Authenticator} to communicate with Datacite
+ * MDS API.
+ *
+ * <p>Use {@link #getAuthenticatedConnection(String)} to construct a new authenticated API connection.
+ */
 public class DataciteMdsConnectionFactory {
 
     public static final PasswordAuthentication DO_NOT_SEND_CREDENTIALS = null;

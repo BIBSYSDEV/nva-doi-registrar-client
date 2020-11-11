@@ -2,6 +2,12 @@ package no.unit.nva.datacite.models;
 
 import nva.commons.utils.JacocoGenerated;
 
+/**
+ * DAO for Datacite MDS Configuration for a associated NVA customer.
+ *
+ * @see DataCiteMdsClientSecretConfig
+ * @see no.unit.nva.datacite.config.DataciteConfigurationFactory
+ */
 public class DataCiteMdsClientConfig {
 
     protected String institution;
@@ -12,6 +18,13 @@ public class DataCiteMdsClientConfig {
     public DataCiteMdsClientConfig() {
     }
 
+    /**
+     * Construct a {@link DataCiteMdsClientConfig}
+     *
+     * @param institution
+     * @param institutionPrefix
+     * @param dataCiteMdsClientUrl
+     */
     public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl) {
         this.institution = institution;
         this.institutionPrefix = institutionPrefix;

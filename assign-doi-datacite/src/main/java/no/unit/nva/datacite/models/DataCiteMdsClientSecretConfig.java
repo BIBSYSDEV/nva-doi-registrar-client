@@ -2,6 +2,11 @@ package no.unit.nva.datacite.models;
 
 import nva.commons.utils.JacocoGenerated;
 
+/**
+ * DAO for Datacite MDS Configuration also including Datacite MDS secrets for a associated NVA customer.
+ *
+ * @see no.unit.nva.datacite.config.DataciteConfigurationFactory
+ */
 public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
 
     private String dataCiteMdsClientUsername;
@@ -15,9 +20,9 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
     /**
      * POJO for DataCite MDS API configuration.
      *
-     * @param institution Institution id
-     * @param institutionPrefix Provider assigned prefix
-     * @param dataCiteMdsClientUrl DataCite MDS API host
+     * @param institution               Institution id
+     * @param institutionPrefix         Provider assigned prefix
+     * @param dataCiteMdsClientUrl      DataCite MDS API host
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */
@@ -27,8 +32,6 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
     }
-
-
 
     public String getDataCiteMdsClientUrl() {
         return dataCiteMdsClientUrl;
