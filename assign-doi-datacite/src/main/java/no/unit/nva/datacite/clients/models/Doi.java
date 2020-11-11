@@ -2,6 +2,11 @@ package no.unit.nva.datacite.clients.models;
 
 import java.net.URI;
 
+/**
+ * Doi class for working with Dois.
+ *
+ * <p>Use {@link Doi#builder()} for constructing a new Doi instance.
+ */
 public abstract class Doi {
 
     public static final String DOI_PROXY = "https://doi.org/";
@@ -16,7 +21,7 @@ public abstract class Doi {
     public abstract String suffix();
 
     /**
-     * Represents the DOI with "${prefix}/${suffix}.
+     * Represents the DOI with ${prefix}/${suffix}.
      *
      * @return prefix/suffix (DOI identifier)
      */
