@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory;
  */
 public class DataciteClient implements DoiClient {
 
-    public static final String ERROR_SETTING_DOI_METADATA = "Error setting DOI metadata";
-    public static final String ERROR_SETTING_DOI_URL = "Error setting DOI url";
-    public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
-    public static final String ERROR_DELETING_DOI = "Error deleting DOI";
+    public static final String ERROR_SETTING_DOI_METADATA_TEMPLATE = "Error setting DOI metadata (%s)";
+    public static final String ERROR_SETTING_DOI_URL_TEMPLATE = "Error setting DOI url (%s)";
+    public static final String ERROR_DELETING_DOI_METADATA_TEMPLATE = "Error deleting DOI metadata (%s)";
+    public static final String ERROR_DELETING_DOI_TEMPLATE = "Error deleting DOI (%s)";
+    public static final String ERROR_COMMUNICATION_TEMPLATE = "Error during API communication: (%s)";
     protected static final String CHARACTER_PARENTHESES_START = "(";
     protected static final String CHARACTER_PARENTHESES_STOP = ")";
     protected static final String CHARACTER_WHITESPACE = " ";
@@ -46,21 +47,17 @@ public class DataciteClient implements DoiClient {
             .orElseThrow();
         Doi doi;
         try {
-            HttpResponse<String> createMetadataResponse =
+            var response =
                 mdsConnectionFactory
                     .getAuthenticatedConnection(customerId)
                     .postMetadata(prefix, metadataDataciteXml);
-            if (!isSucessfullApiResponse(createMetadataResponse)) {
-                throw new ClientException(
-                    ERROR_SETTING_DOI_METADATA + CHARACTER_WHITESPACE
-                        + CHARACTER_PARENTHESES_START
-                        + createMetadataResponse.statusCode()
-                        + CHARACTER_PARENTHESES_STOP);
+            if (!isSucessfullApiResponse(response)) {
+                throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_METADATA_TEMPLATE);
             }
-            String createMetadataResponseBody = createMetadataResponse.body();
+            String createMetadataResponseBody = response.body();
             doi = extractDoiPrefixAndSuffix(createMetadataResponseBody);
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            throw new ClientException(ERROR_SETTING_DOI_METADATA, e);
+            throw logAndCreateClientException("createDoi", e);
         }
         return doi;
     }
@@ -75,7 +72,7 @@ public class DataciteClient implements DoiClient {
                 .getAuthenticatedConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
             if (!isSucessfullApiResponse(response)) {
-                throw new ClientException(ERROR_SETTING_DOI_METADATA
+                throw new ClientException(ERROR_SETTING_DOI_METADATA_TEMPLATE
                     + CHARACTER_WHITESPACE
                     + CHARACTER_PARENTHESES_START
                     + response.statusCode()
@@ -96,15 +93,10 @@ public class DataciteClient implements DoiClient {
                 .getAuthenticatedConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
             if (!isSucessfullApiResponse(response)) {
-                logger.error(ERROR_SETTING_DOI_URL
-                    + CHARACTER_WHITESPACE
-                    + CHARACTER_PARENTHESES_START
-                    + response.statusCode()
-                    + CHARACTER_PARENTHESES_STOP);
-                throw new ClientException(ERROR_SETTING_DOI_URL);
+                throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_URL_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            logger.error(e.getMessage());
+            throw logAndCreateClientException("setLandingPage", e);
         }
     }
 
@@ -118,15 +110,10 @@ public class DataciteClient implements DoiClient {
                 .getAuthenticatedConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
             if (!isSucessfullApiResponse(response)) {
-                logger.error(ERROR_DELETING_DOI_METADATA
-                    + CHARACTER_WHITESPACE
-                    + CHARACTER_PARENTHESES_START
-                    + response.statusCode()
-                    + CHARACTER_PARENTHESES_STOP);
-                throw new ClientException(ERROR_SETTING_DOI_URL);
+                throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_METADATA_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            logger.error(e.getMessage());
+            throw logAndCreateClientException("deleteMetadata", e);
         }
     }
 
@@ -140,16 +127,25 @@ public class DataciteClient implements DoiClient {
                 .getAuthenticatedConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
             if (!isSucessfullApiResponse(response)) {
-                logger.error(ERROR_DELETING_DOI
-                    + CHARACTER_WHITESPACE
-                    + CHARACTER_PARENTHESES_START
-                    + response.statusCode()
-                    + CHARACTER_PARENTHESES_STOP);
-                throw new ClientException(ERROR_DELETING_DOI);
+                throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            logger.error(e.getMessage());
+            throw logAndCreateClientException("deleteDraftDoi", e);
         }
+    }
+
+    private ClientException logAndCreateClientException(String doiClientMethodName, Exception parentException) {
+        // We have to expand the format string anyway for the exception..
+        String errorMessage = String.format(ERROR_COMMUNICATION_TEMPLATE, doiClientMethodName);
+        logger.error(errorMessage);
+        return new ClientException(errorMessage, parentException);
+    }
+
+    private ClientException logAndCreateApiException(int statusCode, String errorStringTemplate) {
+        // We have to expand the format string anyway for the exception..
+        String errorMessage = String.format(errorStringTemplate, statusCode);
+        logger.error(errorMessage);
+        return new ClientException(errorMessage);
     }
 
     private Doi extractDoiPrefixAndSuffix(String createMetadataResponseBody) {
