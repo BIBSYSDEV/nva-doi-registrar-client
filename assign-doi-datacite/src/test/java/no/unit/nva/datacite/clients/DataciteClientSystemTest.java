@@ -175,10 +175,7 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
         assertThrows(ClientException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
-
     }
-
-
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
         verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingMetadata))
@@ -276,9 +273,6 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
     private String successfullyCreateMetadataResponse(Doi newDoi) {
         return String.format("OK (%s)", newDoi.toIdentifier());
     }
-
-
-
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {
         return new BasicCredentials(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);

@@ -19,11 +19,11 @@ public class DataCiteMdsClientConfig {
     }
 
     /**
-     * Construct a {@link DataCiteMdsClientConfig}
+     * Construct a {@link DataCiteMdsClientConfig}.
      *
-     * @param institution
-     * @param institutionPrefix
-     * @param dataCiteMdsClientUrl
+     * @param institution          customerId
+     * @param institutionPrefix    customer's prefix for the NVA repository in the Registry Agency
+     * @param dataCiteMdsClientUrl Hostname to MDS API environment
      */
     public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl) {
         this.institution = institution;

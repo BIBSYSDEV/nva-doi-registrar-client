@@ -35,7 +35,8 @@ public class DataciteConfigurationFactory {
     }
 
     /**
-     * Construct a new Datacite configuration factory for unit/system tests with pre populated secrets
+     * Construct a new Datacite configuration factory for unit/system tests with pre populated secrets.
+     *
      * @param testSecretConfigs Pre populated Datacite configuration.
      */
     protected DataciteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {

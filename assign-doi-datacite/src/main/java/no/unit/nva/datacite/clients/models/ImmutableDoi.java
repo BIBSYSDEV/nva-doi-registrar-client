@@ -10,7 +10,6 @@ import nva.commons.utils.JacocoGenerated;
  *
  * <p>Use the builder to create immutable instances: {@code ImmutableDoi.builder()}.
  */
-
 @SuppressWarnings({"all"})
 @javax.annotation.processing.Generated("org.immutables.processor.ProxyProcessor")
 @JacocoGenerated
@@ -128,6 +127,8 @@ public final class ImmutableDoi extends Doi {
     }
 
     /**
+     * Retreive prefix for the DOI.
+     *
      * @return The value of the {@code prefix} attribute
      */
     @Override
@@ -136,6 +137,8 @@ public final class ImmutableDoi extends Doi {
     }
 
     /**
+     * Retrieve suffix for the DOI.
+     *
      * @return The value of the {@code suffix} attribute
      */
     @Override
@@ -149,8 +152,10 @@ public final class ImmutableDoi extends Doi {
     }
 
     /**
-     * Builds instances of type {@link ImmutableDoi ImmutableDoi}. Initialize attributes and then invoke the {@link
-     * #build()} method to create an immutable instance.
+     * Builds instances of type {@link ImmutableDoi ImmutableDoi}.
+     *
+     * <p>Initialize attributes and then invoke the {@link #build()} method to create an immutable instance.
+     *
      * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
      * but instead used immediately to create instances.</em>
      */
@@ -193,6 +198,12 @@ public final class ImmutableDoi extends Doi {
             return this;
         }
 
+        /**
+         * Initializes the value for the {@link Doi#prefix()} and {@link Doi#suffix()} attributes.
+         *
+         * @param identifier The value (doi identifier: prefix/suffix) that can be parsed into prefix and suffix.
+         * @return {@code this} builder for use in a chained invocation
+         */
         public final Builder identifier(String identifier) {
             Objects.requireNonNull(identifier, "identifier");
             int indexOfDivider = identifier.indexOf(FORWARD_SLASH);
