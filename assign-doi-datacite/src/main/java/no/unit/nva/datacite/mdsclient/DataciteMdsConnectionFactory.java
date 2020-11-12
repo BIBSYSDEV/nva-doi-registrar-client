@@ -80,12 +80,21 @@ public class DataciteMdsConnectionFactory {
         return new Authenticator() {
 
             @Override
-            public PasswordAuthentication requestPasswordAuthenticationInstance(String host, InetAddress addr,
-                                                                                int port, String protocol,
-                                                                                String prompt, String scheme,
-                                                                                URL url, RequestorType reqType) {
-                if (host.equalsIgnoreCase(mdsHostname) && port == mdsPort) {
-                    return super.requestPasswordAuthenticationInstance(host, addr, port, protocol, prompt, scheme,
+            public PasswordAuthentication requestPasswordAuthenticationInstance(String host,
+                                                                                InetAddress addr,
+                                                                                int port,
+                                                                                String protocol,
+                                                                                String prompt,
+                                                                                String scheme,
+                                                                                URL url,
+                                                                                RequestorType reqType) {
+                if (isCommunicatingTowardsConfiguredDataciteApi(host, port)) {
+                    return super.requestPasswordAuthenticationInstance(host,
+                        addr,
+                        port,
+                        protocol,
+                        prompt,
+                        scheme,
                         url,
                         reqType);
                 }
@@ -97,6 +106,10 @@ public class DataciteMdsConnectionFactory {
                 return authenticationFactory
                     .getCredentials(customerId)
                     .orElseThrow(NoCredentialsForCustomerException::new);
+            }
+
+            private boolean isCommunicatingTowardsConfiguredDataciteApi(String host, int port) {
+                return host.equalsIgnoreCase(mdsHostname) && port == mdsPort;
             }
         };
     }
