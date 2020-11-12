@@ -3,6 +3,8 @@ package no.unit.nva.doi.datacite.models;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import org.junit.jupiter.api.Test;
 
 class DataCiteMdsClientConfigTest {
@@ -13,15 +15,17 @@ class DataCiteMdsClientConfigTest {
     private static final String EXAMPLE_MDS_CLIENT_URL = "https://example.net/datacite/mds/api";
 
     @Test
-    void testConstructor() {
+    void constructorPopulatesAllFields() {
         var config = createFullyConfigWithoutSecretConfig();
         assertThat(config.getInstitution(), is(equalTo(EXAMPLE_INSTITUTION)));
         assertThat(config.getInstitutionPrefix(), is(equalTo(EXAMPLE_INSTITUTION_PREFIX)));
     }
 
     @Test
-    void testSetters() {
+    void settersPopulatesAllFields() {
         var config = new DataCiteMdsClientConfig();
+        assertThat(config.getInstitution(), nullValue());
+        assertThat(config.getInstitutionPrefix(), nullValue());
         config.setInstitution(EXAMPLE_INSTITUTION);
         config.setInstitutionPrefix(EXAMPLE_INSTITUTION_PREFIX);
         assertThat(config.getInstitution(), is(equalTo(EXAMPLE_INSTITUTION)));
