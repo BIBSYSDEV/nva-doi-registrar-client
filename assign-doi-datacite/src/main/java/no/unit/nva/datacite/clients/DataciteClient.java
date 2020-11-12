@@ -67,14 +67,10 @@ public class DataciteClient implements DoiClient {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
             if (!isSuccessfulApiResponse(response)) {
-                throw new ClientException(ERROR_SETTING_DOI_METADATA_TEMPLATE
-                    + CHARACTER_WHITESPACE
-                    + CHARACTER_PARENTHESES_START
-                    + response.statusCode()
-                    + CHARACTER_PARENTHESES_STOP);
+                throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_METADATA_TEMPLATE);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            throw new ClientException(e);
+            throw logAndCreateClientException("updateMetadata", e);
         }
     }
 
