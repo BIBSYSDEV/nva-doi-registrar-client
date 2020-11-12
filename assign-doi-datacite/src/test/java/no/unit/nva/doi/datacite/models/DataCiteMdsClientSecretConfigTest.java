@@ -1,5 +1,6 @@
 package no.unit.nva.doi.datacite.models;
 
+import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -16,17 +17,18 @@ public class DataCiteMdsClientSecretConfigTest {
     private static final String BLANK_STRING = "    ";
 
     @Test
-    void testConstructor() {
+    void constructorPopulatesAllFields() {
         var secretConfig = createSecretConfigFullyPopulated();
         assertThat(secretConfig.getInstitution(), is(equalTo(INSTITUTION)));
         assertThat(secretConfig.getInstitutionPrefix(), is(equalTo(INSTITUTION_PREFIX)));
         assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
+        assertThat(secretConfig, doesNotHaveNullOrEmptyFields());
     }
 
     @Test
-    void testSetters() {
+    void settersPopulatesAllFields() {
         DataCiteMdsClientSecretConfig secretConfig = new DataCiteMdsClientSecretConfig();
         secretConfig.setInstitution(INSTITUTION);
         secretConfig.setInstitutionPrefix(INSTITUTION_PREFIX);
@@ -38,6 +40,7 @@ public class DataCiteMdsClientSecretConfigTest {
         assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
+        assertThat(secretConfig, doesNotHaveNullOrEmptyFields());
     }
 
     @Test
