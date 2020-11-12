@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.models;
 
+import static org.apache.logging.log4j.util.Strings.isNotBlank;
 import nva.commons.utils.JacocoGenerated;
 
 /**
@@ -55,5 +56,18 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
 
     public void setDataCiteMdsClientPassword(String dataCiteMdsClientPassword) {
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
+    }
+
+    /**
+     * Is configuration fully configured with config secrets with all required values and {@inheritDoc}.
+     *
+     * @return <code>true</code> if fully configured with required config and secret config.
+     */
+    @Override
+    public boolean isFullyConfigured() {
+        // TODO Update with changes from https://github.com/BIBSYSDEV/nva-commons/pull/126
+        return super.isFullyConfigured()
+            && isNotBlank(dataCiteMdsClientUsername)
+            && isNotBlank(dataCiteMdsClientPassword);
     }
 }

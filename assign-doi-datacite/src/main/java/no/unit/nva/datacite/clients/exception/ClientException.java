@@ -19,4 +19,8 @@ public class ClientException extends Exception {
     public ClientException(String message, Exception e) {
         super(message, e);
     }
+
+    public ClientException() {
+        super();
+    }
 }

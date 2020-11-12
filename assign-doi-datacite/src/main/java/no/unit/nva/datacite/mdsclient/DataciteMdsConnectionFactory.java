@@ -62,6 +62,13 @@ public class DataciteMdsConnectionFactory {
         this.httpBuilder = httpBuilder;
     }
 
+    /**
+     * Get a authenteicated connection towards Datacite MDS API.
+     *
+     * @param customerId NVA customer id
+     * @return DataCiteMdsConnection private connection for provided customerId
+     * @throws NoCredentialsForCustomerRuntimeException if customer has no credentials configured.
+     */
     public DataCiteMdsConnection getAuthenticatedConnection(String customerId) {
         Authenticator nvaCustomerAuthenticator = createNvaCustomerAuthenticator(customerId);
         HttpClient httpClient = createHttpClientWithAuthenticator(nvaCustomerAuthenticator);
@@ -103,9 +110,7 @@ public class DataciteMdsConnectionFactory {
 
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return authenticationFactory
-                    .getCredentials(customerId)
-                    .orElseThrow(NoCredentialsForCustomerException::new);
+                return authenticationFactory.getCredentials(customerId);
             }
 
             private boolean isCommunicatingTowardsConfiguredDataciteApi(String host, int port) {

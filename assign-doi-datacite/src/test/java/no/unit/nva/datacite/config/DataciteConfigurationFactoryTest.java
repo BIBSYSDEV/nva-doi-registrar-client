@@ -13,6 +13,7 @@ import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import java.util.UUID;
+import no.unit.nva.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,39 +45,39 @@ class DataciteConfigurationFactoryTest {
     }
 
     @Test
-    void getCredentialsWithValidConfigurationReturnsPresentOptionalWithSecretInstanceType() {
+    void getCredentialsWithValidConfigurationReturnsSecretInstanceType()
+        throws DataCiteMdsConfigValidationFailedException {
         var credentials = sut.getCredentials(KNOWN_CUSTOMER_ID);
-        assertThat(credentials.isPresent(), is(true));
-        assertThat(credentials.get(), is(instanceOf(DataCiteMdsClientConfig.class)));
+        assertThat(credentials, is(instanceOf(DataCiteMdsClientSecretConfig.class)));
     }
 
     @Test
-    void getConfigWithValidConfigurationReturnsOptionalWithConfigInstanceType() {
-        var credentials = sut.getConfig(KNOWN_CUSTOMER_ID);
-        assertThat(credentials.isPresent(), is(true));
-        assertThat(credentials.get(), is(instanceOf(DataCiteMdsClientSecretConfig.class)));
+    void getConfigWithValidConfigurationReturnsConfigInstanceType()
+        throws DataCiteMdsConfigValidationFailedException {
+        var config = sut.getConfig(KNOWN_CUSTOMER_ID);
+        assertThat(config, is(instanceOf(DataCiteMdsClientConfig.class)));
     }
 
     @Test
-    void getConfigWithUnknownCustomerReturnsOptionalEmpty() {
-        assertThat(sut.getConfig(UNKNOWN_CUSTOMER_ID).isEmpty(), is(true));
+    void getConfigWithUnknownCustomerThrowsConfigValidationException() {
+        assertThrows(DataCiteMdsConfigValidationFailedException.class, () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
     }
 
     @Test
-    void getConfigWithMissingCustomerReturnsOptionalEmpty() {
+    void getConfigWithMissingCustomerThrowsConfigValidationException() {
         configureWithNoCredentials();
-        assertThat(sut.getConfig(KNOWN_CUSTOMER_ID).isEmpty(), is(true));
+        assertThrows(DataCiteMdsConfigValidationFailedException.class, () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
     }
 
     @Test
-    void getCredentialsWithMissingCustomerReturnsOptionalEmpty() {
+    void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() {
         configureWithNoCredentials();
-        assertThat(sut.getCredentials(KNOWN_CUSTOMER_ID).isEmpty(), is(true));
+        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> sut.getCredentials(KNOWN_CUSTOMER_ID));
     }
 
     @Test
-    void getCredentialsWithUnknownCustomerReturnsOptionalEmpty() {
-        assertThat(sut.getCredentials(UNKNOWN_CUSTOMER_ID).isEmpty(), is(true));
+    void getCredentialsWithUnknownCustomerThrowsNoCredentialsForCustomerRuntimeException() {
+        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> sut.getCredentials(UNKNOWN_CUSTOMER_ID));
     }
 
     @Test

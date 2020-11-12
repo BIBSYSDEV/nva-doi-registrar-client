@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.models;
 
+import static java.util.Objects.nonNull;
 import nva.commons.utils.JacocoGenerated;
 
 /**
@@ -45,5 +46,14 @@ public class DataCiteMdsClientConfig {
 
     public void setInstitutionPrefix(String institutionPrefix) {
         this.institutionPrefix = institutionPrefix;
+    }
+
+    /**
+     * Is configuration fully configured with all required values.
+     *
+     * @return <code>true</code> if config is fully configured.
+     */
+    public boolean isFullyConfigured() {
+        return nonNull(institution) && nonNull(institutionPrefix) && nonNull(dataCiteMdsClientUrl);
     }
 }

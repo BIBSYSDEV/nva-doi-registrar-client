@@ -8,7 +8,6 @@ import no.unit.nva.datacite.clients.exception.ClientException;
 import no.unit.nva.datacite.clients.models.Doi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
 import no.unit.nva.datacite.mdsclient.DataciteMdsConnectionFactory;
-import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,7 @@ public class DataciteClient implements DoiClient {
      */
     @Override
     public Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException {
-        var prefix = configFactory.getConfig(customerId)
-            .map(DataCiteMdsClientConfig::getInstitutionPrefix)
-            .orElseThrow();
+        var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
         Doi doi;
         try {
             var response =

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import no.unit.nva.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.datacite.models.DataCiteMdsClientSecretConfig;
 
@@ -47,10 +48,13 @@ public class DataciteConfigurationFactory {
      * Retrieve Datacite configuration for given NVA customer.
      *
      * @param customerId NVA customer id in format https://example.net/nva/customer/923923
-     * @return Configuration wrapped in optional if present.
+     * @return DataCiteMdsClientConfig
+     * @throws DataCiteMdsConfigValidationFailedException no valid customer configuration
      */
-    public Optional<DataCiteMdsClientConfig> getConfig(String customerId) {
-        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId));
+    public DataCiteMdsClientConfig getConfig(String customerId) throws DataCiteMdsConfigValidationFailedException {
+        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId))
+            .filter(DataCiteMdsClientConfig::isFullyConfigured)
+            .orElseThrow(DataCiteMdsConfigValidationFailedException::new);
     }
 
     /**
@@ -58,25 +62,29 @@ public class DataciteConfigurationFactory {
      *
      * @param customerId NVA customer id in format https://example.net/nva/customer/923923
      * @return Configuration wrapped in optional if present.
+     * @throws NoCredentialsForCustomerRuntimeException missing credentials configuration in secret config.
      */
-    protected Optional<DataCiteMdsClientSecretConfig> getCredentials(String customerId) {
-        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId));
+    protected DataCiteMdsClientSecretConfig getCredentials(String customerId) {
+        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId))
+            .filter(DataCiteMdsClientSecretConfig::isFullyConfigured)
+            .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
     }
 
     private void loadSecretsFromSecretManager(String secretId) {
         try {
-            String secretAsJson =
-                secretCache.getSecretString(secretId);
-            var dataCiteMdsClientConfigs = objectMapper.readValue(secretAsJson,
-                DataCiteMdsClientSecretConfig[].class);
-            if (dataCiteMdsClientConfigs != null) {
-                for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
-                    dataCiteMdsClientConfigsMap.put(
-                        dataCiteMdsClientSecretConfig.getInstitution(), dataCiteMdsClientSecretConfig);
-                }
-            }
+            String secretConfigAsJson = secretCache.getSecretString(secretId);
+            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfigAsJson,
+                DataCiteMdsClientSecretConfig[].class));
+            secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
             throw new IllegalStateException("Could not parse configuration from secret string: " + secretId);
+        }
+    }
+
+    private void populateCustomerConfigurationMap(DataCiteMdsClientSecretConfig[] dataCiteMdsClientConfigs) {
+        for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
+            dataCiteMdsClientConfigsMap.put(
+                dataCiteMdsClientSecretConfig.getInstitution(), dataCiteMdsClientSecretConfig);
         }
     }
 }

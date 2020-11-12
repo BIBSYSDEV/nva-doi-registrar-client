@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
+import no.unit.nva.datacite.config.DataCiteMdsConfigValidationFailedException;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
 import no.unit.nva.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.datacite.models.DataCiteMdsClientConfig;
@@ -42,10 +43,10 @@ class DataciteMdsConnectionFactoryTest {
     private DataciteMdsConnectionFactory sut;
 
     @BeforeEach
-    void configure() {
+    void configure() throws DataCiteMdsConfigValidationFailedException {
 
         configurationFactory = mock(DataciteConfigurationFactory.class);
-        when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(Optional.of(MOCK_DATACITE_CONFIG));
+        when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
         sut = new DataciteMdsConnectionFactory(
             new PasswordAuthenticationFactory(configurationFactory), EXAMPLE_HOST, EXAMPLE_PORT);
     }
@@ -57,11 +58,12 @@ class DataciteMdsConnectionFactoryTest {
 
     @Test
     void getAuthenticatedConnectionHasAuthenticatorButThrowsExceptionForUnknownCustomerWhenAskedForCredentials() {
+
         var authenticator = sut.getAuthenticatedConnection(UNKNOWN_CUSTOMER_ID)
             .getHttpClient()
             .authenticator();
         assertThat(authenticator.isPresent(), is(true));
-        assertThrows(NoCredentialsForCustomerException.class,
+        assertThrows(NoCredentialsForCustomerRuntimeException.class,
             () -> prompAuthenticatorForCredentials(authenticator.get()));
     }
 
