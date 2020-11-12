@@ -41,6 +41,16 @@ Parameters:
     Type: String
     Description: Amazon DynamoDB Stream ARN.
 
+  EventBusName:
+    Type: String
+    Default: '{{resolve:ssm:nva-eventbus-name:1}}'
+  EventBusArn:
+    Type: String
+    Default: '{{resolve:ssm:nva-eventbus-name:1}}'
+  DlqArn:
+    Type: String
+    Default: '{{resolve:ssm:nva-dlq-arn:1}}'
+
 Resources:
   NvaDataciteMdsApi:
     Type: AWS::Serverless::Api
@@ -128,6 +138,43 @@ Resources:
             RestApiId: !Ref NvaDataciteMdsApi
             Path: /
             Method: POST
+
+  DataciteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.DraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail:
+                type:
+                  - doi.publication
+                item:
+                  doiRequest:
+                    status:
+                      - APPROVED
+                  doi:
+                    - null
+                  sameModifiedDateForDoiRequest:
+                    - true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !Ref DlqArn
 
   NvaDataciteMdsBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

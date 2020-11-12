@@ -1,0 +1,4 @@
+dependencies {
+    implementation project(":event-handler-template")
+    implementation project(":datacite-doi-commons")
+}
