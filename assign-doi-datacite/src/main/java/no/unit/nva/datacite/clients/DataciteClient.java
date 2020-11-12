@@ -43,7 +43,6 @@ public class DataciteClient implements DoiClient {
     @Override
     public Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException {
         var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
-        Doi doi;
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .postMetadata(prefix, metadataDataciteXml);
@@ -51,11 +50,11 @@ public class DataciteClient implements DoiClient {
                 throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_METADATA_TEMPLATE);
             }
             String createMetadataResponseBody = response.body();
-            doi = extractDoiPrefixAndSuffix(createMetadataResponseBody);
+            var doi = extractDoiPrefixAndSuffix(createMetadataResponseBody);
+            return doi;
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw logAndCreateClientException("createDoi", e);
         }
-        return doi;
     }
 
     /**
