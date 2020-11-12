@@ -1,23 +1,19 @@
 package no.unit.nva.datacite.clients.exception;
 
+import no.unit.nva.datacite.clients.models.Doi;
 import nva.commons.utils.JacocoGenerated;
 
 @JacocoGenerated
 public class DeleteDraftDoiException extends UpstreamApiException {
 
-    public DeleteDraftDoiException(int statusCode) {
-        super(statusCode);
+    private final Doi doi;
+
+    public DeleteDraftDoiException(Doi doi, int statusCode) {
+        super(statusCode, String.format(ERROR_MESSAGE_FORMAT, doi.toIdentifier(), statusCode));
+        this.doi = doi;
     }
 
-    public DeleteDraftDoiException(int statusCode, String message) {
-        super(statusCode, message);
-    }
-
-    public DeleteDraftDoiException(int statusCode, Exception e) {
-        super(statusCode, e);
-    }
-
-    public DeleteDraftDoiException(int statusCode, String message, Exception e) {
-        super(statusCode, message, e);
+    public Doi getDoi() {
+        return doi;
     }
 }

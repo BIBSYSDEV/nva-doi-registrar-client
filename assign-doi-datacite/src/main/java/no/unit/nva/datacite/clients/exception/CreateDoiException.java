@@ -5,20 +5,14 @@ import nva.commons.utils.JacocoGenerated;
 @JacocoGenerated
 public class CreateDoiException extends UpstreamApiException {
 
+    private final String doiPrefix;
 
-    public CreateDoiException(int statusCode) {
-        super(statusCode);
+    public CreateDoiException(String doiPrefix, int statusCode) {
+        super(statusCode, String.format(ERROR_MESSAGE_FORMAT, doiPrefix, statusCode));
+        this.doiPrefix = doiPrefix;
     }
 
-    public CreateDoiException(int statusCode, String message) {
-        super(statusCode, message);
-    }
-
-    public CreateDoiException(int statusCode, Exception e) {
-        super(statusCode, e);
-    }
-
-    public CreateDoiException(int statusCode, String message, Exception e) {
-        super(statusCode, message, e);
+    public String getDoiPrefix() {
+        return doiPrefix;
     }
 }

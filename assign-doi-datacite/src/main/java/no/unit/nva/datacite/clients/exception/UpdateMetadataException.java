@@ -1,23 +1,19 @@
 package no.unit.nva.datacite.clients.exception;
 
+import no.unit.nva.datacite.clients.models.Doi;
 import nva.commons.utils.JacocoGenerated;
 
 @JacocoGenerated
 public class UpdateMetadataException extends UpstreamApiException {
 
-    public UpdateMetadataException(int statusCode) {
-        super(statusCode);
+    private final Doi doi;
+
+    public UpdateMetadataException(Doi doi, int statusCode) {
+        super(statusCode, String.format(ERROR_MESSAGE_FORMAT, doi.toIdentifier(), statusCode));
+        this.doi = doi;
     }
 
-    public UpdateMetadataException(int statusCode, String message) {
-        super(statusCode, message);
-    }
-
-    public UpdateMetadataException(int statusCode, Exception e) {
-        super(statusCode, e);
-    }
-
-    public UpdateMetadataException(int statusCode, String message, Exception e) {
-        super(statusCode, message, e);
+    public Doi getDoi() {
+        return doi;
     }
 }

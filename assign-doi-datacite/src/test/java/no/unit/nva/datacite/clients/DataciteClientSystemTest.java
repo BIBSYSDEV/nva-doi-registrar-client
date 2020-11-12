@@ -14,9 +14,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.unit.nva.datacite.mdsclient.DataCiteMdsConnection.APPLICATION_XML_CHARSET_UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
@@ -37,6 +39,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.datacite.clients.exception.ClientException;
+import no.unit.nva.datacite.clients.exception.CreateDoiException;
+import no.unit.nva.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.datacite.clients.models.Doi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
 import no.unit.nva.datacite.config.DataciteConfigurationFactoryForSystemTests;
@@ -174,7 +178,10 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
-        assertThrows(ClientException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+        var actualException = assertThrows(DeleteDraftDoiException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+        assertThat(actualException, isA(ClientException.class));
+        assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
+        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_FORBIDDEN)));
     }
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {

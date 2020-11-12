@@ -8,25 +8,12 @@ import nva.commons.utils.JacocoGenerated;
 @JacocoGenerated
 public class UpstreamApiException extends ClientException {
 
-    private final int statusCode;
+    protected static final String ERROR_MESSAGE_FORMAT = "%s (%s)";
 
-    public UpstreamApiException(int statusCode) {
-        super();
-        this.statusCode = statusCode;
-    }
+    private final int statusCode;
 
     public UpstreamApiException(int statusCode, String message) {
         super(message);
-        this.statusCode = statusCode;
-    }
-
-    public UpstreamApiException(int statusCode, Exception e) {
-        super(e);
-        this.statusCode = statusCode;
-    }
-
-    public UpstreamApiException(int statusCode, String message, Exception e) {
-        super(message, e);
         this.statusCode = statusCode;
     }
 
