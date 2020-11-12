@@ -1,6 +1,7 @@
 package no.unit.nva.doi;
 
 import java.net.URI;
+import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 
@@ -13,7 +14,7 @@ import no.unit.nva.doi.datacite.clients.models.Doi;
  * @see <a href="https://support.datacite.org/docs/landing-pages">Best practices for landing pages</a>
  * @see <a href="https://support.datacite.org/docs/tombstone-pages">Best practices for Tombstone Landing pages</a>
  * @see <a href="https://support.datacite.org/docs/versioning">Best practices about versioning</a>
- * @see no.unit.nva.doi.datacite.clients.DataciteClient
+ * @see DataCiteClient
  */
 public interface DoiClient {
 
@@ -24,24 +25,24 @@ public interface DoiClient {
      * their own repository with associated prefix that will be used for NVA.
      *
      * @param customerId          NVAs customerId
-     * @param metadataDataciteXml datacite schema serialized xml as string
+     * @param metadataDataCiteXml datacite schema serialized xml as string
      * @return {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()}) from provider
      * @throws ClientException Error while communicating with Registry Agency
      */
-    Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException;
+    Doi createDoi(String customerId, String metadataDataCiteXml) throws ClientException;
 
     /**
      * Update metadata for a DOI.
      *
      * @param customerId          NVAs customerId
-     * @param metadataDataciteXml datacite schema serialized xml as string
+     * @param metadataDataCiteXml datacite schema serialized xml as string
      * @param doi                 {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      * @see <a href="https://support.datacite.org/docs/metadata-quality">Metadata quality requirements</a>
      * @see <a href="https://support.datacite.org/docs/connecting-research-outputs">Connect Reseearch Outputs
      *     (SCHOLIX)</a>
      */
-    void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException;
+    void updateMetadata(String customerId, Doi doi, String metadataDataCiteXml) throws ClientException;
 
     /**
      * Set landing page for a Doi. This will also turns the DOI into findable state!

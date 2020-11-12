@@ -11,13 +11,13 @@ import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 
 /**
- * Datacite configuration factory to obtain datacite related configuration.
+ * DataCite configuration factory to obtain DataCite related configuration.
  *
  * <p>{@link #getConfig(String)} for obtaining configuration for a specific customer, and
  * {@link #getCredentials(String)} for obtaining secret configuration, but this is restricted for implementations scoped
  * under package {@link no.unit.nva.datacite.config}.
  */
-public class DataciteConfigurationFactory {
+public class DataCiteConfigurationFactory {
 
     public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
@@ -25,27 +25,27 @@ public class DataciteConfigurationFactory {
     private SecretCache secretCache;
 
     /**
-     * Construct a new Datacite configuration factory.
+     * Construct a new DataCite configuration factory.
      *
      * @param secretCache to obtain secret configuration from
      * @param secretId    id to look up in AWS Secret Manager
      */
-    public DataciteConfigurationFactory(SecretCache secretCache, String secretId) {
+    public DataCiteConfigurationFactory(SecretCache secretCache, String secretId) {
         this.secretCache = secretCache;
         loadSecretsFromSecretManager(secretId);
     }
 
     /**
-     * Construct a new Datacite configuration factory for unit/system tests with pre populated secrets.
+     * Construct a new DataCite configuration factory for unit/system tests with pre populated secrets.
      *
-     * @param testSecretConfigs Pre populated Datacite configuration.
+     * @param testSecretConfigs Pre populated DataCite configuration.
      */
-    protected DataciteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {
+    protected DataCiteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {
         this.dataCiteMdsClientConfigsMap = testSecretConfigs;
     }
 
     /**
-     * Retrieve Datacite configuration for given NVA customer.
+     * Retrieve DataCite configuration for given NVA customer.
      *
      * @param customerId NVA customer id in format https://example.net/nva/customer/923923
      * @return DataCiteMdsClientConfig
@@ -58,7 +58,7 @@ public class DataciteConfigurationFactory {
     }
 
     /**
-     * Retrieve Datacite secret configuration for given NVA customer.
+     * Retrieve DataCite secret configuration for given NVA customer.
      *
      * @param customerId NVA customer id in format https://example.net/nva/customer/923923
      * @return Configuration wrapped in optional if present.

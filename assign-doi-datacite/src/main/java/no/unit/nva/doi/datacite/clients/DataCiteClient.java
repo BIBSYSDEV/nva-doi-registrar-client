@@ -12,21 +12,21 @@ import no.unit.nva.doi.datacite.clients.exception.DeleteMetadataException;
 import no.unit.nva.doi.datacite.clients.exception.SetLandingPageException;
 import no.unit.nva.doi.datacite.clients.exception.UpdateMetadataException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
-import no.unit.nva.doi.datacite.mdsclient.DataciteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A DoiClient implementation towards Registry Agency Datacite.
+ * A DoiClient implementation towards Registry Agency DataCite.
  *
- * <p>Notice in Datacite APIs, de-listed state is registered.
+ * <p>Notice in DataCite APIs, de-listed state is registered.
  *
  * @see DoiClient
  */
-public class DataciteClient implements DoiClient {
+public class DataCiteClient implements DoiClient {
 
     public static final String HTTP_STATUS_LOG_TEMPLATE = " ({})";
     public static final String ERROR_CREATING_DOI = "Error creating new DOI with metadata";
@@ -65,12 +65,12 @@ public class DataciteClient implements DoiClient {
         ERROR_CREATING_DOI
             + PREFIX_TEMPLATE_ENTRY
             + HTTP_STATUS_LOG_TEMPLATE;
-    private static final Logger logger = LoggerFactory.getLogger(DataciteClient.class);
-    private final DataciteMdsConnectionFactory mdsConnectionFactory;
-    private final DataciteConfigurationFactory configFactory;
+    private static final Logger logger = LoggerFactory.getLogger(DataCiteClient.class);
+    private final DataCiteMdsConnectionFactory mdsConnectionFactory;
+    private final DataCiteConfigurationFactory configFactory;
 
-    public DataciteClient(DataciteConfigurationFactory configFactory,
-                          DataciteMdsConnectionFactory mdsConnectionFactory) {
+    public DataCiteClient(DataCiteConfigurationFactory configFactory,
+                          DataCiteMdsConnectionFactory mdsConnectionFactory) {
         this.configFactory = configFactory;
         this.mdsConnectionFactory = mdsConnectionFactory;
     }
@@ -79,11 +79,11 @@ public class DataciteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public Doi createDoi(String customerId, String metadataDataciteXml) throws ClientException {
+    public Doi createDoi(String customerId, String metadataDataCiteXml) throws ClientException {
         var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
         try {
-            var response = prepareAuthenticatedDataciteConnection(customerId)
-                .postMetadata(prefix, metadataDataciteXml);
+            var response = prepareAuthenticatedDataCiteConnection(customerId)
+                .postMetadata(prefix, metadataDataCiteXml);
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_CREATING_DOI_TEMPLATE, prefix, response.statusCode());
                 throw new CreateDoiException(prefix, response.statusCode());
@@ -100,10 +100,10 @@ public class DataciteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException {
+    public void updateMetadata(String customerId, Doi doi, String metadataDataCiteXml) throws ClientException {
         try {
-            var response = prepareAuthenticatedDataciteConnection(customerId)
-                .postMetadata(doi.toIdentifier(), metadataDataciteXml);
+            var response = prepareAuthenticatedDataCiteConnection(customerId)
+                .postMetadata(doi.toIdentifier(), metadataDataCiteXml);
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_UPDATING_METADATA_FOR_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new UpdateMetadataException(doi, response.statusCode());
@@ -119,7 +119,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void setLandingPage(String customerId, Doi doi, URI landingPage) throws ClientException {
         try {
-            var response = prepareAuthenticatedDataciteConnection(customerId)
+            var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_URL_TEMPLATE, doi.toIdentifier(), response.statusCode());
@@ -136,7 +136,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void deleteMetadata(String customerId, Doi doi) throws ClientException {
         try {
-            var response = prepareAuthenticatedDataciteConnection(customerId)
+            var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_METADATA_TEMPLATE, doi.toIdentifier(), response.statusCode());
@@ -153,7 +153,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void deleteDraftDoi(String customerId, Doi doi) throws ClientException {
         try {
-            var response = prepareAuthenticatedDataciteConnection(customerId)
+            var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
@@ -164,7 +164,7 @@ public class DataciteClient implements DoiClient {
         }
     }
 
-    private DataCiteMdsConnection prepareAuthenticatedDataciteConnection(String customerId) {
+    private DataCiteMdsConnection prepareAuthenticatedDataCiteConnection(String customerId) {
         return mdsConnectionFactory.getAuthenticatedConnection(customerId);
     }
 

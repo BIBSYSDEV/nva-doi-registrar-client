@@ -16,12 +16,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 
 /**
- * DataCiteMdsConnect instance for handling the HTTP communication with Datacite MDS API.
+ * DataCiteMdsConnect instance for handling the HTTP communication with DataCite MDS API.
  *
  * <p>The HttpClient provided should have a {@link java.net.Authenticator} associated to do pre-emptive
  * authentication towards the API server.
  *
- * <p>Use the {@link DataciteMdsConnectionFactory#getAuthenticatedConnection(String)} to construct new instances.
+ * <p>Use the {@link DataCiteMdsConnectionFactory#getAuthenticatedConnection(String)} to construct new instances.
  */
 public class DataCiteMdsConnection {
 
@@ -53,13 +53,13 @@ public class DataCiteMdsConnection {
      * This request stores a new version of metadata.
      *
      * @param doi         prefix/suffix
-     * @param dataciteXml resource metadata as Datacite XML, encoded with UTF-8.
+     * @param dataCiteXml resource metadata as DataCite XML, encoded with UTF-8.
      * @return HttpResponse
      * @throws IOException          IOException
      * @throws URISyntaxException   URISyntaxException
      * @throws InterruptedException InterruptedException
      */
-    public HttpResponse<String> postMetadata(String doi, String dataciteXml) throws IOException,
+    public HttpResponse<String> postMetadata(String doi, String dataCiteXml) throws IOException,
                                                                                     URISyntaxException,
                                                                                     InterruptedException {
 
@@ -67,7 +67,7 @@ public class DataCiteMdsConnection {
             .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
             .build();
 
-        HttpRequest request = postApplicationXmlRequest(dataciteXml, uri);
+        HttpRequest request = postApplicationXmlRequest(dataCiteXml, uri);
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }

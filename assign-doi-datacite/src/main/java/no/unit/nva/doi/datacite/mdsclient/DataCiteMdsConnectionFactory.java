@@ -11,9 +11,9 @@ import java.time.Duration;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 
 /**
- * Datacite MDS API Connection factory
+ * DataCite MDS API Connection factory
  *
- * <p>Configures a {@link DataCiteMdsConnection} with associated {@link Authenticator} to communicate with Datacite
+ * <p>Configures a {@link DataCiteMdsConnection} with associated {@link Authenticator} to communicate with DataCite
  * MDS API.
  *
  * <p>Our {@link PasswordAuthentication} will only provide credentials for valid endpoints for the {@link HttpClient}
@@ -23,7 +23,7 @@ import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
  *
  * @see #createNvaCustomerAuthenticator(String)
  */
-public class DataciteMdsConnectionFactory {
+public class DataCiteMdsConnectionFactory {
 
     public static final PasswordAuthentication DO_NOT_SEND_CREDENTIALS = null;
     private final PasswordAuthenticationFactory authenticationFactory;
@@ -38,7 +38,7 @@ public class DataciteMdsConnectionFactory {
      * @param mdsHostname           MDS API hostname
      * @param mdsPort               MDS API port
      */
-    public DataciteMdsConnectionFactory(PasswordAuthenticationFactory authenticationFactory,
+    public DataCiteMdsConnectionFactory(PasswordAuthenticationFactory authenticationFactory,
                                         String mdsHostname,
                                         int mdsPort) {
         this(HttpClient.newBuilder(), authenticationFactory, mdsHostname, mdsPort);
@@ -52,7 +52,7 @@ public class DataciteMdsConnectionFactory {
      * @param mdsHostname           MDS API hostname
      * @param mdsPort               MDS API port
      */
-    public DataciteMdsConnectionFactory(HttpClient.Builder httpBuilder,
+    public DataCiteMdsConnectionFactory(HttpClient.Builder httpBuilder,
                                         PasswordAuthenticationFactory authenticationFactory,
                                         String mdsHostname,
                                         int mdsPort) {
@@ -63,7 +63,7 @@ public class DataciteMdsConnectionFactory {
     }
 
     /**
-     * Get a authenteicated connection towards Datacite MDS API.
+     * Get a authenteicated connection towards DataCite MDS API.
      *
      * @param customerId NVA customer id
      * @return DataCiteMdsConnection private connection for provided customerId
@@ -95,7 +95,7 @@ public class DataciteMdsConnectionFactory {
                                                                                 String scheme,
                                                                                 URL url,
                                                                                 RequestorType reqType) {
-                if (isCommunicatingTowardsConfiguredDataciteApi(host, port)) {
+                if (isCommunicatingTowardsConfiguredDataCiteApi(host, port)) {
                     return super.requestPasswordAuthenticationInstance(host,
                         addr,
                         port,
@@ -113,7 +113,7 @@ public class DataciteMdsConnectionFactory {
                 return authenticationFactory.getCredentials(customerId);
             }
 
-            private boolean isCommunicatingTowardsConfiguredDataciteApi(String host, int port) {
+            private boolean isCommunicatingTowardsConfiguredDataCiteApi(String host, int port) {
                 return host.equalsIgnoreCase(mdsHostname) && port == mdsPort;
             }
         };

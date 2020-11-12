@@ -30,7 +30,7 @@ class PasswordAuthenticationFactoryTest {
 
     @BeforeEach
     void setUp() {
-        DataciteConfigurationFactory configurationFactory = getConfigurationFactoryMock();
+        DataCiteConfigurationFactory configurationFactory = getConfigurationFactoryMock();
         sut = new PasswordAuthenticationFactory(configurationFactory);
     }
 
@@ -46,8 +46,8 @@ class PasswordAuthenticationFactoryTest {
         assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> sut.getCredentials(UNKNOWN_CUSTOMER_ID));
     }
 
-    private DataciteConfigurationFactory getConfigurationFactoryMock() {
-        var configurationFactory = mock(DataciteConfigurationFactory.class);
+    private DataCiteConfigurationFactory getConfigurationFactoryMock() {
+        var configurationFactory = mock(DataCiteConfigurationFactory.class);
         try {
             when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
             when(configurationFactory.getCredentials(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);

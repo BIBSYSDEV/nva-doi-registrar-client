@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.config;
 
-import static no.unit.nva.doi.datacite.config.DataciteConfigurationFactory.ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS;
+import static no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory.ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -19,7 +19,7 @@ import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteConfigurationFactoryTest {
+class DataCiteConfigurationFactoryTest {
 
     private static final String INVALID_JSON = "{{";
     private static final String EMPTY_CREDENTIALS_CONFIGURED = "[]";
@@ -35,7 +35,7 @@ class DataciteConfigurationFactoryTest {
         new DataCiteMdsClientSecretConfig(EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_ENDPOINT,
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
     private SecretCache secretCache;
-    private DataciteConfigurationFactory sut;
+    private DataCiteConfigurationFactory sut;
 
     @BeforeEach
     void setUp() {
@@ -84,11 +84,11 @@ class DataciteConfigurationFactoryTest {
     void constructorThrowsExceptionWhenConfigurationError() {
         prepareBadCredentialsConfig();
         assertThrows(IllegalStateException.class,
-            () -> new DataciteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
+            () -> new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
     }
 
     private void setupSystemUnderTest() {
-        sut = new DataciteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
+        sut = new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
     }
 
     private void configureWithNoCredentials() {

@@ -1,13 +1,13 @@
 package no.unit.nva.doi.datacite.models;
 
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
 /**
- * DAO for Datacite MDS Configuration also including Datacite MDS secrets for a associated NVA customer.
+ * DAO for DataCite MDS Configuration also including DataCite MDS secrets for a associated NVA customer.
  *
- * @see DataciteConfigurationFactory
+ * @see DataCiteConfigurationFactory
  */
 public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
 

@@ -41,11 +41,11 @@ import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactoryForSystemTests;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
-import no.unit.nva.doi.datacite.mdsclient.DataciteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.utils.IoUtils;
 import org.apache.http.HttpHeaders;
@@ -56,7 +56,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteClientSystemTest extends DataciteClientTestBase {
+class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
     private static final char FORWARD_SLASH = '/';
@@ -71,10 +71,10 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
-    private DataciteConfigurationFactory configurationFactory;
+    private DataCiteConfigurationFactory configurationFactory;
     private PasswordAuthenticationFactory authenticationFactory;
-    private DataciteClient sut;
-    private DataciteMdsConnectionFactory mdsConnectionFactory;
+    private DataCiteClient sut;
+    private DataCiteMdsConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
 
     void startProxyToWireMock() {
@@ -99,7 +99,7 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
         startProxyToWireMock();
         stubRequireAuthenticationForAllApiCalls();
 
-        configurationFactory = new DataciteConfigurationFactoryForSystemTests(
+        configurationFactory = new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
         authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
 
@@ -107,11 +107,11 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
             .connectTimeout(Duration.ofMinutes(1))
             .sslContext(createInsecureSslContextTrustingEverything());
 
-        mdsConnectionFactory = new DataciteMdsConnectionFactory(httpClientBuilder,
+        mdsConnectionFactory = new DataCiteMdsConnectionFactory(httpClientBuilder,
             authenticationFactory,
             mdsHost,
             mdsPort);
-        sut = new DataciteClient(configurationFactory, mdsConnectionFactory);
+        sut = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
     @Test

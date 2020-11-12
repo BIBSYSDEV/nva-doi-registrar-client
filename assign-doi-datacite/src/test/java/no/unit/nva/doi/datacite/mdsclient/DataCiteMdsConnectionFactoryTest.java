@@ -16,14 +16,14 @@ import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
 import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteMdsConnectionFactoryTest {
+class DataCiteMdsConnectionFactoryTest {
 
     private static final String DEMO_PREFIX = "10.5072";
     private static final String KNOWN_CUSTOMER_ID = "https://example.net/customer/id/1234";
@@ -39,15 +39,15 @@ class DataciteMdsConnectionFactoryTest {
         EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_HOST, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
     private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/41515-unknown-customer";
 
-    private DataciteConfigurationFactory configurationFactory;
-    private DataciteMdsConnectionFactory sut;
+    private DataCiteConfigurationFactory configurationFactory;
+    private DataCiteMdsConnectionFactory sut;
 
     @BeforeEach
     void configure() throws DataCiteMdsConfigValidationFailedException {
 
-        configurationFactory = mock(DataciteConfigurationFactory.class);
+        configurationFactory = mock(DataCiteConfigurationFactory.class);
         when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
-        sut = new DataciteMdsConnectionFactory(
+        sut = new DataCiteMdsConnectionFactory(
             new PasswordAuthenticationFactory(configurationFactory), EXAMPLE_HOST, EXAMPLE_PORT);
     }
 

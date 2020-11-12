@@ -4,19 +4,19 @@ import java.net.PasswordAuthentication;
 import java.net.http.HttpClient;
 import java.util.Optional;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
-import no.unit.nva.doi.datacite.mdsclient.DataciteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 
 /**
  * Password authentication factory for providing {@link java.net.Authenticator} for NVA customers.
  *
- * @see DataciteMdsConnectionFactory
+ * @see DataCiteMdsConnectionFactory
  * @see HttpClient#authenticator()
  */
 public class PasswordAuthenticationFactory {
 
-    private final DataciteConfigurationFactory dataciteConfigurationFactory;
+    private final DataCiteConfigurationFactory dataciteConfigurationFactory;
 
-    public PasswordAuthenticationFactory(DataciteConfigurationFactory dataciteConfigurationFactory) {
+    public PasswordAuthenticationFactory(DataCiteConfigurationFactory dataciteConfigurationFactory) {
         this.dataciteConfigurationFactory = dataciteConfigurationFactory;
     }
 

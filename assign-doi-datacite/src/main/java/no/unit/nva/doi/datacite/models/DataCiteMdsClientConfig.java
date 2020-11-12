@@ -1,14 +1,14 @@
 package no.unit.nva.doi.datacite.models;
 
 import static java.util.Objects.nonNull;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
 /**
- * DAO for Datacite MDS Configuration for a associated NVA customer.
+ * DAO for DataCite MDS Configuration for a associated NVA customer.
  *
  * @see DataCiteMdsClientSecretConfig
- * @see DataciteConfigurationFactory
+ * @see DataCiteConfigurationFactory
  */
 public class DataCiteMdsClientConfig {
 

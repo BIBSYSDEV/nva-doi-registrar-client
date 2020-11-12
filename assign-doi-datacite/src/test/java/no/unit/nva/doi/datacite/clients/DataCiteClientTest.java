@@ -11,16 +11,16 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataciteConfigurationFactoryForSystemTests;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
-import no.unit.nva.doi.datacite.mdsclient.DataciteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.utils.log.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataciteClientTest extends DataciteClientTestBase {
+class DataCiteClientTest extends DataciteClientTestBase {
 
     public static final String ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI = "deleteDraftDoi";
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
@@ -31,10 +31,10 @@ class DataciteClientTest extends DataciteClientTestBase {
     private final String mdsHost = "example.net";
     private DataCiteMdsClientSecretConfig validSecretConfig;
 
-    private DataciteConfigurationFactory configurationFactory;
+    private DataCiteConfigurationFactory configurationFactory;
 
-    private DataciteClient sut;
-    private DataciteMdsConnectionFactory mdsConnectionFactory;
+    private DataCiteClient sut;
+    private DataCiteMdsConnectionFactory mdsConnectionFactory;
 
     private DataCiteMdsConnection mdsConnectionThrowingIoException;
 
@@ -42,13 +42,13 @@ class DataciteClientTest extends DataciteClientTestBase {
     void setUp() throws InterruptedException, IOException, URISyntaxException {
         configurationFactory = createDataConfigurationFactoryForTest();
 
-        mdsConnectionFactory = mock(DataciteMdsConnectionFactory.class);
+        mdsConnectionFactory = mock(DataCiteMdsConnectionFactory.class);
         mdsConnectionThrowingIoException = mock(DataCiteMdsConnection.class);
         when(mdsConnectionFactory.getAuthenticatedConnection(anyString())).thenReturn(mdsConnectionThrowingIoException);
 
         when(mdsConnectionThrowingIoException.deleteDoi(anyString())).thenThrow(IOException.class);
 
-        sut = new DataciteClient(configurationFactory, mdsConnectionFactory);
+        sut = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
     @Test
@@ -61,17 +61,17 @@ class DataciteClientTest extends DataciteClientTestBase {
 
     @Test
     void transExceptionWhichThrowsClientExceptionIsLogged() {
-        var appender = LogUtils.getTestingAppender(DataciteClient.class);
+        var appender = LogUtils.getTestingAppender(DataCiteClient.class);
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
 
         assertThrows(ClientException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(appender.getMessages(), containsString(ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI));
     }
 
-    private DataciteConfigurationFactoryForSystemTests createDataConfigurationFactoryForTest() {
+    private DataCiteConfigurationFactoryForSystemTests createDataConfigurationFactoryForTest() {
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             INSTITUTION_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
-        return new DataciteConfigurationFactoryForSystemTests(
+        return new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
     }
 }
