@@ -18,6 +18,7 @@ allprojects {
         awsSdkVersion = '1.11.875'
         nvaCommonsVersion = '0.5.4'
         nvaTestUtilsVersion = "0.1.15"
+        jacksonVersion = '2.10.2'
     }
 }
 
