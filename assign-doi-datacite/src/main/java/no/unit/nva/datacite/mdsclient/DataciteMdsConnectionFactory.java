@@ -63,11 +63,17 @@ public class DataciteMdsConnectionFactory {
     }
 
     public DataCiteMdsConnection getAuthenticatedConnection(String customerId) {
-        return new DataCiteMdsConnection(httpBuilder
+        Authenticator nvaCustomerAuthenticator = createNvaCustomerAuthenticator(customerId);
+        HttpClient httpClient = createHttpClientWithAuthenticator(nvaCustomerAuthenticator);
+        return new DataCiteMdsConnection(httpClient, mdsHostname, mdsPort);
+    }
+
+    private HttpClient createHttpClientWithAuthenticator(Authenticator nvaCustomerAuthenticator) {
+        return httpBuilder
             .version(Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(2))
-            .authenticator(createNvaCustomerAuthenticator(customerId))
-            .build(), mdsHostname, mdsPort);
+            .authenticator(nvaCustomerAuthenticator)
+            .build();
     }
 
     private Authenticator createNvaCustomerAuthenticator(String customerId) {
