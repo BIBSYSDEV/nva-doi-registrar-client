@@ -177,7 +177,8 @@ class DataciteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
-        var actualException = assertThrows(DeleteDraftDoiException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+        var actualException = assertThrows(DeleteDraftDoiException.class,
+            () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_FORBIDDEN)));
