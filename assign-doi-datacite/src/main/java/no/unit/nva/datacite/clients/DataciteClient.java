@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import no.unit.nva.datacite.clients.exception.ClientException;
 import no.unit.nva.datacite.clients.models.Doi;
 import no.unit.nva.datacite.config.DataciteConfigurationFactory;
+import no.unit.nva.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.datacite.mdsclient.DataciteMdsConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,10 +45,8 @@ public class DataciteClient implements DoiClient {
         var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
         Doi doi;
         try {
-            var response =
-                mdsConnectionFactory
-                    .getAuthenticatedConnection(customerId)
-                    .postMetadata(prefix, metadataDataciteXml);
+            var response = prepareAuthenticatedDataciteConnection(customerId)
+                .postMetadata(prefix, metadataDataciteXml);
             if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_METADATA_TEMPLATE);
             }
@@ -65,8 +64,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void updateMetadata(String customerId, Doi doi, String metadataDataciteXml) throws ClientException {
         try {
-            var response = mdsConnectionFactory
-                .getAuthenticatedConnection(customerId)
+            var response = prepareAuthenticatedDataciteConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
             if (!isSuccessfulApiResponse(response)) {
                 throw new ClientException(ERROR_SETTING_DOI_METADATA_TEMPLATE
@@ -86,8 +84,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void setLandingPage(String customerId, Doi doi, URI landingPage) throws ClientException {
         try {
-            var response = mdsConnectionFactory
-                .getAuthenticatedConnection(customerId)
+            var response = prepareAuthenticatedDataciteConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
             if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_SETTING_DOI_URL_TEMPLATE);
@@ -103,8 +100,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void deleteMetadata(String customerId, Doi doi) throws ClientException {
         try {
-            var response = mdsConnectionFactory
-                .getAuthenticatedConnection(customerId)
+            var response = prepareAuthenticatedDataciteConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
             if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_METADATA_TEMPLATE);
@@ -120,8 +116,7 @@ public class DataciteClient implements DoiClient {
     @Override
     public void deleteDraftDoi(String customerId, Doi doi) throws ClientException {
         try {
-            var response = mdsConnectionFactory
-                .getAuthenticatedConnection(customerId)
+            var response = prepareAuthenticatedDataciteConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
             if (!isSuccessfulApiResponse(response)) {
                 throw logAndCreateApiException(response.statusCode(), ERROR_DELETING_DOI_TEMPLATE);
@@ -129,6 +124,10 @@ public class DataciteClient implements DoiClient {
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw logAndCreateClientException("deleteDraftDoi", e);
         }
+    }
+
+    private DataCiteMdsConnection prepareAuthenticatedDataciteConnection(String customerId) {
+        return mdsConnectionFactory.getAuthenticatedConnection(customerId);
     }
 
     private ClientException logAndCreateClientException(String doiClientMethodName, Exception parentException) {
