@@ -11,7 +11,6 @@ import nva.commons.utils.JacocoGenerated;
  * <p>Use the builder to create immutable instances: {@code ImmutableDoi.builder()}.
  */
 @SuppressWarnings({"all"})
-@javax.annotation.processing.Generated("org.immutables.processor.ProxyProcessor")
 @JacocoGenerated
 public final class ImmutableDoi extends Doi {
 
@@ -120,10 +119,7 @@ public final class ImmutableDoi extends Doi {
      */
     @Override
     public String toString() {
-        return "Doi{"
-            + "prefix=" + prefix
-            + ", suffix=" + suffix
-            + "}";
+        return toIdentifier();
     }
 
     /**
@@ -159,7 +155,6 @@ public final class ImmutableDoi extends Doi {
      * <p><em>{@code Builder} is not thread-safe and generally should not be stored in a field or collection,
      * but instead used immediately to create instances.</em>
      */
-    //@Generated(from = "Doi", generator = "Immutables")
     public static final class Builder {
 
         private static final long INIT_BIT_PREFIX = 0x1L;
