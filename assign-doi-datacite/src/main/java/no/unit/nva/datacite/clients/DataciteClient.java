@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A DoiClient implementation towards Registry Agency Datacite.
+ *
+ * <p>Notice in Datacite APIs, de-listed state is registered.
+ *
+ * @see DoiClient
  */
 public class DataciteClient implements DoiClient {
 

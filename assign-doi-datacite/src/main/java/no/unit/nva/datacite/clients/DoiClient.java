@@ -7,7 +7,7 @@ import no.unit.nva.datacite.clients.models.Doi;
 /**
  * NVAs supported DOI operations.
  *
- * <p>DOIs can exist in three states: draft, registered, and findable. DOIs are in the draft state when metadata
+ * <p>DOIs can exist in three states: draft, de-listed, and findable. DOIs are in the draft state when metadata
  * have been registered, and will transition to the findable state when registering a landing page (URL).
  *
  * @see <a href="https://support.datacite.org/docs/landing-pages">Best practices for landing pages</a>
