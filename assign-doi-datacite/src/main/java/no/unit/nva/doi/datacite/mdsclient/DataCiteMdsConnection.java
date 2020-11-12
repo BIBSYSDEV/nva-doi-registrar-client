@@ -10,6 +10,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
+import java.util.Map;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
@@ -205,7 +206,7 @@ public class DataCiteMdsConnection {
             .build();
     }
 
-    private HashMap<String, String> createRegisterUrlFormParams(String doi, String landingPage) {
+    private Map<String, String> createRegisterUrlFormParams(String doi, String landingPage) {
         HashMap<String, String> formParams = new HashMap<>();
         formParams.put(FORM_PARAM_DOI, doi);
         formParams.put(FORM_PARAM_URL, landingPage);
