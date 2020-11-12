@@ -8,6 +8,6 @@ dependencies {
     implementation group: 'org.zalando', name: 'problem', version: zalandoVersion
     implementation group: 'org.zalando', name: 'jackson-datatype-problem', version: zalandoVersion
 
-    testCompile "com.github.tomakehurst:wiremock-jre8:2.27.2"
+    testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
 
 }
