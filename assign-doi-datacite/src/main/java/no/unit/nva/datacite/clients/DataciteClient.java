@@ -58,7 +58,7 @@ public class DataciteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .postMetadata(prefix, metadataDataciteXml);
-            if (!isSuccessfulApiResponse(response)) {
+            if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_METADATA_TEMPLATE, response.statusCode());
                 throw new CreateDoiException(response.statusCode(), ERROR_SETTING_DOI_METADATA);
             }
@@ -78,7 +78,7 @@ public class DataciteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataciteXml);
-            if (!isSuccessfulApiResponse(response)) {
+            if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_METADATA_TEMPLATE, response.statusCode());
                 throw new UpdateMetadataException(response.statusCode(), ERROR_SETTING_DOI_METADATA);
             }
@@ -95,7 +95,7 @@ public class DataciteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
-            if (!isSuccessfulApiResponse(response)) {
+            if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_URL_TEMPLATE, response.statusCode());
                 throw new SetLandingPageException(response.statusCode(), ERROR_SETTING_DOI_URL_TEMPLATE);
             }
@@ -112,7 +112,7 @@ public class DataciteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
-            if (!isSuccessfulApiResponse(response)) {
+            if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_METADATA_TEMPLATE, response.statusCode());
                 throw new DeleteMetadataException(response.statusCode(), ERROR_DELETING_DOI_METADATA);
             }
@@ -129,7 +129,7 @@ public class DataciteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedDataciteConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
-            if (!isSuccessfulApiResponse(response)) {
+            if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_TEMPLATE, response.statusCode());
                 throw new DeleteDraftDoiException(response.statusCode(), ERROR_DELETING_DOI);
             }
@@ -154,7 +154,7 @@ public class DataciteClient implements DoiClient {
         return Doi.builder().identifier(identifier).build();
     }
 
-    private boolean isSuccessfulApiResponse(HttpResponse<String> createDoiResponse) {
-        return createDoiResponse.statusCode() / 100 == 2;
+    private boolean isUnsuccessfulResponse(HttpResponse<String> response) {
+        return response.statusCode() / 100 != 2;
     }
 }
