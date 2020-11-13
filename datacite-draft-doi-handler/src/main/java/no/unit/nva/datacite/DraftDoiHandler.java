@@ -26,6 +26,7 @@ public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
         this(defaultTransformService(), defaultDoiClient());
     }
 
+    @JacocoGenerated
     private static DoiClient defaultDoiClient() {
         return new DoiClient() {
             @Override
