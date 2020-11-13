@@ -32,11 +32,9 @@ import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import no.unit.nva.testutils.HandlerRequestBuilder;
@@ -67,10 +65,6 @@ public class DataCiteMdsCreateDoiHandlerTest {
             + "\"institutionPrefix\": \"institutionPrefix\"," + "\"dataCiteMdsClientUrl\": \"dataCiteMdsClientUrl\","
             + "\"dataCiteMdsClientUsername\": \"dataCiteMdsClientUsername\",\"dataCiteMdsClientPassword\": "
             + "\"dataCiteMdsClientPassword\"}]";
-    public static final JavaType GATEWAY_PROBLEM_TYPE = objectMapper.getTypeFactory()
-        .constructParametricType(GatewayResponse.class, Problem.class);
-    private static final JavaType GATEWAY_CREATEDOIRESPONSE_TYPE = objectMapper.getTypeFactory()
-        .constructParametricType(GatewayResponse.class, CreateDoiResponse.class);
 
     private Environment environment;
     private Context context;
