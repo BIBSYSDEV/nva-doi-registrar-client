@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -13,6 +12,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.APPLICATION_XML_CHARSET_UTF_8;
+import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.LANDING_PAGE_BODY_FORMAT;
+import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -66,6 +67,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
@@ -142,7 +144,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     void setLandingPageForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
 
-        stubSetLandingPageResponse();
+        stubSetLandingPageResponse(doi);
 
         sut.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
 
@@ -181,7 +183,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
-        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_FORBIDDEN)));
+        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
@@ -203,18 +205,18 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {
-        verify(putRequestedFor(urlEqualTo(doiPath))
+        verify(putRequestedFor(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withHeader(HttpHeaders.CONTENT_TYPE,
                 WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
 
-            .withRequestBody(matchingJsonPath("$.[?(@.url == '" + EXAMPLE_LANDING_PAGE + "')]"))
-            .withRequestBody(matchingJsonPath("$.[?(@.doi == '" + requestedDoi.toIdentifier() + "')]"))
-            .withHeader("Content-Type", WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())));
+            .withRequestBody(WireMock.equalTo(
+                String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
+            .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
     }
 
-    private void stubSetLandingPageResponse() {
-        stubFor(put(urlEqualTo(doiPath))
+    private void stubSetLandingPageResponse(Doi requestedDoi) {
+        stubFor(put(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_CREATED)
@@ -234,11 +236,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
                     .withStatus(HttpStatus.SC_OK)
                     .withBody(HTTP_RESPONSE_OK)));
         } else {
-            // TODO: Validate that trying to delete a DOI that is not in draft state, gives us a 403 Forbidden.
             stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
                 .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
                 .willReturn(aResponse()
-                    .withStatus(HttpStatus.SC_FORBIDDEN)));
+                    .withStatus(HttpStatus.SC_METHOD_NOT_ALLOWED)));
         }
     }
 

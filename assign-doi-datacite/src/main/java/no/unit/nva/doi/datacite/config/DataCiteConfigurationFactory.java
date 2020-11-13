@@ -1,28 +1,30 @@
 package no.unit.nva.doi.datacite.config;
 
+import static java.util.Objects.isNull;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+import nva.commons.utils.IoUtils;
 
 /**
  * DataCite configuration factory to obtain DataCite related configuration.
  *
  * <p>{@link #getConfig(String)} for obtaining configuration for a specific customer, and
  * {@link #getCredentials(String)} for obtaining secret configuration, but this is restricted for implementations scoped
- * under package {@link no.unit.nva.datacite.config}.
+ * under package {@link no.unit.nva.doi.datacite.config}.
  */
 public class DataCiteConfigurationFactory {
 
     public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
 
     private Map<String, DataCiteMdsClientSecretConfig> dataCiteMdsClientConfigsMap = new ConcurrentHashMap<>();
-    private SecretCache secretCache;
 
     /**
      * Construct a new DataCite configuration factory.
@@ -31,8 +33,15 @@ public class DataCiteConfigurationFactory {
      * @param secretId    id to look up in AWS Secret Manager
      */
     public DataCiteConfigurationFactory(SecretCache secretCache, String secretId) {
-        this.secretCache = secretCache;
-        loadSecretsFromSecretManager(secretId);
+        this(secretCache.getSecretString(secretId));
+    }
+
+    public DataCiteConfigurationFactory(InputStream jsonConfig) {
+        this(IoUtils.streamToString(jsonConfig));
+    }
+
+    protected DataCiteConfigurationFactory(String secretConfigAsJsonString) {
+        parseConfig(secretConfigAsJsonString);
     }
 
     /**
@@ -52,9 +61,14 @@ public class DataCiteConfigurationFactory {
      * @throws DataCiteMdsConfigValidationFailedException no valid customer configuration
      */
     public DataCiteMdsClientConfig getConfig(String customerId) throws DataCiteMdsConfigValidationFailedException {
-        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId))
+        DataCiteMdsClientSecretConfig value = dataCiteMdsClientConfigsMap.get(customerId);
+        if (isNull(value)) {
+            throw new DataCiteMdsConfigValidationFailedException(customerId + " not present in config");
+        }
+        return Optional.of(value)
             .filter(DataCiteMdsClientConfig::isFullyConfigured)
-            .orElseThrow(DataCiteMdsConfigValidationFailedException::new);
+            .orElseThrow(
+                () -> new DataCiteMdsConfigValidationFailedException(customerId + " has invalid configuration!"));
     }
 
     /**
@@ -70,14 +84,13 @@ public class DataCiteConfigurationFactory {
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
     }
 
-    private void loadSecretsFromSecretManager(String secretId) {
+    private void parseConfig(String secretConfigAsJsonString) {
         try {
-            String secretConfigAsJson = secretCache.getSecretString(secretId);
-            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfigAsJson,
+            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfigAsJsonString,
                 DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
-            throw new IllegalStateException("Could not parse configuration from secret string: " + secretId);
+            throw new IllegalStateException("Could not parse secret configuration");
         }
     }
 

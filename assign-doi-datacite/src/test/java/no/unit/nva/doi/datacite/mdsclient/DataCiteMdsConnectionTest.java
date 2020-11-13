@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import java.io.IOException;
@@ -27,10 +28,8 @@ public class DataCiteMdsConnectionTest {
     public static final String MOCK_DOI_PREFIX = "prefix";
     public static final String MOCK_DOI = "prefix/suffix";
     public static final String MOCK_DATACITE_XML = "mock-xml";
-    public static final String MOCK_USER = "MOCK_USER";
-    public static final String MOCK_PASSWORD = "MOCK_PASSWORD";
+    public static final String NO_METADATA = null;
     private static final int MOCK_PORT = 8888;
-
     @Mock
     HttpClient httpClient;
 
@@ -92,6 +91,17 @@ public class DataCiteMdsConnectionTest {
         HttpResponse<String> httpResponse = mockDataCiteMdsConnection.registerUrl(MOCK_DOI, MOCK_LANDING_PAGE_URL);
 
         assertResponseContainsBody(httpResponse);
+    }
+
+    @Test
+    public void postDoiWithoutBodyThrowsNullPointerException()
+        throws IOException, InterruptedException {
+        String body = IoUtils.stringFromResources(Path.of(DATACITE_MDS_OK_RESPONSE));
+        stubHttpClientWithHttpResponse(null);
+
+        DataCiteMdsConnection mockDataCiteMdsConnection = createDataCiteMdsConnection();
+
+        assertThrows(NullPointerException.class, () -> mockDataCiteMdsConnection.postMetadata(MOCK_DOI, NO_METADATA));
     }
 
     @Test

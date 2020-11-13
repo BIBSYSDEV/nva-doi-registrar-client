@@ -19,7 +19,7 @@ import no.unit.nva.doi.datacite.clients.models.Doi;
 public interface DoiClient {
 
     /**
-     * Create a DOI with an auto-generated suffix in the specified customer repository.
+     * Create a DOI with metadata and an auto-generated suffix in the specified customer repository.
      *
      * <p>The specified customer repository are configured by the NVA application administrators. Each customer has
      * their own repository with associated prefix that will be used for NVA.
