@@ -41,30 +41,24 @@ public class DataCiteClient implements DoiClient {
     protected static final String CHARACTER_WHITESPACE = " ";
     protected static final char FORWARD_SLASH = '/';
     private static final String PREFIX_TEMPLATE_ENTRY = "{}";
+    public static final String DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES = COLON_SPACE
+        + PREFIX_TEMPLATE_ENTRY
+        + HTTP_STATUS_LOG_TEMPLATE;
     public static final String ERROR_DELETING_DOI_TEMPLATE =
         ERROR_DELETING_DOI
-            + COLON_SPACE
-            + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE;
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     public static final String ERROR_DELETING_DOI_METADATA_TEMPLATE =
         ERROR_DELETING_DOI_METADATA
-            + COLON_SPACE
-            + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE;
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     public static final String ERROR_SETTING_DOI_URL_TEMPLATE =
         ERROR_SETTING_DOI_URL
-            + COLON_SPACE
-            + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE;
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     public static final String ERROR_UPDATING_METADATA_FOR_DOI_TEMPLATE =
         ERROR_UPDATING_METADATA_FOR_DOI
-            + COLON_SPACE
-            + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE;
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     public static final String ERROR_CREATING_DOI_TEMPLATE =
         ERROR_CREATING_DOI
-            + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE;
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     private static final Logger logger = LoggerFactory.getLogger(DataCiteClient.class);
     private final DataCiteMdsConnectionFactory mdsConnectionFactory;
     private final DataCiteConfigurationFactory configFactory;
