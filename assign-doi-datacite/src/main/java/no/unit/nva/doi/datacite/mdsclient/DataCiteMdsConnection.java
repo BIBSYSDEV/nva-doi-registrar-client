@@ -18,7 +18,7 @@ import org.apache.http.client.utils.URIBuilder;
  * <p>The HttpClient provided should have a {@link java.net.Authenticator} associated to do pre-emptive
  * authentication towards the API server.
  *
- * <p>Use the {@link DataCiteMdsConnectionFactory#getAuthenticatedConnection(String)} to construct new instances.
+ * <p>Use the {@link DataCiteMdsConnectionFactory#getAuthenticatedConnection(URI)} to construct new instances.
  */
 public class DataCiteMdsConnection {
 

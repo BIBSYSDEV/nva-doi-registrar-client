@@ -45,3 +45,39 @@ Value of secret should be stored in JSON format like this:
   ...
 ]
 ```
+
+## assignd-doi-datecite-example CLI client
+
+You can easily run the CLI via gradle by issuing the commands with:
+
+`./gradlew :assign-doi-datacite-example:run --args="<command line argument goes here>"`
+
+Examples below, copy them into `<command line argument goes here>`
+
+> Create DOI with metadata
+
+`create --config $(pwd)/datacite-mds-test-config.json --customer https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934 -m $(pwd)/assign-doi-datacite-example/example-minimal-document.xml 10.16903"`
+
+> Delete DOI in Draft state
+
+`delete doi --config $(pwd)/datacite-mds-test-config.json --customer https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934 10.16903/test-rono-dev-example3"`
+
+> Delete DOI metadata  (This makes it de-listed)
+
+`delete metadata --config $(pwd)/datacite-mds-test-config.json --customer https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934 10.16903/test-rono-dev-example1"`
+
+> Update DOI metadata
+
+`update --config $(pwd)/datacite-mds-test-config.json --customer https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934 -m $(pwd)/assign-doi-datacite-example/example-minimal-document.xml 10.16903/test-rono-dev-example1"`
+
+> Update DOI landing page 
+
+`landingpage --config $(pwd)/datacite-mds-test-config.json --customer https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934 -l https://github.com/BIBSYSDEV/nva-doi-registrar-client 10.16903/test-rono-dev-example1"`
+
+Notice changes won't show before it has gone 1 day! DOI landing page are cached for 24 hours. 
+You need to query the JSON API in the handle server to verify if it has been updated.
+
+> Other information
+
+The CLI client is hardcoded and configured to run towards test environment API servers, so even if you change the `--config` to contain `dataCiteMdsClientUrl` for production, the authenticator won't authenticate for security reasons.
+ We want to be really careful about minting DOIs in production! 

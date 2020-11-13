@@ -1,5 +1,6 @@
 rootProject.name = 'nva-doi-registrar-client'
 include 'assign-doi-datacite'
+include 'assign-doi-datacite-example'
 include 'assign-doi-proxy-function'
 include 'dynamo-event-to-datacite-request'
 include 'event-handler-template'

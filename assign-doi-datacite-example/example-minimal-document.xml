@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://datacite.org/schema/kernel-4"
+	xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.1/metadata.xsd">
+  <!-- Ignored for Create DOI requests ! -->	
+  <identifier identifierType="DOI">10.5072/ignored</identifier>
+  <resourceType resourceTypeGeneral="Other">Other</resourceType>
+  <version>4.1</version>
+  <creators>
+    <creator>
+      <creatorName>Magicka the first born</creatorName>
+    </creator>
+  </creators>
+  <titles>
+    <title xml:lang="en">Example title</title>
+  </titles>
+  <publisher>UNIT</publisher>
+  <publicationYear>2020</publicationYear>
+
+</resource>
