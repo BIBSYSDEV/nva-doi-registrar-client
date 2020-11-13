@@ -1,0 +1,12 @@
+dependencies {
+    implementation (project(":event-handler-template")){
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation (project(":datacite-doi-commons")){
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: project.ext.awsSdkVersion
+
+}
