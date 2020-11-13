@@ -23,8 +23,10 @@ import nva.commons.utils.IoUtils;
 public class DataCiteConfigurationFactory {
 
     public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
+    public static final String ERROR_NOT_PRESENT_IN_CONFIG = " not present in config";
+    public static final String ERROR_HAS_INVALID_CONFIGURATION = " has invalid configuration!";
 
-    private Map<String, DataCiteMdsClientSecretConfig> dataCiteMdsClientConfigsMap = new ConcurrentHashMap<>();
+    private Map<String, DataCiteMdsClientSecretConfig> customerConfigurations = new ConcurrentHashMap<>();
 
     /**
      * Construct a new DataCite configuration factory.
@@ -50,7 +52,7 @@ public class DataCiteConfigurationFactory {
      * @param testSecretConfigs Pre populated DataCite configuration.
      */
     protected DataCiteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {
-        this.dataCiteMdsClientConfigsMap = testSecretConfigs;
+        this.customerConfigurations = testSecretConfigs;
     }
 
     /**
@@ -61,14 +63,14 @@ public class DataCiteConfigurationFactory {
      * @throws DataCiteMdsConfigValidationFailedException no valid customer configuration
      */
     public DataCiteMdsClientConfig getConfig(String customerId) throws DataCiteMdsConfigValidationFailedException {
-        DataCiteMdsClientSecretConfig value = dataCiteMdsClientConfigsMap.get(customerId);
+        DataCiteMdsClientSecretConfig value = customerConfigurations.get(customerId);
         if (isNull(value)) {
-            throw new DataCiteMdsConfigValidationFailedException(customerId + " not present in config");
+            throw new DataCiteMdsConfigValidationFailedException(customerId + ERROR_NOT_PRESENT_IN_CONFIG);
         }
         return Optional.of(value)
             .filter(DataCiteMdsClientConfig::isFullyConfigured)
             .orElseThrow(
-                () -> new DataCiteMdsConfigValidationFailedException(customerId + " has invalid configuration!"));
+                () -> new DataCiteMdsConfigValidationFailedException(customerId + ERROR_HAS_INVALID_CONFIGURATION));
     }
 
     /**
@@ -79,9 +81,13 @@ public class DataCiteConfigurationFactory {
      * @throws NoCredentialsForCustomerRuntimeException missing credentials configuration in secret config.
      */
     protected DataCiteMdsClientSecretConfig getCredentials(String customerId) {
-        return Optional.ofNullable(dataCiteMdsClientConfigsMap.get(customerId))
+        return Optional.ofNullable(customerConfigurations.get(customerId))
             .filter(DataCiteMdsClientSecretConfig::isFullyConfigured)
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
+    }
+
+    public int getNumbersOfConfiguredCustomers() {
+        return customerConfigurations.size();
     }
 
     private void parseConfig(String secretConfigAsJsonString) {
@@ -96,7 +102,7 @@ public class DataCiteConfigurationFactory {
 
     private void populateCustomerConfigurationMap(DataCiteMdsClientSecretConfig[] dataCiteMdsClientConfigs) {
         for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
-            dataCiteMdsClientConfigsMap.put(
+            customerConfigurations.put(
                 dataCiteMdsClientSecretConfig.getInstitution(), dataCiteMdsClientSecretConfig);
         }
     }

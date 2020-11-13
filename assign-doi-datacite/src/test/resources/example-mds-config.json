@@ -1,0 +1,22 @@
+[
+  {
+    "institution": "https://example.net/customer/id/1234",
+    "institutionPrefix": "10.5072",
+    "dataCiteMdsClientUrl": "https://mds.test.datacite.org",
+    "dataCiteMdsClientUsername": "user1.repository",
+    "dataCiteMdsClientPassword": "randompasswd1"
+  },
+  {
+    "institution": "https://example.net/customer/id/42",
+    "institutionPrefix": "10.16903",
+    "dataCiteMdsClientUrl": "https://mds.test.datacite.org",
+    "dataCiteMdsClientUsername": "customer2.nva",
+    "dataCiteMdsClientPassword": "randompasswd2"
+  },
+  {
+    "institution": "https://example.net/customer/id/missing-configuration",
+    "dataCiteMdsClientUrl": "https://mds.test.datacite.org",
+    "dataCiteMdsClientUsername": "customer3.nva",
+    "dataCiteMdsClientPassword": "randompasswd3"
+  }
+]
