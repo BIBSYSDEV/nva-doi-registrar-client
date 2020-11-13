@@ -58,18 +58,13 @@ class DataCiteConfigurationFactoryTest {
     void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
         throws DataCiteMdsConfigValidationFailedException {
         sut = createDataCiteConfigurationFactoryFromInputStream();
+
         assertThat(sut.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
         var customerConfig1 = sut.getConfig(KNOWN_CUSTOMER_ID);
         assertThat(customerConfig1.getInstitution(), is(equalTo(KNOWN_CUSTOMER_ID)));
         var customerConfig2 = sut.getCredentials(KNOWN_CUSTOMER2_ID);
         assertThat(customerConfig2.getInstitution(), is(equalTo(KNOWN_CUSTOMER2_ID)));
         assertThat(customerConfig2.getDataCiteMdsClientPassword(), is(equalTo(KNOWN_CUSTOMER2_PASSWORD)));
-    }
-
-
-    private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromInputStream() {
-        return new DataCiteConfigurationFactory(IoUtils.inputStreamFromResources(
-            Path.of("example-mds-config.json")));
     }
 
     @Test
@@ -110,7 +105,6 @@ class DataCiteConfigurationFactoryTest {
             () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(ERROR_NOT_PRESENT_IN_CONFIG));
-
     }
 
     @Test
@@ -134,6 +128,11 @@ class DataCiteConfigurationFactoryTest {
         prepareBadCredentialsConfig();
         assertThrows(IllegalStateException.class,
             () -> new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
+    }
+
+    private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromInputStream() {
+        return new DataCiteConfigurationFactory(IoUtils.inputStreamFromResources(
+            Path.of("example-mds-config.json")));
     }
 
     private void setupSystemUnderTest() {
