@@ -1,22 +1,22 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi.datacite.models;
 
+import static org.apache.logging.log4j.util.Strings.isNotBlank;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
-public class DataCiteMdsClientConfig {
+/**
+ * DAO for DataCite MDS Configuration also including DataCite MDS secrets for a associated NVA customer.
+ *
+ * @see DataCiteConfigurationFactory
+ */
+public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
 
-    private String institution;
-    private String institutionPrefix;
-    private String dataCiteMdsClientUrl;
     private String dataCiteMdsClientUsername;
     private String dataCiteMdsClientPassword;
 
-    /**
-     * POJO for DataCite MDS API configuration.
-     *
-     * <p>No-arg constructor for that can be used together with setters.
-     */
     @JacocoGenerated
-    public DataCiteMdsClientConfig() {
+    public DataCiteMdsClientSecretConfig() {
+        super();
     }
 
     /**
@@ -28,29 +28,11 @@ public class DataCiteMdsClientConfig {
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */
-    public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl,
-                                   String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
-        this.institution = institution;
-        this.institutionPrefix = institutionPrefix;
-        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
+    public DataCiteMdsClientSecretConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl,
+                                         String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
+        super(institution, institutionPrefix, dataCiteMdsClientUrl);
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
-    }
-
-    public String getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(String institution) {
-        this.institution = institution;
-    }
-
-    public String getInstitutionPrefix() {
-        return institutionPrefix;
-    }
-
-    public void setInstitutionPrefix(String institutionPrefix) {
-        this.institutionPrefix = institutionPrefix;
     }
 
     public String getDataCiteMdsClientUrl() {
@@ -75,5 +57,18 @@ public class DataCiteMdsClientConfig {
 
     public void setDataCiteMdsClientPassword(String dataCiteMdsClientPassword) {
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
+    }
+
+    /**
+     * Is configuration fully configured with config secrets with all required values and {@inheritDoc}.
+     *
+     * @return <code>true</code> if fully configured with required config and secret config.
+     */
+    @Override
+    public boolean isFullyConfigured() {
+        // TODO Update with changes from https://github.com/BIBSYSDEV/nva-commons/pull/126
+        return super.isFullyConfigured()
+            && isNotBlank(dataCiteMdsClientUsername)
+            && isNotBlank(dataCiteMdsClientPassword);
     }
 }
