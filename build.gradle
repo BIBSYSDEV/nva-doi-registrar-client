@@ -3,6 +3,7 @@ plugins {
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
+    id 'org.mikeneck.graalvm-native-image' version '0.5.0'
 }
 
 group 'no.unit.nva'
@@ -30,6 +31,7 @@ subprojects {
     apply plugin: 'pmd'
     if (name.equalsIgnoreCase('assign-doi-datacite-example')) {
         apply plugin: 'application'
+        apply plugin: "org.mikeneck.graalvm-native-image"
     }
 
     sourceCompatibility = JavaVersion.VERSION_11

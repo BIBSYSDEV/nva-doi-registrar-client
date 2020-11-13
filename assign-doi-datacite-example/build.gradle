@@ -19,8 +19,35 @@ dependencies {
 
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
     testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: nvaTestUtilsVersion
+
+    compileOnly("com.mageddo.nativeimage:reflection-config-generator:2.3.4")
+    annotationProcessor("com.mageddo.nativeimage:reflection-config-generator:2.3.4")
+
+    compile 'info.picocli:picocli:4.5.2'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.2'
+    compile 'info.picocli:picocli-jansi-graalvm:1.2.0'
+    compile 'org.fusesource.jansi:jansi:1.18'
 }
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
+
+//test.dependsOn(tasks.getByName('nativeImage'))
+
+nativeImage {
+    graalVmHome = '/home/rockj/.sdkman/candidates/java/current' // System.getenv('JAVA_HOME')
+    mainClass = mainClassName
+    executableName = 'datacite'
+    arguments(
+            '--no-fallback',
+//            '--enable-all-security-services',
+//            '--initialize-at-run-time=com.example.runtime',
+            '-H:EnableURLProtocols=http,https',
+            '-H:+AllowIncompleteClasspath',
+            '--report-unsupported-elements-at-runtime'
+    )
+}
+
+// work around https://github.com/mike-neck/graalvm-native-image-plugin/issues/12
+tasks.nativeImage.outputs.upToDateWhen { false }
