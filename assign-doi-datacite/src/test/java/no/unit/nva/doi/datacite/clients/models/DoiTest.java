@@ -29,8 +29,8 @@ class DoiTest {
 
     private Doi createDoi(String randomSuffix) {
         return ImmutableDoi.builder()
-            .prefix(EXAMPLE_PREFIX)
-            .suffix(randomSuffix)
+            .withPrefix(EXAMPLE_PREFIX)
+            .withSuffix(randomSuffix)
             .build();
     }
 
@@ -46,21 +46,21 @@ class DoiTest {
     void builderWithIdentifierSetsPrefixAndSuffixCorrect() {
         String exampleIdentifier = "10.5072/dummy-suffixid";
         Doi doi = ImmutableDoi.builder().identifier(exampleIdentifier).build();
-        assertThat(doi.prefix(), is(equalTo(DEMO_PREFIX)));
-        assertThat(doi.suffix(), is(equalTo(DUMMY_SUFFIXID)));
+        assertThat(doi.getPrefix(), is(equalTo(DEMO_PREFIX)));
+        assertThat(doi.getSuffix(), is(equalTo(DUMMY_SUFFIXID)));
     }
 
     @Test
     void builderOnlyPrefixThrowsException() {
         var actual = assertThrows(IllegalStateException.class,
-            () -> ImmutableDoi.builder().prefix(DEMO_PREFIX).build());
+            () -> ImmutableDoi.builder().withPrefix(DEMO_PREFIX).build());
         assertThat(actual.getMessage(), containsString("required attributes are not set"));
     }
 
     @Test
     void builderOnlySuffixThrowsException() {
         var actual = assertThrows(IllegalStateException.class,
-            () -> ImmutableDoi.builder().suffix(createRandomSuffix()).build());
+            () -> ImmutableDoi.builder().withSuffix(createRandomSuffix()).build());
         assertThat(actual.getMessage(), containsString("required attributes are not set"));
     }
 

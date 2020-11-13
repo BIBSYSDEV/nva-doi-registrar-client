@@ -10,7 +10,7 @@ public class DataciteClientTestBase {
     protected static final String EXAMPLE_DOI_SUFFIX = "1942810412-sadsfgffds";
 
     protected Doi createDoi(String prefix, String suffix) {
-        return Doi.builder().prefix(prefix).suffix(suffix).build();
+        return Doi.builder().withPrefix(prefix).withSuffix(suffix).build();
     }
 
     protected Doi createDoiWithDemoPrefixAndExampleSuffix() {

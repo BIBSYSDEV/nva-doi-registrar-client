@@ -121,8 +121,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         Doi actual = sut.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
         assertThat(actual, is(instanceOf(Doi.class)));
-        assertThat(actual.prefix(), is(equalTo(expectedCreatedServerDoi.prefix())));
-        assertThat(actual.suffix(), is(equalTo(expectedCreatedServerDoi.suffix())));
+        assertThat(actual.getPrefix(), is(equalTo(expectedCreatedServerDoi.getPrefix())));
+        assertThat(actual.getSuffix(), is(equalTo(expectedCreatedServerDoi.getSuffix())));
 
         verifyCreateDoiResponse(actual);
     }
@@ -258,7 +258,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void verifyCreateDoiResponse(Doi actual) {
-        verifyUpdateMetadataResponse(metadataPathPrefix + FORWARD_SLASH + actual.prefix());
+        verifyUpdateMetadataResponse(metadataPathPrefix + FORWARD_SLASH + actual.getPrefix());
     }
 
     private void stubCreateDoiResponse(Doi expectedCreatedServerDoi) {

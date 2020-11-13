@@ -16,9 +16,9 @@ public abstract class Doi {
         return ImmutableDoi.builder();
     }
 
-    public abstract String prefix();
+    public abstract String getPrefix();
 
-    public abstract String suffix();
+    public abstract String getSuffix();
 
     /**
      * Represents the DOI with ${prefix}/${suffix}.
@@ -26,7 +26,7 @@ public abstract class Doi {
      * @return prefix/suffix (DOI identifier)
      */
     public String toIdentifier() {
-        return prefix() + FORWARD_SLASH + suffix();
+        return getPrefix() + FORWARD_SLASH + getSuffix();
     }
 
     /**
@@ -35,6 +35,6 @@ public abstract class Doi {
      * @return DOI as URI with proxy, prefix and suffix.
      */
     public URI toId() {
-        return URI.create(DOI_PROXY + prefix() + FORWARD_SLASH + suffix());
+        return URI.create(DOI_PROXY + getPrefix() + FORWARD_SLASH + getSuffix());
     }
 }

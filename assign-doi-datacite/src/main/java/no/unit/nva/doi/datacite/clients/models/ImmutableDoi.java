@@ -35,8 +35,8 @@ public final class ImmutableDoi extends Doi {
             return (ImmutableDoi) instance;
         }
         return ImmutableDoi.builder()
-            .prefix(instance.prefix())
-            .suffix(instance.suffix())
+            .withPrefix(instance.getPrefix())
+            .withSuffix(instance.getSuffix())
             .build();
     }
 
@@ -44,8 +44,8 @@ public final class ImmutableDoi extends Doi {
      * Creates a builder for {@link ImmutableDoi ImmutableDoi}.
      * <pre>
      * ImmutableDoi.builder()
-     *    .prefix(String) // required {@link Doi#prefix() prefix}
-     *    .suffix(String) // required {@link Doi#suffix() suffix}
+     *    .prefix(String) // required {@link Doi#getPrefix() prefix}
+     *    .suffix(String) // required {@link Doi#getSuffix() suffix}
      *    .build();
      * </pre>
      *
@@ -56,7 +56,7 @@ public final class ImmutableDoi extends Doi {
     }
 
     /**
-     * Copy the current immutable object by setting a value for the {@link Doi#prefix() prefix} attribute. An equals
+     * Copy the current immutable object by setting a value for the {@link Doi#getPrefix() prefix} attribute. An equals
      * check used to prevent copying of the same value by returning {@code this}.
      *
      * @param value A new value for prefix
@@ -71,7 +71,7 @@ public final class ImmutableDoi extends Doi {
     }
 
     /**
-     * Copy the current immutable object by setting a value for the {@link Doi#suffix() suffix} attribute. An equals
+     * Copy the current immutable object by setting a value for the {@link Doi#getSuffix() suffix} attribute. An equals
      * check used to prevent copying of the same value by returning {@code this}.
      *
      * @param value A new value for suffix
@@ -128,7 +128,7 @@ public final class ImmutableDoi extends Doi {
      * @return The value of the {@code prefix} attribute
      */
     @Override
-    public String prefix() {
+    public String getPrefix() {
         return prefix;
     }
 
@@ -138,7 +138,7 @@ public final class ImmutableDoi extends Doi {
      * @return The value of the {@code suffix} attribute
      */
     @Override
-    public String suffix() {
+    public String getSuffix() {
         return suffix;
     }
 
@@ -168,12 +168,12 @@ public final class ImmutableDoi extends Doi {
         }
 
         /**
-         * Initializes the value for the {@link Doi#prefix() prefix} attribute.
+         * Initializes the value for the {@link Doi#getPrefix() prefix} attribute.
          *
          * @param prefix The value for prefix
          * @return {@code this} builder for use in a chained invocation
          */
-        public final Builder prefix(String prefix) {
+        public final Builder withPrefix(String prefix) {
             checkNotIsSet(prefixIsSet(), "prefix");
             this.prefix = Objects.requireNonNull(prefix, "prefix");
             initBits &= ~INIT_BIT_PREFIX;
@@ -181,12 +181,12 @@ public final class ImmutableDoi extends Doi {
         }
 
         /**
-         * Initializes the value for the {@link Doi#suffix() suffix} attribute.
+         * Initializes the value for the {@link Doi#getSuffix() suffix} attribute.
          *
          * @param suffix The value for suffix
          * @return {@code this} builder for use in a chained invocation
          */
-        public final Builder suffix(String suffix) {
+        public final Builder withSuffix(String suffix) {
             checkNotIsSet(suffixIsSet(), "suffix");
             this.suffix = Objects.requireNonNull(suffix, "suffix");
             initBits &= ~INIT_BIT_SUFFIX;
@@ -194,7 +194,7 @@ public final class ImmutableDoi extends Doi {
         }
 
         /**
-         * Initializes the value for the {@link Doi#prefix()} and {@link Doi#suffix()} attributes.
+         * Initializes the value for the {@link Doi#getPrefix()} and {@link Doi#getSuffix()} attributes.
          *
          * @param identifier The value (doi identifier: prefix/suffix) that can be parsed into prefix and suffix.
          * @return {@code this} builder for use in a chained invocation
@@ -205,8 +205,8 @@ public final class ImmutableDoi extends Doi {
             if (indexOfDivider == -1) {
                 throw new IllegalArgumentException("Invalid DOI identifier");
             }
-            prefix(identifier.substring(0, indexOfDivider));
-            suffix(identifier.substring(++indexOfDivider));
+            withPrefix(identifier.substring(0, indexOfDivider));
+            withSuffix(identifier.substring(++indexOfDivider));
             return this;
         }
 
