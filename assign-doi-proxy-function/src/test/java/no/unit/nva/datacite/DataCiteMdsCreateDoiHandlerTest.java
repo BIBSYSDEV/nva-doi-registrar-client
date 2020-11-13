@@ -76,7 +76,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     private Context context;
     private DataCiteMdsConnection dataCiteMdsConnection;
     private SecretCache secretCache;
-    private OutputStream output;
+    private ByteArrayOutputStream output;
     private DataCiteMdsCreateDoiHandler dataCiteMdsCreateDoiHandler;
 
     /**
@@ -113,7 +113,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_CREATEDOIRESPONSE_TYPE);
+        GatewayResponse<CreateDoiResponse> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_CREATED, gatewayResponse.getStatusCode());
         CreateDoiResponse response = objectMapper.readValue(gatewayResponse.getBody(), CreateDoiResponse.class);
         assertEquals(response.getDoi(), MOCK_CREATED_DOI);
@@ -131,7 +131,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_UNKNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_PAYMENT_REQUIRED, gatewayResponse.getStatusCode());
 
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
@@ -149,7 +149,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithNullBodyAndHeaders();
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -169,7 +169,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(null, null, null);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -186,7 +186,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(null, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -204,7 +204,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, null);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -222,7 +222,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, null, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse<Problem> gatewayResponse = objectMapper.readValue(output.toString(), GATEWAY_PROBLEM_TYPE);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -245,7 +245,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -289,7 +289,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -317,7 +317,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -346,7 +346,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
