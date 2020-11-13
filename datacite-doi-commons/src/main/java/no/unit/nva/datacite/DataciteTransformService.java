@@ -21,6 +21,7 @@ public class DataciteTransformService implements TransformService {
 
     private static final Logger logger = LoggerFactory.getLogger(DataciteTransformService.class);
 
+    @Override
     public String getXml(Publication publication) {
         DynamoRecordDto dynamoRecordDto = fromPublication(publication);
         try {

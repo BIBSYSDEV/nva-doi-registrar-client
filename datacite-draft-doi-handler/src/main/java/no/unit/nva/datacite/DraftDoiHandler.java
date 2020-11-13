@@ -7,6 +7,7 @@ import no.unit.nva.datacite.model.DoiUpdateDto;
 import no.unit.nva.events.handlers.EventHandler;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Publication;
+import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,10 @@ public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
 
+    /**
+     * Default constructor for DraftDoiHandler.
+     */
+    @JacocoGenerated
     public  DraftDoiHandler() {
         this(defaultTransformService(), defaultDoiClient());
     }

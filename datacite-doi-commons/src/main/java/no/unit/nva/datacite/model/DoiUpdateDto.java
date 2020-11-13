@@ -9,6 +9,13 @@ public class DoiUpdateDto {
     private final URI publicationId;
     private final Instant modifiedDate;
 
+    /**
+     * Constructor for DoiUpdateDto.
+     *
+     * @param doi   doi
+     * @param publicationId publicationId
+     * @param modifiedDate  modifiedDate
+     */
     public DoiUpdateDto(String doi, URI publicationId, Instant modifiedDate) {
         this.doi = doi;
         this.publicationId = publicationId;
