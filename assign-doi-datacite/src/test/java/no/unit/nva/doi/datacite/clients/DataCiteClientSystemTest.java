@@ -59,7 +59,8 @@ import org.junit.jupiter.api.Test;
 
 class DataCiteClientSystemTest extends DataciteClientTestBase {
 
-    private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
         FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA;
@@ -67,7 +68,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final char COLON = ':';
+    public static final String HTTPS_SCHEME = "https://";
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
@@ -85,8 +87,12 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
+        var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
-            INSTITUTION_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+            INSTITUTION_PREFIX,
+            dataCiteMdsClientUrl,
+            EXAMPLE_MDS_USERNAME,
+            EXAMPLE_MDS_PASSWORD);
     }
 
     @AfterEach

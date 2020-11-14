@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
@@ -30,18 +31,18 @@ class DataCiteConfigurationFactoryTest {
     private static final String INVALID_JSON = "{{";
     private static final String EMPTY_CREDENTIALS_CONFIGURED = "[]";
     private static final String DEMO_PREFIX = "10.5072";
-    private static final String KNOWN_CUSTOMER_ID = "https://example.net/customer/id/1234";
-    private static final String KNOWN_CUSTOMER2_ID = "https://example.net/customer/id/42";
-    private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/1249423";
-    private static final String MISSING_CONFIGURATION_CUSTOMER_ID = "https://example.net/customer/id/missing"
-        + "-configuration";
-    private static final String EXAMPLE_INSTITUTION_PREFIX = DEMO_PREFIX;
-    private static final String EXAMPLE_INSTITUTION = KNOWN_CUSTOMER_ID;
+    private static final URI KNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/1234");
+    private static final URI KNOWN_CUSTOMER2_ID = URI.create("https://example.net/customer/id/42");
+    private static final URI UNKNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/1249423");
+    private static final URI MISSING_CONFIGURATION_CUSTOMER_ID = URI.create("https://example.net/customer/id/missing"
+        + "-configuration");
+    private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
+    private static final URI EXAMPLE_CUSTOMER_ID = KNOWN_CUSTOMER_ID;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
-    private static final String EXAMPLE_ENDPOINT = "https://example.net/datacite/mds/api";
+    private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/datacite/mds/api");
     private static final List<DataCiteMdsClientConfig> FAKE_CLIENT_CONFIGS = List.of(
-        new DataCiteMdsClientSecretConfig(EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_ENDPOINT,
+        new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT,
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
     private static final String KNOWN_CUSTOMER2_PASSWORD = "randompasswd2";
     private SecretCache secretCache;
@@ -61,9 +62,9 @@ class DataCiteConfigurationFactoryTest {
 
         assertThat(sut.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
         var customerConfig1 = sut.getConfig(KNOWN_CUSTOMER_ID);
-        assertThat(customerConfig1.getInstitution(), is(equalTo(KNOWN_CUSTOMER_ID)));
+        assertThat(customerConfig1.getCustomerId(), is(equalTo(KNOWN_CUSTOMER_ID)));
         var customerConfig2 = sut.getCredentials(KNOWN_CUSTOMER2_ID);
-        assertThat(customerConfig2.getInstitution(), is(equalTo(KNOWN_CUSTOMER2_ID)));
+        assertThat(customerConfig2.getCustomerId(), is(equalTo(KNOWN_CUSTOMER2_ID)));
         assertThat(customerConfig2.getDataCiteMdsClientPassword(), is(equalTo(KNOWN_CUSTOMER2_PASSWORD)));
     }
 
@@ -85,7 +86,7 @@ class DataCiteConfigurationFactoryTest {
     void getConfigWithUnknownCustomerThrowsConfigValidationException() {
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
             () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
-        assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID));
+        assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID.toASCIIString()));
         assertThat(actualException.getMessage(), containsString(ERROR_NOT_PRESENT_IN_CONFIG));
     }
 
@@ -94,7 +95,7 @@ class DataCiteConfigurationFactoryTest {
         sut = createDataCiteConfigurationFactoryFromInputStream();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
             () -> sut.getConfig(MISSING_CONFIGURATION_CUSTOMER_ID));
-        assertThat(actualException.getMessage(), containsString(MISSING_CONFIGURATION_CUSTOMER_ID));
+        assertThat(actualException.getMessage(), containsString(MISSING_CONFIGURATION_CUSTOMER_ID.toASCIIString()));
         assertThat(actualException.getMessage(), containsString(ERROR_HAS_INVALID_CONFIGURATION));
     }
 
@@ -103,7 +104,7 @@ class DataCiteConfigurationFactoryTest {
         configureWithNoCredentials();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
             () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
-        assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID));
+        assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID.toASCIIString()));
         assertThat(actualException.getMessage(), containsString(ERROR_NOT_PRESENT_IN_CONFIG));
     }
 

@@ -4,23 +4,25 @@ import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullO
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import java.net.URI;
 import org.junit.jupiter.api.Test;
 
 public class DataCiteMdsClientSecretConfigTest {
 
-    public static final String INSTITUTION = "institution";
-    public static final String INSTITUTION_PREFIX = "institutionPrefix";
-    public static final String DATA_CITE_MDS_CLIENT_URL = "dataCiteMdsClientUrl";
+    public static final URI CUSTOMER_ID = URI.create("https://example.net/customer/id");
+    public static final URI DATA_CITE_MDS_CLIENT_URL = URI.create("https://example.net/mds/client/url");
     public static final String DATACITE_MDS_CLIENT_USERNAME = "dataCiteMdsClientUsername";
     public static final String DATACITE_MDS_CLIENT_PASSWORD = "dataCiteMdsClientPassword";
+    private static final String DEMO_PREFIX = "10.5072";
+    public static final String CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
     private static final String EMPTY_STRING = "";
     private static final String BLANK_STRING = "    ";
 
     @Test
     void constructorPopulatesAllFields() {
         var secretConfig = createSecretConfigFullyPopulated();
-        assertThat(secretConfig.getInstitution(), is(equalTo(INSTITUTION)));
-        assertThat(secretConfig.getInstitutionPrefix(), is(equalTo(INSTITUTION_PREFIX)));
+        assertThat(secretConfig.getCustomerId(), is(equalTo(CUSTOMER_ID)));
+        assertThat(secretConfig.getCustomerDoiPrefix(), is(equalTo(CUSTOMER_DOI_PREFIX)));
         assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
@@ -30,13 +32,13 @@ public class DataCiteMdsClientSecretConfigTest {
     @Test
     void settersPopulatesAllFields() {
         DataCiteMdsClientSecretConfig secretConfig = new DataCiteMdsClientSecretConfig();
-        secretConfig.setInstitution(INSTITUTION);
-        secretConfig.setInstitutionPrefix(INSTITUTION_PREFIX);
+        secretConfig.setCustomerId(CUSTOMER_ID);
+        secretConfig.setCustomerDoiPrefix(CUSTOMER_DOI_PREFIX);
         secretConfig.setDataCiteMdsClientUrl(DATA_CITE_MDS_CLIENT_URL);
         secretConfig.setDataCiteMdsClientUsername(DATACITE_MDS_CLIENT_USERNAME);
         secretConfig.setDataCiteMdsClientPassword(DATACITE_MDS_CLIENT_PASSWORD);
-        assertThat(secretConfig.getInstitution(), is(equalTo(INSTITUTION)));
-        assertThat(secretConfig.getInstitutionPrefix(), is(equalTo(INSTITUTION_PREFIX)));
+        assertThat(secretConfig.getCustomerId(), is(equalTo(CUSTOMER_ID)));
+        assertThat(secretConfig.getCustomerDoiPrefix(), is(equalTo(CUSTOMER_DOI_PREFIX)));
         assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
@@ -68,8 +70,8 @@ public class DataCiteMdsClientSecretConfigTest {
     }
 
     private DataCiteMdsClientSecretConfig createSecretConfigFullyPopulated() {
-        return new DataCiteMdsClientSecretConfig(INSTITUTION,
-            INSTITUTION_PREFIX, DATA_CITE_MDS_CLIENT_URL,
+        return new DataCiteMdsClientSecretConfig(CUSTOMER_ID,
+            CUSTOMER_DOI_PREFIX, DATA_CITE_MDS_CLIENT_URL,
             DATACITE_MDS_CLIENT_USERNAME, DATACITE_MDS_CLIENT_PASSWORD);
     }
 }

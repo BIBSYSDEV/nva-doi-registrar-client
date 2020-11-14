@@ -5,31 +5,32 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import java.net.URI;
 import org.junit.jupiter.api.Test;
 
 class DataCiteMdsClientConfigTest {
 
-    private static final String EXAMPLE_INSTITUTION = "https://example.net/customer/id/123";
+    private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/123");
     private static final String DEMO_PREFIX = "10.5072";
-    private static final String EXAMPLE_INSTITUTION_PREFIX = DEMO_PREFIX;
-    private static final String EXAMPLE_MDS_CLIENT_URL = "https://example.net/datacite/mds/api";
+    private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
+    private static final URI EXAMPLE_MDS_CLIENT_URL = URI.create("https://example.net/datacite/mds/api");
 
     @Test
     void constructorPopulatesAllFields() {
         var config = createFullyConfigWithoutSecretConfig();
-        assertThat(config.getInstitution(), is(equalTo(EXAMPLE_INSTITUTION)));
-        assertThat(config.getInstitutionPrefix(), is(equalTo(EXAMPLE_INSTITUTION_PREFIX)));
+        assertThat(config.getCustomerId(), is(equalTo(EXAMPLE_CUSTOMER_ID)));
+        assertThat(config.getCustomerDoiPrefix(), is(equalTo(EXAMPLE_CUSTOMER_DOI_PREFIX)));
     }
 
     @Test
     void settersPopulatesAllFields() {
         var config = new DataCiteMdsClientConfig();
-        assertThat(config.getInstitution(), nullValue());
-        assertThat(config.getInstitutionPrefix(), nullValue());
-        config.setInstitution(EXAMPLE_INSTITUTION);
-        config.setInstitutionPrefix(EXAMPLE_INSTITUTION_PREFIX);
-        assertThat(config.getInstitution(), is(equalTo(EXAMPLE_INSTITUTION)));
-        assertThat(config.getInstitutionPrefix(), is(equalTo(EXAMPLE_INSTITUTION_PREFIX)));
+        assertThat(config.getCustomerId(), nullValue());
+        assertThat(config.getCustomerDoiPrefix(), nullValue());
+        config.setCustomerId(EXAMPLE_CUSTOMER_ID);
+        config.setCustomerDoiPrefix(EXAMPLE_CUSTOMER_DOI_PREFIX);
+        assertThat(config.getCustomerId(), is(equalTo(EXAMPLE_CUSTOMER_ID)));
+        assertThat(config.getCustomerDoiPrefix(), is(equalTo(EXAMPLE_CUSTOMER_DOI_PREFIX)));
         assertThat(config, doesNotHaveNullOrEmptyFields());
     }
 
@@ -42,14 +43,14 @@ class DataCiteMdsClientConfigTest {
     @Test
     void isFullyConfiguredWithMissingInstitutionThenReturnsFalse() {
         var config = createFullyConfigWithoutSecretConfig();
-        config.setInstitution(null);
+        config.setCustomerId(null);
         assertThat(config.isFullyConfigured(), is(equalTo(false)));
     }
 
     @Test
     void isFullyConfiguredWithMissingInstitutionPrefixThenReturnsFalse() {
         var config = createFullyConfigWithoutSecretConfig();
-        config.setInstitutionPrefix(null);
+        config.setCustomerDoiPrefix(null);
         assertThat(config.isFullyConfigured(), is(equalTo(false)));
     }
 
@@ -60,7 +61,7 @@ class DataCiteMdsClientConfigTest {
     }
 
     private DataCiteMdsClientConfig createFullyConfigWithoutSecretConfig() {
-        return new DataCiteMdsClientConfig(EXAMPLE_INSTITUTION,
-            EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_MDS_CLIENT_URL);
+        return new DataCiteMdsClientConfig(EXAMPLE_CUSTOMER_ID,
+            EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_CLIENT_URL);
     }
 }

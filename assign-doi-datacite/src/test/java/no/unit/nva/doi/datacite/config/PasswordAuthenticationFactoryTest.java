@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import java.net.URI;
 import java.util.UUID;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
@@ -17,15 +18,17 @@ class PasswordAuthenticationFactoryTest {
 
     public static final String INTERNAL_CONFIGURATION_SETUP_ERROR = "Failed configuring up valid Datacite MDS config";
     private static final String DEMO_PREFIX = "10.5072";
-    private static final String KNOWN_CUSTOMER_ID = "https://example.net/customer/id/1234";
-    private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/92392323-is-unknown-customer";
-    private static final String EXAMPLE_INSTITUTION_PREFIX = DEMO_PREFIX;
-    private static final String EXAMPLE_INSTITUTION = KNOWN_CUSTOMER_ID;
+    private static final URI KNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/1234");
+    private static final URI UNKNOWN_CUSTOMER_ID = URI.create(
+        "https://example.net/customer/id/92392323-is-unknown-customer");
+    private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
+    private static final URI EXAMPLE_CUSTOMER_ID = KNOWN_CUSTOMER_ID;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
-    private static final String EXAMPLE_ENDPOINT = "https://example.net/datacite/mds/api";
+    private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/datacite/mds/api");
     private static final DataCiteMdsClientSecretConfig MOCK_DATACITE_CONFIG = new DataCiteMdsClientSecretConfig(
-        EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_ENDPOINT, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT, EXAMPLE_MDS_USERNAME,
+        EXAMPLE_MDS_PASSWORD);
     private PasswordAuthenticationFactory sut;
 
     @BeforeEach
