@@ -2,6 +2,12 @@ package no.unit.nva.datacite;
 
 import nva.commons.utils.JacocoGenerated;
 
+/**
+ * Deprecated.
+ *
+ * See {@code no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory} in assign-doi-datacite module.
+ */
+@Deprecated(forRemoval = true)
 public class DataCiteMdsClientConfig {
 
     private String institution;
