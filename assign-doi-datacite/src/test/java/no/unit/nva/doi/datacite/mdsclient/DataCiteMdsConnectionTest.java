@@ -1,5 +1,9 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
+import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.MISSING_DATACITE_XML_ARGUMENT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,12 +100,13 @@ public class DataCiteMdsConnectionTest {
     @Test
     public void postDoiWithoutBodyThrowsNullPointerException()
         throws IOException, InterruptedException {
-        String body = IoUtils.stringFromResources(Path.of(DATACITE_MDS_OK_RESPONSE));
         stubHttpClientWithHttpResponse(null);
 
         DataCiteMdsConnection mockDataCiteMdsConnection = createDataCiteMdsConnection();
 
-        assertThrows(NullPointerException.class, () -> mockDataCiteMdsConnection.postMetadata(MOCK_DOI, NO_METADATA));
+        NullPointerException actualException = assertThrows(NullPointerException.class,
+            () -> mockDataCiteMdsConnection.postMetadata(MOCK_DOI, NO_METADATA));
+        assertThat(actualException.getMessage(), is(equalTo(MISSING_DATACITE_XML_ARGUMENT)));
     }
 
     @Test
