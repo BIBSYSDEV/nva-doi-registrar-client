@@ -208,8 +208,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         verify(putRequestedFor(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withHeader(HttpHeaders.CONTENT_TYPE,
-                WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
-
+                WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8))
             .withRequestBody(WireMock.equalTo(
                 String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
             .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
@@ -219,6 +218,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubFor(put(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
+                .withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
                 .withStatus(HttpStatus.SC_CREATED)
                 .withBody(HTTP_RESPONSE_OK)));
     }
