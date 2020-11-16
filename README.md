@@ -35,13 +35,13 @@ Value of secret should be stored in JSON format like this:
 
 ```
 [
-    {
-    "institution": "INSTITUTION-ID",
-    "institutionPrefix": "INSTITUTION-DOI-PREFIX",
-    "dataCiteMdsClientUrl": "https://mds(.test).datacite.org",
-    "dataCiteMdsClientUsername": "INSTITUTION-DOI-PROVIDER-USERNAME",
-    "dataCiteMdsClientPassword": "INSTITUTION-DOI-PROVIDER-PASSWORD"
-    },
-    ...
+  {
+    "customerId": "https://example.net/nva/customer/id/1234",
+    "customerDoiPrefix": "CUSTOMER-NVA-REPOSITORY-WITH-NVA-PREFIX",
+    "dataCiteMdsClientUrl": "https://mds.test.datacite.org",
+    "dataCiteMdsClientUsername": "CUSTOMER-NVA-REPOSITORY_USERNAME",
+    "dataCiteMdsClientPassword": "CUSTOMER-NVA-PASSWORD"
+  },
+  ...
 ]
 ```

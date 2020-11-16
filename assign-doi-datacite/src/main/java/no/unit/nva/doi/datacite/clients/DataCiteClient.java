@@ -74,8 +74,8 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public Doi createDoi(String customerId, String metadataDataCiteXml) throws ClientException {
-        var prefix = configFactory.getConfig(customerId).getInstitutionPrefix();
+    public Doi createDoi(URI customerId, String metadataDataCiteXml) throws ClientException {
+        var prefix = configFactory.getConfig(customerId).getCustomerDoiPrefix();
         try {
             var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .postMetadata(prefix, metadataDataCiteXml);
@@ -95,7 +95,7 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public void updateMetadata(String customerId, Doi doi, String metadataDataCiteXml) throws ClientException {
+    public void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml) throws ClientException {
         try {
             var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataCiteXml);
@@ -112,7 +112,7 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public void setLandingPage(String customerId, Doi doi, URI landingPage) throws ClientException {
+    public void setLandingPage(URI customerId, Doi doi, URI landingPage) throws ClientException {
         try {
             var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
@@ -129,7 +129,7 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public void deleteMetadata(String customerId, Doi doi) throws ClientException {
+    public void deleteMetadata(URI customerId, Doi doi) throws ClientException {
         try {
             var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .deleteMetadata(doi.toIdentifier());
@@ -146,7 +146,7 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public void deleteDraftDoi(String customerId, Doi doi) throws ClientException {
+    public void deleteDraftDoi(URI customerId, Doi doi) throws ClientException {
         try {
             var response = prepareAuthenticatedDataCiteConnection(customerId)
                 .deleteDoi(doi.toIdentifier());
@@ -159,7 +159,7 @@ public class DataCiteClient implements DoiClient {
         }
     }
 
-    private DataCiteMdsConnection prepareAuthenticatedDataCiteConnection(String customerId) {
+    private DataCiteMdsConnection prepareAuthenticatedDataCiteConnection(URI customerId) {
         return mdsConnectionFactory.getAuthenticatedConnection(customerId);
     }
 

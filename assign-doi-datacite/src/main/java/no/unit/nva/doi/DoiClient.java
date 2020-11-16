@@ -29,7 +29,7 @@ public interface DoiClient {
      * @return {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()}) from provider
      * @throws ClientException Error while communicating with Registry Agency
      */
-    Doi createDoi(String customerId, String metadataDataCiteXml) throws ClientException;
+    Doi createDoi(URI customerId, String metadataDataCiteXml) throws ClientException;
 
     /**
      * Update metadata for a DOI.
@@ -42,7 +42,7 @@ public interface DoiClient {
      * @see <a href="https://support.datacite.org/docs/connecting-research-outputs">Connect Reseearch Outputs
      *     (SCHOLIX)</a>
      */
-    void updateMetadata(String customerId, Doi doi, String metadataDataCiteXml) throws ClientException;
+    void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml) throws ClientException;
 
     /**
      * Set landing page for a Doi. This will also turns the DOI into findable state!
@@ -55,7 +55,7 @@ public interface DoiClient {
      * @throws ClientException Error while communicating with Registry Agency
      * @see <a href="https://support.datacite.org/docs/datacite-doi-display-guidelines">DOI display guidelines.</a>
      */
-    void setLandingPage(String customerId, Doi doi, URI url) throws ClientException;
+    void setLandingPage(URI customerId, Doi doi, URI url) throws ClientException;
 
     /**
      * Delete metadata from DOI.
@@ -70,7 +70,7 @@ public interface DoiClient {
      * @param doi        {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      */
-    void deleteMetadata(String customerId, Doi doi) throws ClientException;
+    void deleteMetadata(URI customerId, Doi doi) throws ClientException;
 
     /**
      * Delete a DOI which is in draft.
@@ -81,5 +81,5 @@ public interface DoiClient {
      * @param doi        {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      */
-    void deleteDraftDoi(String customerId, Doi doi) throws ClientException;
+    void deleteDraftDoi(URI customerId, Doi doi) throws ClientException;
 }

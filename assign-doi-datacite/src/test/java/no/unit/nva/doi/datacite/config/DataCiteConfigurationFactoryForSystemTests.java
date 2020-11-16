@@ -1,5 +1,6 @@
 package no.unit.nva.doi.datacite.config;
 
+import java.net.URI;
 import java.util.Map;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 
@@ -10,7 +11,7 @@ import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
  */
 public class DataCiteConfigurationFactoryForSystemTests extends DataCiteConfigurationFactory {
 
-    public DataCiteConfigurationFactoryForSystemTests(Map<String, DataCiteMdsClientSecretConfig> secretConfigs) {
+    public DataCiteConfigurationFactoryForSystemTests(Map<URI, DataCiteMdsClientSecretConfig> secretConfigs) {
         super(secretConfigs);
     }
 }

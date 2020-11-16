@@ -51,7 +51,6 @@ import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.utils.IoUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +64,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
             + "wiremock server and local signed SSL certificate for now.";
-    private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
+    private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
         FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_METADATA;
@@ -91,8 +90,12 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
+        var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
-            INSTITUTION_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+            INSTITUTION_PREFIX,
+            dataCiteMdsClientUrl,
+            EXAMPLE_MDS_USERNAME,
+            EXAMPLE_MDS_PASSWORD);
     }
 
     @AfterEach

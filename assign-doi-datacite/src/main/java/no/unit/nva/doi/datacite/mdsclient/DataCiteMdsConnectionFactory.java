@@ -3,6 +3,7 @@ package no.unit.nva.doi.datacite.mdsclient;
 import java.net.Authenticator;
 import java.net.InetAddress;
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Builder;
@@ -69,7 +70,7 @@ public class DataCiteMdsConnectionFactory {
      * @return DataCiteMdsConnection private connection for provided customerId
      * @throws NoCredentialsForCustomerRuntimeException if customer has no credentials configured.
      */
-    public DataCiteMdsConnection getAuthenticatedConnection(String customerId) {
+    public DataCiteMdsConnection getAuthenticatedConnection(URI customerId) {
         Authenticator nvaCustomerAuthenticator = createNvaCustomerAuthenticator(customerId);
         HttpClient httpClient = createHttpClientWithAuthenticator(nvaCustomerAuthenticator);
         return new DataCiteMdsConnection(httpClient, mdsHostname, mdsPort);
@@ -83,7 +84,7 @@ public class DataCiteMdsConnectionFactory {
             .build();
     }
 
-    private Authenticator createNvaCustomerAuthenticator(String customerId) {
+    private Authenticator createNvaCustomerAuthenticator(URI customerId) {
         return new Authenticator() {
 
             @Override

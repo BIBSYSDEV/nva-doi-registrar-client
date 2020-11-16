@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.models;
 
 import static java.util.Objects.nonNull;
+import java.net.URI;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
@@ -12,9 +13,9 @@ import nva.commons.utils.JacocoGenerated;
  */
 public class DataCiteMdsClientConfig {
 
-    protected String institution;
-    protected String institutionPrefix;
-    protected String dataCiteMdsClientUrl;
+    protected URI customerId;
+    protected String customerDoiPrefix;
+    protected URI dataCiteMdsClientUrl;
 
     @JacocoGenerated
     public DataCiteMdsClientConfig() {
@@ -23,30 +24,30 @@ public class DataCiteMdsClientConfig {
     /**
      * Construct a {@link DataCiteMdsClientConfig}.
      *
-     * @param institution          customerId
-     * @param institutionPrefix    customer's prefix for the NVA repository in the Registry Agency
+     * @param customerId          customerId
+     * @param customerDoiPrefix    customer's prefix for the NVA repository in the Registry Agency
      * @param dataCiteMdsClientUrl Hostname to MDS API environment
      */
-    public DataCiteMdsClientConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl) {
-        this.institution = institution;
-        this.institutionPrefix = institutionPrefix;
+    public DataCiteMdsClientConfig(URI customerId, String customerDoiPrefix, URI dataCiteMdsClientUrl) {
+        this.customerId = customerId;
+        this.customerDoiPrefix = customerDoiPrefix;
         this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
     }
 
-    public String getInstitution() {
-        return institution;
+    public URI getCustomerId() {
+        return customerId;
     }
 
-    public void setInstitution(String institution) {
-        this.institution = institution;
+    public void setCustomerId(URI customerId) {
+        this.customerId = customerId;
     }
 
-    public String getInstitutionPrefix() {
-        return institutionPrefix;
+    public String getCustomerDoiPrefix() {
+        return customerDoiPrefix;
     }
 
-    public void setInstitutionPrefix(String institutionPrefix) {
-        this.institutionPrefix = institutionPrefix;
+    public void setCustomerDoiPrefix(String customerDoiPrefix) {
+        this.customerDoiPrefix = customerDoiPrefix;
     }
 
     /**
@@ -55,6 +56,6 @@ public class DataCiteMdsClientConfig {
      * @return <code>true</code> if config is fully configured.
      */
     public boolean isFullyConfigured() {
-        return nonNull(institution) && nonNull(institutionPrefix) && nonNull(dataCiteMdsClientUrl);
+        return nonNull(customerId) && nonNull(customerDoiPrefix) && nonNull(dataCiteMdsClientUrl);
     }
 }

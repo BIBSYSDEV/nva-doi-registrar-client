@@ -15,8 +15,8 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
-import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
@@ -26,18 +26,18 @@ import org.junit.jupiter.api.Test;
 class DataCiteMdsConnectionFactoryTest {
 
     private static final String DEMO_PREFIX = "10.5072";
-    private static final String KNOWN_CUSTOMER_ID = "https://example.net/customer/id/1234";
+    private static final URI KNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/1234");
 
-    private static final String EXAMPLE_INSTITUTION_PREFIX = DEMO_PREFIX;
-    private static final String EXAMPLE_INSTITUTION = KNOWN_CUSTOMER_ID;
+    private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
+    private static final URI EXAMPLE_CUSTOMER_ID = KNOWN_CUSTOMER_ID;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
-    private static final String EXAMPLE_HOST = "example.net";
-    private static final int EXAMPLE_PORT = 8888;
+    private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/api/mds/endpoint");
 
     private static final DataCiteMdsClientConfig MOCK_DATACITE_CONFIG = new DataCiteMdsClientSecretConfig(
-        EXAMPLE_INSTITUTION, EXAMPLE_INSTITUTION_PREFIX, EXAMPLE_HOST, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
-    private static final String UNKNOWN_CUSTOMER_ID = "https://example.net/customer/id/41515-unknown-customer";
+        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT, EXAMPLE_MDS_USERNAME,
+        EXAMPLE_MDS_PASSWORD);
+    private static final URI UNKNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/41515-unknown-customer");
 
     private DataCiteConfigurationFactory configurationFactory;
     private DataCiteMdsConnectionFactory sut;
@@ -47,8 +47,10 @@ class DataCiteMdsConnectionFactoryTest {
 
         configurationFactory = mock(DataCiteConfigurationFactory.class);
         when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
-        sut = new DataCiteMdsConnectionFactory(
-            new PasswordAuthenticationFactory(configurationFactory), EXAMPLE_HOST, EXAMPLE_PORT);
+        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
+        sut = new DataCiteMdsConnectionFactory(authenticationFactory,
+            EXAMPLE_MDS_API_ENDPOINT.getHost(),
+            EXAMPLE_MDS_API_ENDPOINT.getPort());
     }
 
     @Test
@@ -78,9 +80,12 @@ class DataCiteMdsConnectionFactoryTest {
     private PasswordAuthentication prompAuthenticatorForCredentials(Authenticator authenticator)
         throws UnknownHostException, MalformedURLException {
         return authenticator
-            .requestPasswordAuthenticationInstance(EXAMPLE_HOST, InetAddress.getLocalHost(), EXAMPLE_PORT, null,
+            .requestPasswordAuthenticationInstance(EXAMPLE_MDS_API_ENDPOINT.getHost(), InetAddress.getLocalHost(),
+                EXAMPLE_MDS_API_ENDPOINT.getPort(),
+                null,
                 "Please authenticate", "authenticationScheme",
-                URI.create(String.format("https://%s:%s/dummypath", EXAMPLE_HOST, EXAMPLE_PORT)).toURL(),
+                URI.create(String.format("https://%s:%s/dummypath", EXAMPLE_MDS_API_ENDPOINT.getHost(),
+                    EXAMPLE_MDS_API_ENDPOINT.getPort())).toURL(),
                 RequestorType.SERVER);
     }
 }

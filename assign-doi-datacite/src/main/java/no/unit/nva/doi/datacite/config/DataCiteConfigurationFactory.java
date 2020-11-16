@@ -5,6 +5,7 @@ import static nva.commons.utils.JsonUtils.objectMapper;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,8 +17,8 @@ import nva.commons.utils.IoUtils;
 /**
  * DataCite configuration factory to obtain DataCite related configuration.
  *
- * <p>{@link #getConfig(String)} for obtaining configuration for a specific customer, and
- * {@link #getCredentials(String)} for obtaining secret configuration, but this is restricted for implementations scoped
+ * <p>{@link #getConfig(URI)} for obtaining configuration for a specific customer, and
+ * {@link #getCredentials(URI)} for obtaining secret configuration, but this is restricted for implementations scoped
  * under package {@link no.unit.nva.doi.datacite.config}.
  */
 public class DataCiteConfigurationFactory {
@@ -26,7 +27,7 @@ public class DataCiteConfigurationFactory {
     public static final String ERROR_NOT_PRESENT_IN_CONFIG = " not present in config";
     public static final String ERROR_HAS_INVALID_CONFIGURATION = " has invalid configuration!";
 
-    private Map<String, DataCiteMdsClientSecretConfig> customerConfigurations = new ConcurrentHashMap<>();
+    private Map<URI, DataCiteMdsClientSecretConfig> customerConfigurations = new ConcurrentHashMap<>();
 
     /**
      * Construct a new DataCite configuration factory.
@@ -51,7 +52,7 @@ public class DataCiteConfigurationFactory {
      *
      * @param testSecretConfigs Pre populated DataCite configuration.
      */
-    protected DataCiteConfigurationFactory(Map<String, DataCiteMdsClientSecretConfig> testSecretConfigs) {
+    protected DataCiteConfigurationFactory(Map<URI, DataCiteMdsClientSecretConfig> testSecretConfigs) {
         this.customerConfigurations = testSecretConfigs;
     }
 
@@ -62,7 +63,7 @@ public class DataCiteConfigurationFactory {
      * @return DataCiteMdsClientConfig
      * @throws DataCiteMdsConfigValidationFailedException no valid customer configuration
      */
-    public DataCiteMdsClientConfig getConfig(String customerId) throws DataCiteMdsConfigValidationFailedException {
+    public DataCiteMdsClientConfig getConfig(URI customerId) throws DataCiteMdsConfigValidationFailedException {
         DataCiteMdsClientSecretConfig value = customerConfigurations.get(customerId);
         if (isNull(value)) {
             throw new DataCiteMdsConfigValidationFailedException(customerId + ERROR_NOT_PRESENT_IN_CONFIG);
@@ -80,7 +81,7 @@ public class DataCiteConfigurationFactory {
      * @return Configuration wrapped in optional if present.
      * @throws NoCredentialsForCustomerRuntimeException missing credentials configuration in secret config.
      */
-    protected DataCiteMdsClientSecretConfig getCredentials(String customerId) {
+    protected DataCiteMdsClientSecretConfig getCredentials(URI customerId) {
         return Optional.ofNullable(customerConfigurations.get(customerId))
             .filter(DataCiteMdsClientSecretConfig::isFullyConfigured)
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
@@ -103,7 +104,7 @@ public class DataCiteConfigurationFactory {
     private void populateCustomerConfigurationMap(DataCiteMdsClientSecretConfig[] dataCiteMdsClientConfigs) {
         for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
             customerConfigurations.put(
-                dataCiteMdsClientSecretConfig.getInstitution(), dataCiteMdsClientSecretConfig);
+                dataCiteMdsClientSecretConfig.getCustomerId(), dataCiteMdsClientSecretConfig);
         }
     }
 }

@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.models;
 
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
+import java.net.URI;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
@@ -22,24 +23,24 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
     /**
      * POJO for DataCite MDS API configuration.
      *
-     * @param institution               Institution id
-     * @param institutionPrefix         Provider assigned prefix
-     * @param dataCiteMdsClientUrl      DataCite MDS API host
+     * @param customerId                NVA customerId
+     * @param customerDoiPrefix         NVA customer assigned DOI prefix
+     * @param dataCiteMdsClientUrl      DataCite MDS API URL
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */
-    public DataCiteMdsClientSecretConfig(String institution, String institutionPrefix, String dataCiteMdsClientUrl,
+    public DataCiteMdsClientSecretConfig(URI customerId, String customerDoiPrefix, URI dataCiteMdsClientUrl,
                                          String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
-        super(institution, institutionPrefix, dataCiteMdsClientUrl);
+        super(customerId, customerDoiPrefix, dataCiteMdsClientUrl);
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
     }
 
-    public String getDataCiteMdsClientUrl() {
+    public URI getDataCiteMdsClientUrl() {
         return dataCiteMdsClientUrl;
     }
 
-    public void setDataCiteMdsClientUrl(String dataCiteMdsClientUrl) {
+    public void setDataCiteMdsClientUrl(URI dataCiteMdsClientUrl) {
         this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
     }
 
