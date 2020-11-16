@@ -57,7 +57,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     @Test
-    public void testPostMetadata() throws IOException, URISyntaxException, InterruptedException {
+    public void postMetadata() throws IOException, URISyntaxException, InterruptedException {
         InputStream stream = DataCiteMdsConnectionTest.class.getResourceAsStream(DATACITE_MDS_POST_METADATA_RESPONSE);
         String body = IoUtils.streamToString(stream);
         when(httpResponse.body()).thenReturn(body);

@@ -139,11 +139,11 @@ Resources:
             Path: /
             Method: POST
 
-  DataciteDraftDoiHandlerFunction:
+  FindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.DraftDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Environment:
@@ -170,8 +170,35 @@ Resources:
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
-            Type: EventBridge
+            Type: SQS
             Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !Ref DlqArn
+
+  DataciteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.DraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: "Lambda Function Invocation Result - Success"
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: SQS
+            Destination: !Ref DlqArn
           OnFailure:
             Type: SQS
             Destination: !Ref DlqArn
