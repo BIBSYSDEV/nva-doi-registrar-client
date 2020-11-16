@@ -81,7 +81,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private int mdsPort;
     private DataCiteConfigurationFactory configurationFactory;
     private PasswordAuthenticationFactory authenticationFactory;
-    private DataCiteClient sut;
+    private DataCiteClient doiClient;
     private DataCiteMdsConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
 
@@ -119,7 +119,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             authenticationFactory,
             mdsHost,
             mdsPort);
-        sut = new DataCiteClient(configurationFactory, mdsConnectionFactory);
+        doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
     @Test
@@ -127,7 +127,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
         stubCreateDoiResponse(expectedCreatedServerDoi);
 
-        Doi actual = sut.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
+        Doi actual = doiClient.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
         assertThat(actual, is(instanceOf(Doi.class)));
         assertThat(actual.getPrefix(), is(equalTo(expectedCreatedServerDoi.getPrefix())));
         assertThat(actual.getSuffix(), is(equalTo(expectedCreatedServerDoi.getSuffix())));
@@ -141,7 +141,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForUpdatingMetadata = createMetadataDoiIdentifierPath(doi);
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
 
-        sut.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
+        doiClient.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
 
         verifyUpdateMetadataResponse(expectedPathForUpdatingMetadata);
     }
@@ -152,7 +152,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         stubSetLandingPageResponse(doi);
 
-        sut.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
+        doiClient.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
 
         verifySetLandingResponse(doi);
     }
@@ -163,7 +163,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForDeletingMetadata = createMetadataDoiIdentifierPath(doi);
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
 
-        sut.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
+        doiClient.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
 
         verifyDeleteMetadataResponse(expectedPathForDeletingMetadata);
     }
@@ -174,7 +174,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
 
-        sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
+        doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
 
         verifyDeleteDoiResponse(expectedPathForDeletingDoiInDraftStatus);
     }
@@ -186,7 +186,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
         var actualException = assertThrows(DeleteDraftDoiException.class,
-            () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+            () -> doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
