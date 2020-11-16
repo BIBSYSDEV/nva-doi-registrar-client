@@ -58,19 +58,6 @@ class DataCiteConfigurationFactoryTest {
     @Test
     void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
         throws DataCiteMdsConfigValidationFailedException {
-        sut = createDataCiteConfigurationFactoryFromInputStream();
-
-        assertThat(sut.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
-        var customerConfig1 = sut.getConfig(KNOWN_CUSTOMER_ID);
-        assertThat(customerConfig1.getCustomerId(), is(equalTo(KNOWN_CUSTOMER_ID)));
-        var customerConfig2 = sut.getCredentials(KNOWN_CUSTOMER2_ID);
-        assertThat(customerConfig2.getCustomerId(), is(equalTo(KNOWN_CUSTOMER2_ID)));
-        assertThat(customerConfig2.getDataCiteMdsClientPassword(), is(equalTo(KNOWN_CUSTOMER2_PASSWORD)));
-    }
-
-    @Test
-    void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
-        throws DataCiteMdsConfigValidationFailedException {
         dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromInputStream();
 
         assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
