@@ -4,14 +4,16 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
 import no.unit.nva.datacite.model.DoiUpdateDto;
-import no.unit.nva.events.handlers.EventHandler;
+import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
+import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Publication;
+import no.unit.nva.publication.doi.dto.PublicationHolder;
 import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
+public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateDto> {
 
     private TransformService transformService;
     private DoiClient doiClient;
@@ -29,16 +31,19 @@ public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
         return new DoiClient() {
+            @JacocoGenerated
             @Override
             public String createDoi(String customerId, String metadataDataciteXml) {
                 return "http://example.doi";
             }
 
+            @JacocoGenerated
             @Override
             public void updateMetadata(String customerId, String doi, String metadataDataciteXml) {
 
             }
 
+            @JacocoGenerated
             @Override
             public void setLandingPage(String customerId, String doi, URI url) {
 
@@ -50,22 +55,16 @@ public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
         return new DataciteTransformService();
     }
 
+    /**
+     * Constructor for DraftDoiHandler.
+     *
+     * @param transformService  transformService
+     * @param doiClient doiClient
+     */
     public DraftDoiHandler(TransformService transformService, DoiClient doiClient) {
-        super(DraftDoiHandler.class);
+        super(PublicationHolder.class);
         this.transformService = transformService;
         this.doiClient = doiClient;
-    }
-
-    @Override
-    protected DoiUpdateDto processInput(Publication input, AwsEventBridgeEvent<Publication> event, Context context) {
-        String customerId = input.getInstitutionOwner().toString();
-        logger.debug("Received request to create draft new DOI for {}", customerId);
-
-        String dataciteXml = transformService.getXml(input);
-        String doi = doiClient.createDoi(customerId, dataciteXml);
-        logger.debug("Drafted new DOI: {}", doi);
-
-        return createUpdateDoi(input, doi);
     }
 
     private DoiUpdateDto createUpdateDoi(Publication input, String doi) {
@@ -74,5 +73,20 @@ public class DraftDoiHandler extends EventHandler<Publication, DoiUpdateDto> {
             .withPublicationId(input.getId())
             .withModifiedDate(Instant.now())
             .build();
+    }
+
+    @Override
+    protected DoiUpdateDto processInputPayload(PublicationHolder input,
+                                               AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
+                                               Context context) {
+        Publication publication = input.getItem();
+        String customerId = publication.getInstitutionOwner().toString();
+        logger.debug("Received request to create draft new DOI for {}", customerId);
+
+        String dataciteXml = transformService.getXml(publication);
+        String doi = doiClient.createDoi(customerId, dataciteXml);
+        logger.debug("Drafted new DOI: {}", doi);
+
+        return createUpdateDoi(publication, doi);
     }
 }

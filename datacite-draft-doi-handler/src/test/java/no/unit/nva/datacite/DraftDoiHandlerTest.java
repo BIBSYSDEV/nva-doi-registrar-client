@@ -1,12 +1,21 @@
 package no.unit.nva.datacite;
 
+import static nva.commons.utils.attempt.Try.attempt;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import no.unit.nva.datacite.model.DoiUpdateDto;
+import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Contributor;
 import no.unit.nva.publication.doi.dto.DoiRequest;
@@ -14,8 +23,11 @@ import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.Publication.Builder;
 import no.unit.nva.publication.doi.dto.PublicationDate;
+import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.dto.PublicationStatus;
 import no.unit.nva.publication.doi.dto.PublicationType;
+import nva.commons.utils.IoUtils;
+import nva.commons.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,13 +42,31 @@ public class DraftDoiHandlerTest {
     private static final String EXAMPLE_CONTRIBUTOR_NAME = "Brinx";
     private static final String EXAMPLE_CONTRIBUTOR_ARPID = "989114";
 
+    private DraftDoiHandler handler;
+    private ByteArrayOutputStream outputStream;
     private Context context;
-    private AwsEventBridgeEvent<Publication> event;
+    private AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event;
 
     @BeforeEach
     public void setUp() {
+        handler = new DraftDoiHandler();
+        outputStream = new ByteArrayOutputStream();
         context = Mockito.mock(Context.class);
         event = Mockito.mock(AwsEventBridgeEvent.class);
+    }
+
+
+    @Test
+    public void handleRequestReturnsDoiUpdateDtoWithPublicationUriWhenInputIsValid() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_request_event.json"));
+        handler.handleRequest(inputStream,outputStream,context);
+        DoiUpdateDto response = parseResponse();
+        assertThat(response.getPublicationId(), is(not(nullValue())));
+    }
+
+    private DoiUpdateDto parseResponse() {
+        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateDto.class))
+            .orElseThrow();
     }
 
     @Test
@@ -44,8 +74,9 @@ public class DraftDoiHandlerTest {
         DraftDoiHandler handler = new DraftDoiHandler();
 
         Publication publication = createBuilderWithAllFieldsSet().build();
+        PublicationHolder publicationHolder = new PublicationHolder("doi.publication", publication);
 
-        DoiUpdateDto doiUpdateDto = handler.processInput(publication, event, context);
+        DoiUpdateDto doiUpdateDto = handler.processInputPayload(publicationHolder, event, context);
 
         assertNotNull(doiUpdateDto.getDoi());
     }

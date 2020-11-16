@@ -1,5 +1,7 @@
 package no.unit.nva.datacite.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.Instant;
 
@@ -16,7 +18,10 @@ public class DoiUpdateDto {
      * @param publicationId publicationId
      * @param modifiedDate  modifiedDate
      */
-    public DoiUpdateDto(String doi, URI publicationId, Instant modifiedDate) {
+    @JsonCreator
+    public DoiUpdateDto(@JsonProperty("doi") String doi,
+                        @JsonProperty("publicationId") URI publicationId,
+                        @JsonProperty("modifiedDate") Instant modifiedDate) {
         this.doi = doi;
         this.publicationId = publicationId;
         this.modifiedDate = modifiedDate;

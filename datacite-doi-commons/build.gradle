@@ -1,9 +1,9 @@
 dependencies {
-    api project(":event-handler-template")
-
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
     api group: 'com.github.BIBSYSDEV.nva-doi-partner-data', name: 'datacite-transform', version: '1bd0e98df497b50c0d536d95fcacb73043705503'
-    api group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-commons', version: 'b7ab3646862926c4b4a6904cf770f8398cd1aee7'
+    api (group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-commons', version: 'b7ab3646862926c4b4a6904cf770f8398cd1aee7') {
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
 
     runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
 }

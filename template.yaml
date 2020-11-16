@@ -157,16 +157,17 @@ Resources:
             EventBusName: !Ref EventBusName
             Pattern:
               detail:
-                type:
-                  - doi.publication
-                item:
-                  doiRequest:
-                    status:
-                      - APPROVED
-                  doi:
-                    - null
-                  sameModifiedDateForDoiRequest:
-                    - true
+                responsePayload:
+                  type:
+                    - doi.publication
+                  item:
+                    doiRequest:
+                      status:
+                        - APPROVED
+                    doi:
+                      - null
+                    sameModifiedDateForDoiRequest:
+                      - true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
