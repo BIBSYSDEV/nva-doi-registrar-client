@@ -122,7 +122,8 @@ class DataCiteConfigurationFactoryTest {
 
     @Test
     void getNumberOfConfiguredCustomersThenReturnsNumber() {
-        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(FAKE_CLIENT_CONFIGS.size())));
+        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(),
+            is(equalTo(FAKE_CLIENT_CONFIGS.size())));
     }
 
     @Test
