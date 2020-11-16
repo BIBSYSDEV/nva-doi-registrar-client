@@ -1,6 +1,5 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
-import static nva.commons.utils.JsonUtils.objectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.URI;
@@ -9,11 +8,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
 
 /**
  * DataCiteMdsConnect instance for handling the HTTP communication with DataCite MDS API.
@@ -28,11 +25,15 @@ public class DataCiteMdsConnection {
     public static final String HTTPS = "https";
     public static final String DATACITE_PATH_DOI = "doi";
     public static final String DATACITE_PATH_METADATA = "metadata";
-    public static final String FORM_PARAM_DOI = "doi";
-    public static final String FORM_PARAM_URL = "url";
 
     public static final String CHARACTER_SLASH = "/";
     public static final String APPLICATION_XML_CHARSET_UTF_8 = "application/xml; charset=UTF-8";
+    public static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain;charset=UTF-8";
+    public static final String LANDING_PAGE_BODY_FORMAT = "doi=%s\nurl=%s";
+    public static final String MISSING_DATACITE_XML_ARGUMENT =
+        "Argument for parameter dataCiteXml cannot be null!";
+    public static final String MISSING_DOI_IDENTIFIER_ARGUMENT = "Argument for parameter doi cannot be null!";
+    public static final String MISSING_LANDING_PAGE_ARGUMENT = "Argument landingPage cannot be null!";
 
     private final transient HttpClient httpClient;
     private final String host;
@@ -62,12 +63,13 @@ public class DataCiteMdsConnection {
     public HttpResponse<String> postMetadata(String doi, String dataCiteXml) throws IOException,
                                                                                     URISyntaxException,
                                                                                     InterruptedException {
-
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
+        Objects.requireNonNull(dataCiteXml, MISSING_DATACITE_XML_ARGUMENT);
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .setPath(createPathMetadataWithDoiIdentifier(doi))
             .build();
 
-        HttpRequest request = postApplicationXmlRequest(dataCiteXml, uri);
+        HttpRequest request = postApplicationXmlWithBody(uri, dataCiteXml);
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -82,8 +84,9 @@ public class DataCiteMdsConnection {
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> getMetadata(String doi) throws IOException, URISyntaxException, InterruptedException {
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .setPath(createPathMetadataWithDoiIdentifier(doi))
             .build();
 
         HttpRequest request = getRequest(uri)
@@ -103,8 +106,9 @@ public class DataCiteMdsConnection {
      */
     public HttpResponse<String> deleteMetadata(String doi) throws IOException, URISyntaxException,
                                                                   InterruptedException {
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_METADATA + CHARACTER_SLASH + doi)
+            .setPath(createPathMetadataWithDoiIdentifier(doi))
             .build();
 
         HttpRequest request = deleteRequest(uri).build();
@@ -122,8 +126,9 @@ public class DataCiteMdsConnection {
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> getDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
+            .setPath(createPathDoiWithDoiIdentifier(doi))
             .build();
 
         HttpRequest request = getRequest(uri).build();
@@ -141,8 +146,9 @@ public class DataCiteMdsConnection {
      * @throws InterruptedException InterruptedException
      */
     public HttpResponse<String> deleteDoi(String doi) throws IOException, URISyntaxException, InterruptedException {
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_DOI + CHARACTER_SLASH + doi)
+            .setPath(createPathDoiWithDoiIdentifier(doi))
             .build();
 
         HttpRequest request = deleteRequest(uri)
@@ -164,19 +170,30 @@ public class DataCiteMdsConnection {
      */
     public HttpResponse<String> registerUrl(String doi, String landingPage) throws IOException, URISyntaxException,
                                                                                    InterruptedException {
+        Objects.requireNonNull(doi, MISSING_DOI_IDENTIFIER_ARGUMENT);
+        Objects.requireNonNull(landingPage, MISSING_LANDING_PAGE_ARGUMENT);
+
         URI uri = createApiEndpointBase()
-            .setPath(DATACITE_PATH_DOI)
+            .setPath(createPathDoiWithDoiIdentifier(doi))
             .build();
 
         String requestBody = createRequestBodyForRegisterUrl(doi, landingPage);
 
-        HttpRequest request = putForm(uri, requestBody).build();
+        HttpRequest request = putLandingPage(uri, requestBody).build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     protected HttpClient getHttpClient() {
         return httpClient;
+    }
+
+    private String createPathDoiWithDoiIdentifier(String doi) {
+        return DATACITE_PATH_DOI + CHARACTER_SLASH + doi;
+    }
+
+    private String createPathMetadataWithDoiIdentifier(String doi) {
+        return DATACITE_PATH_METADATA + CHARACTER_SLASH + doi;
     }
 
     private Builder getRequest(URI uri) {
@@ -191,31 +208,27 @@ public class DataCiteMdsConnection {
             .uri(uri);
     }
 
-    private Builder putForm(URI uri, String requestBody) {
+    private Builder putLandingPage(URI uri, String requestBody) {
         return HttpRequest.newBuilder()
             .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
             .uri(uri)
-            .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+            .header(HttpHeaders.CONTENT_TYPE, DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8);
     }
 
-    private HttpRequest postApplicationXmlRequest(String dataciteXml, URI uri) {
+    private Builder postApplicationXml(URI uri) {
         return HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
-            .uri(uri)
             .header(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_CHARSET_UTF_8)
+            .uri(uri);
+    }
+
+    private HttpRequest postApplicationXmlWithBody(URI uri, String dataciteXml) {
+        return postApplicationXml(uri)
+            .POST(HttpRequest.BodyPublishers.ofString(dataciteXml))
             .build();
     }
 
-    private Map<String, String> createRegisterUrlFormParams(String doi, String landingPage) {
-        HashMap<String, String> formParams = new HashMap<>();
-        formParams.put(FORM_PARAM_DOI, doi);
-        formParams.put(FORM_PARAM_URL, landingPage);
-        return formParams;
-    }
-
     private String createRequestBodyForRegisterUrl(String doi, String landingPage) throws JsonProcessingException {
-        var formParams = createRegisterUrlFormParams(doi, landingPage);
-        return objectMapper.writeValueAsString(formParams);
+        return String.format(LANDING_PAGE_BODY_FORMAT, doi, landingPage);
     }
 
     private URIBuilder createApiEndpointBase() {

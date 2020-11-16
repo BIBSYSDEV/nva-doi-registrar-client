@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -13,6 +12,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.APPLICATION_XML_CHARSET_UTF_8;
+import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.LANDING_PAGE_BODY_FORMAT;
+import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -58,6 +59,12 @@ import org.junit.jupiter.api.Test;
 
 class DataCiteClientSystemTest extends DataciteClientTestBase {
 
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HTTPS_SCHEME = "https://";
+    public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
+        "Failed to configure the trust everything rule for the http client, which is required to connect to "
+            + "wiremock server and local signed SSL certificate for now.";
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -66,14 +73,15 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
-    private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
+    private static final char COLON = ':';
+    private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
     private DataCiteConfigurationFactory configurationFactory;
     private PasswordAuthenticationFactory authenticationFactory;
-    private DataCiteClient sut;
+    private DataCiteClient doiClient;
     private DataCiteMdsConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
 
@@ -111,7 +119,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             authenticationFactory,
             mdsHost,
             mdsPort);
-        sut = new DataCiteClient(configurationFactory, mdsConnectionFactory);
+        doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
     @Test
@@ -119,7 +127,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
         stubCreateDoiResponse(expectedCreatedServerDoi);
 
-        Doi actual = sut.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
+        Doi actual = doiClient.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
         assertThat(actual, is(instanceOf(Doi.class)));
         assertThat(actual.getPrefix(), is(equalTo(expectedCreatedServerDoi.getPrefix())));
         assertThat(actual.getSuffix(), is(equalTo(expectedCreatedServerDoi.getSuffix())));
@@ -130,10 +138,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void updateMetadataForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForUpdatingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForUpdatingMetadata = createMetadataDoiIdentifierPath(doi);
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
 
-        sut.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
+        doiClient.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
 
         verifyUpdateMetadataResponse(expectedPathForUpdatingMetadata);
     }
@@ -142,9 +150,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     void setLandingPageForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
 
-        stubSetLandingPageResponse();
+        stubSetLandingPageResponse(doi);
 
-        sut.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
+        doiClient.setLandingPage(EXAMPLE_CUSTOMER_ID, doi, EXAMPLE_LANDING_PAGE);
 
         verifySetLandingResponse(doi);
     }
@@ -152,10 +160,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteMetadataForCustomerDoiSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingMetadata = createMetadataDoiIdentifierPath(doi);
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
 
-        sut.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
+        doiClient.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
 
         verifyDeleteMetadataResponse(expectedPathForDeletingMetadata);
     }
@@ -163,10 +171,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsDraftStateSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
 
-        sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
+        doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
 
         verifyDeleteDoiResponse(expectedPathForDeletingDoiInDraftStatus);
     }
@@ -174,14 +182,18 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
         var actualException = assertThrows(DeleteDraftDoiException.class,
-            () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+            () -> doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
-        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_FORBIDDEN)));
+        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+    }
+
+    private String createMetadataDoiIdentifierPath(Doi doi) {
+        return metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
     }
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
@@ -203,20 +215,24 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {
-        verify(putRequestedFor(urlEqualTo(doiPath))
+        verify(putRequestedFor(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withHeader(HttpHeaders.CONTENT_TYPE,
-                WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType()))
-
-            .withRequestBody(matchingJsonPath("$.[?(@.url == '" + EXAMPLE_LANDING_PAGE + "')]"))
-            .withRequestBody(matchingJsonPath("$.[?(@.doi == '" + requestedDoi.toIdentifier() + "')]"))
-            .withHeader("Content-Type", WireMock.equalTo(ContentType.APPLICATION_FORM_URLENCODED.getMimeType())));
+                WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8))
+            .withRequestBody(WireMock.equalTo(
+                String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
+            .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
     }
 
-    private void stubSetLandingPageResponse() {
-        stubFor(put(urlEqualTo(doiPath))
+    private String createDoiIdentifierPath(Doi requestedDoi) {
+        return doiPath + FORWARD_SLASH + requestedDoi.toIdentifier();
+    }
+
+    private void stubSetLandingPageResponse(Doi requestedDoi) {
+        stubFor(put(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
+                .withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
                 .withStatus(HttpStatus.SC_CREATED)
                 .withBody(HTTP_RESPONSE_OK)));
     }
@@ -234,11 +250,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
                     .withStatus(HttpStatus.SC_OK)
                     .withBody(HTTP_RESPONSE_OK)));
         } else {
-            // TODO: Validate that trying to delete a DOI that is not in draft state, gives us a 403 Forbidden.
             stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
                 .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
                 .willReturn(aResponse()
-                    .withStatus(HttpStatus.SC_FORBIDDEN)));
+                    .withStatus(HttpStatus.SC_METHOD_NOT_ALLOWED)));
         }
     }
 
@@ -246,7 +261,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         verify(postRequestedFor(urlEqualTo(expectedPath))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
-            .withHeader("Content-Type", WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
+            .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
     }
 
     private void stubUpdateMetadataResponse(String expectedPathForUpdatingMetadata) {
@@ -274,7 +289,11 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubFor(any(WireMock.anyUrl())
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_UNAUTHORIZED)
-                .withHeader("WWW-Authenticate", "Basic realm=\"" + mdsHost + "\"")));
+                .withHeader(HEADER_WWW_AUTHENTICATE, createRealm())));
+    }
+
+    private String createRealm() {
+        return "Basic realm=\"" + mdsHost + "\"";
     }
 
     private String successfullyCreateMetadataResponse(Doi newDoi) {
@@ -294,9 +313,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             return insecureSslContext;
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             e.printStackTrace();
-            Assertions.fail(
-                "Failed to configure the trust everything rule for the http client, which is required to connect to "
-                    + "wiremock server and local signed SSL certificate for now.");
+            Assertions.fail(TEST_CONFIGURATION_TRUST_MANAGER_FAILURE);
             return null;
         }
     }
