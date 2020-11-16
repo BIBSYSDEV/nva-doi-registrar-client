@@ -30,6 +30,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
+        // TODO: replace with real datacite client
         return new DoiClient() {
             @JacocoGenerated
             @Override
