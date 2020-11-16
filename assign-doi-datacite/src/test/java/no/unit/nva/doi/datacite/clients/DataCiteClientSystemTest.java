@@ -59,6 +59,8 @@ import org.junit.jupiter.api.Test;
 
 class DataCiteClientSystemTest extends DataciteClientTestBase {
 
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HTTPS_SCHEME = "https://";
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -67,7 +69,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final char COLON = ':';
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
@@ -132,7 +134,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void updateMetadataForCustomerSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForUpdatingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForUpdatingMetadata = createMetadataDoiIdentifierPath(doi);
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
 
         sut.updateMetadata(EXAMPLE_CUSTOMER_ID, doi, getValidMetadataPayload());
@@ -154,7 +156,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteMetadataForCustomerDoiSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingMetadata = metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingMetadata = createMetadataDoiIdentifierPath(doi);
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
 
         sut.deleteMetadata(EXAMPLE_CUSTOMER_ID, doi);
@@ -165,7 +167,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsDraftStateSuccessfully() throws ClientException {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
 
         sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi);
@@ -176,7 +178,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
-        String expectedPathForDeletingDoiInDraftStatus = doiPath + FORWARD_SLASH + doi.toIdentifier();
+        String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
         var actualException = assertThrows(DeleteDraftDoiException.class,
@@ -184,6 +186,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+    }
+
+    private String createMetadataDoiIdentifierPath(Doi doi) {
+        return metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
     }
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
@@ -205,7 +211,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {
-        verify(putRequestedFor(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
+        verify(putRequestedFor(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withHeader(HttpHeaders.CONTENT_TYPE,
                 WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8))
@@ -214,8 +220,12 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
     }
 
+    private String createDoiIdentifierPath(Doi requestedDoi) {
+        return doiPath + FORWARD_SLASH + requestedDoi.toIdentifier();
+    }
+
     private void stubSetLandingPageResponse(Doi requestedDoi) {
-        stubFor(put(urlEqualTo(doiPath + FORWARD_SLASH + requestedDoi.toIdentifier()))
+        stubFor(put(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
                 .withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
