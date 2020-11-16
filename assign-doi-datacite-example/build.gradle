@@ -19,6 +19,9 @@ dependencies {
 
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
     testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: nvaTestUtilsVersion
+
+    compile 'info.picocli:picocli:4.5.2'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.2'
 }
 
 compileJava {
