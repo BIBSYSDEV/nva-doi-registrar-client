@@ -61,6 +61,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HTTPS_SCHEME = "https://";
+    public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
+        "Failed to configure the trust everything rule for the http client, which is required to connect to "
+            + "wiremock server and local signed SSL certificate for now.";
     private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -70,7 +74,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final char COLON = ':';
-    public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
@@ -310,9 +313,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             return insecureSslContext;
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             e.printStackTrace();
-            Assertions.fail(
-                "Failed to configure the trust everything rule for the http client, which is required to connect to "
-                    + "wiremock server and local signed SSL certificate for now.");
+            Assertions.fail(TEST_CONFIGURATION_TRUST_MANAGER_FAILURE);
             return null;
         }
     }
