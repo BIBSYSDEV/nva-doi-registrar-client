@@ -55,7 +55,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
+    void constructorCreates2CustomersWhenConfigHasTwoValidAndOneInvalidEntry()
         throws DataCiteMdsConfigValidationFailedException {
         dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromInputStream();
 
@@ -68,8 +68,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void getCredentialsWithValidConfigurationReturnsSecretInstanceType()
-        throws DataCiteMdsConfigValidationFailedException {
+    void getCredentialsWithValidConfigurationReturnsSecretInstanceType() {
         var credentials = dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID);
         assertThat(credentials, is(instanceOf(DataCiteMdsClientSecretConfig.class)));
     }
