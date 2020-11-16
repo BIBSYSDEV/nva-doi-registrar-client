@@ -45,7 +45,7 @@ class DataCiteConfigurationFactoryTest {
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
     private static final String KNOWN_CUSTOMER2_PASSWORD = "randompasswd2";
     private SecretCache secretCache;
-    private DataCiteConfigurationFactory sut;
+    private DataCiteConfigurationFactory dataCiteConfigurationFactory;
 
     @BeforeEach
     void setUp() {
@@ -57,12 +57,12 @@ class DataCiteConfigurationFactoryTest {
     @Test
     void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
         throws DataCiteMdsConfigValidationFailedException {
-        sut = createDataCiteConfigurationFactoryFromInputStream();
+        dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromInputStream();
 
-        assertThat(sut.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
-        var customerConfig1 = sut.getConfig(KNOWN_CUSTOMER_ID);
+        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
+        var customerConfig1 = dataCiteConfigurationFactory.getConfig(KNOWN_CUSTOMER_ID);
         assertThat(customerConfig1.getInstitution(), is(equalTo(KNOWN_CUSTOMER_ID)));
-        var customerConfig2 = sut.getCredentials(KNOWN_CUSTOMER2_ID);
+        var customerConfig2 = dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER2_ID);
         assertThat(customerConfig2.getInstitution(), is(equalTo(KNOWN_CUSTOMER2_ID)));
         assertThat(customerConfig2.getDataCiteMdsClientPassword(), is(equalTo(KNOWN_CUSTOMER2_PASSWORD)));
     }
@@ -70,30 +70,30 @@ class DataCiteConfigurationFactoryTest {
     @Test
     void getCredentialsWithValidConfigurationReturnsSecretInstanceType()
         throws DataCiteMdsConfigValidationFailedException {
-        var credentials = sut.getCredentials(KNOWN_CUSTOMER_ID);
+        var credentials = dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID);
         assertThat(credentials, is(instanceOf(DataCiteMdsClientSecretConfig.class)));
     }
 
     @Test
     void getConfigWithValidConfigurationReturnsConfigInstanceType()
         throws DataCiteMdsConfigValidationFailedException {
-        var config = sut.getConfig(KNOWN_CUSTOMER_ID);
+        var config = dataCiteConfigurationFactory.getConfig(KNOWN_CUSTOMER_ID);
         assertThat(config, is(instanceOf(DataCiteMdsClientConfig.class)));
     }
 
     @Test
     void getConfigWithUnknownCustomerThrowsConfigValidationException() {
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
-            () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
+            () -> dataCiteConfigurationFactory.getConfig(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(ERROR_NOT_PRESENT_IN_CONFIG));
     }
 
     @Test
     void getConfigWithCustomerNotFullyConfiguredThrowsConfigValidationException() {
-        sut = createDataCiteConfigurationFactoryFromInputStream();
+        dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromInputStream();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
-            () -> sut.getConfig(MISSING_CONFIGURATION_CUSTOMER_ID));
+            () -> dataCiteConfigurationFactory.getConfig(MISSING_CONFIGURATION_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(MISSING_CONFIGURATION_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(ERROR_HAS_INVALID_CONFIGURATION));
     }
@@ -102,25 +102,25 @@ class DataCiteConfigurationFactoryTest {
     void getConfigWithMissingCustomerThrowsConfigValidationException() {
         configureWithNoCredentials();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
-            () -> sut.getConfig(UNKNOWN_CUSTOMER_ID));
+            () -> dataCiteConfigurationFactory.getConfig(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(UNKNOWN_CUSTOMER_ID));
         assertThat(actualException.getMessage(), containsString(ERROR_NOT_PRESENT_IN_CONFIG));
     }
 
     @Test
     void getNumberOfConfiguredCustomersThenReturnsNumber() {
-        assertThat(sut.getNumbersOfConfiguredCustomers(), is(equalTo(FAKE_CLIENT_CONFIGS.size())));
+        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(FAKE_CLIENT_CONFIGS.size())));
     }
 
     @Test
     void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() {
         configureWithNoCredentials();
-        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> sut.getCredentials(KNOWN_CUSTOMER_ID));
+        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID));
     }
 
     @Test
     void getCredentialsWithUnknownCustomerThrowsNoCredentialsForCustomerRuntimeException() {
-        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> sut.getCredentials(UNKNOWN_CUSTOMER_ID));
+        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> dataCiteConfigurationFactory.getCredentials(UNKNOWN_CUSTOMER_ID));
     }
 
     @Test
@@ -136,7 +136,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     private void setupSystemUnderTest() {
-        sut = new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
+        dataCiteConfigurationFactory = new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
     }
 
     private void configureWithNoCredentials() {
