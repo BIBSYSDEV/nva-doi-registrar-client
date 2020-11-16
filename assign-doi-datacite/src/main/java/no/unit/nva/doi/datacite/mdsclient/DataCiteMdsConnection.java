@@ -31,9 +31,9 @@ public class DataCiteMdsConnection {
     public static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain;charset=UTF-8";
     public static final String LANDING_PAGE_BODY_FORMAT = "doi=%s\nurl=%s";
     public static final String MISSING_DATACITE_XML_ARGUMENT =
-        "Please specify DataCite XML encoded with UTF-8 as a string";
-    public static final String MISSING_DOI_IDENTIFIER_ARGUMENT = "Please specify doi with 'prefix/suffix'";
-    public static final String MISSING_LANDING_PAGE_ARGUMENT = "Please specify landing page URI as string";
+        "Argument for parameter dataCiteXml cannot be null!";
+    public static final String MISSING_DOI_IDENTIFIER_ARGUMENT = "Argument for parameter doi cannot be null!";
+    public static final String MISSING_LANDING_PAGE_ARGUMENT = "Argument landingPage cannot be null!";
 
     private final transient HttpClient httpClient;
     private final String host;
@@ -136,10 +136,6 @@ public class DataCiteMdsConnection {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private String createPathDoiWithDoiIdentifier(String doi) {
-        return DATACITE_PATH_DOI + CHARACTER_SLASH + doi;
-    }
-
     /**
      * Deletes a DOI if DOI is in draft status.
      *
@@ -190,6 +186,10 @@ public class DataCiteMdsConnection {
 
     protected HttpClient getHttpClient() {
         return httpClient;
+    }
+
+    private String createPathDoiWithDoiIdentifier(String doi) {
+        return DATACITE_PATH_DOI + CHARACTER_SLASH + doi;
     }
 
     private String createPathMetadataWithDoiIdentifier(String doi) {
