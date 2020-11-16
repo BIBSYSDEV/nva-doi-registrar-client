@@ -109,18 +109,21 @@ class DataCiteConfigurationFactoryTest {
 
     @Test
     void getNumberOfConfiguredCustomersThenReturnsNumber() {
-        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(FAKE_CLIENT_CONFIGS.size())));
+        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(),
+            is(equalTo(FAKE_CLIENT_CONFIGS.size())));
     }
 
     @Test
     void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() {
         configureWithNoCredentials();
-        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID));
+        assertThrows(NoCredentialsForCustomerRuntimeException.class,
+            () -> dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID));
     }
 
     @Test
     void getCredentialsWithUnknownCustomerThrowsNoCredentialsForCustomerRuntimeException() {
-        assertThrows(NoCredentialsForCustomerRuntimeException.class, () -> dataCiteConfigurationFactory.getCredentials(UNKNOWN_CUSTOMER_ID));
+        assertThrows(NoCredentialsForCustomerRuntimeException.class,
+            () -> dataCiteConfigurationFactory.getCredentials(UNKNOWN_CUSTOMER_ID));
     }
 
     @Test
@@ -136,7 +139,8 @@ class DataCiteConfigurationFactoryTest {
     }
 
     private void setupSystemUnderTest() {
-        dataCiteConfigurationFactory = new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
+        dataCiteConfigurationFactory = new DataCiteConfigurationFactory(secretCache,
+            ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
     }
 
     private void configureWithNoCredentials() {
