@@ -1,6 +1,6 @@
-rootProject.name = 'nva-datacite-mds'
-include 'assign-doi-proxy-function'
+rootProject.name = 'nva-doi-registrar-client'
 include 'assign-doi-datacite'
+include 'assign-doi-proxy-function'
 include 'dynamo-event-to-datacite-request'
 include 'datacite-doi-commons'
 include 'datacite-draft-doi-handler'

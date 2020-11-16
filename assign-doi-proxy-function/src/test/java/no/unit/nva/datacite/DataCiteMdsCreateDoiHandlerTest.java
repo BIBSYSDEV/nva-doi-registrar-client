@@ -3,9 +3,6 @@ package no.unit.nva.datacite;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import no.unit.nva.testutils.HandlerUtils;
-import no.unit.nva.testutils.TestContext;
-import no.unit.nva.testutils.TestHeaders;
 import nva.commons.handlers.GatewayResponse;
 import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
@@ -20,12 +17,11 @@ import org.zalando.problem.Status;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 
+import static java.util.Collections.singletonMap;
 import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
-
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_START;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_STOP;
 import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_WHITESPACE;
@@ -48,12 +44,15 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
+
 
 
 public class DataCiteMdsCreateDoiHandlerTest {
@@ -76,7 +75,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     private Context context;
     private DataCiteMdsConnection dataCiteMdsConnection;
     private SecretCache secretCache;
-    private OutputStream output;
+    private ByteArrayOutputStream output;
     private DataCiteMdsCreateDoiHandler dataCiteMdsCreateDoiHandler;
 
     /**
@@ -86,7 +85,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
     public void setUp() {
         environment = mock(Environment.class);
         when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        context = new TestContext();
+        context = mock(Context.class);
 
         output = new ByteArrayOutputStream();
 
@@ -113,7 +112,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<CreateDoiResponse> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_CREATED, gatewayResponse.getStatusCode());
         CreateDoiResponse response = objectMapper.readValue(gatewayResponse.getBody(), CreateDoiResponse.class);
         assertEquals(response.getDoi(), MOCK_CREATED_DOI);
@@ -131,7 +130,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_UNKNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_PAYMENT_REQUIRED, gatewayResponse.getStatusCode());
 
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
@@ -146,10 +145,10 @@ public class DataCiteMdsCreateDoiHandlerTest {
 
         dataCiteMdsCreateDoiHandler = new DataCiteMdsCreateDoiHandler(environment, dataCiteMdsConnection, secretCache);
 
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null);
+        InputStream input = requestWithNullBodyAndHeaders();
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -169,7 +168,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(null, null, null);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -186,7 +185,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(null, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -204,7 +203,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, null);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -222,7 +221,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, null, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -245,7 +244,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -289,7 +288,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -317,7 +316,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -346,7 +345,7 @@ public class DataCiteMdsCreateDoiHandlerTest {
         InputStream input = requestWithBodyAndHeaders(MOCK_URL, MOCK_KNOWN_INSTITUTION_ID, MOCK_DATACITE_XML);
         dataCiteMdsCreateDoiHandler.handleRequest(input, output, context);
 
-        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_INTERNAL_SERVER_ERROR, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
@@ -371,8 +370,14 @@ public class DataCiteMdsCreateDoiHandlerTest {
             throws JsonProcessingException {
 
         CreateDoiRequest requestBody = new CreateDoiRequest(url, institutionId, dataciteXml);
-        return new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestBody,
-                TestHeaders.getRequestHeaders());
+        return new HandlerRequestBuilder<CreateDoiRequest>(objectMapper)
+            .withBody(requestBody)
+            .withHeaders(singletonMap(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()))
+            .build();
+    }
+
+    private InputStream requestWithNullBodyAndHeaders() throws JsonProcessingException {
+        return new HandlerRequestBuilder<Void>(objectMapper).withBody(null).build();
     }
 
 }
