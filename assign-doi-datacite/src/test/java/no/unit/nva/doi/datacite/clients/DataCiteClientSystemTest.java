@@ -70,6 +70,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final char COLON = ':';
+    public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     private final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
 
     private String mdsHost;
@@ -257,7 +258,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         verify(postRequestedFor(urlEqualTo(expectedPath))
             .withBasicAuth(getExpectedAuthenticatedCredentials())
             .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
-            .withHeader("Content-Type", WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
+            .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
     }
 
     private void stubUpdateMetadataResponse(String expectedPathForUpdatingMetadata) {
@@ -285,7 +286,11 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubFor(any(WireMock.anyUrl())
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_UNAUTHORIZED)
-                .withHeader("WWW-Authenticate", "Basic realm=\"" + mdsHost + "\"")));
+                .withHeader(HEADER_WWW_AUTHENTICATE, createRealm())));
+    }
+
+    private String createRealm() {
+        return "Basic realm=\"" + mdsHost + "\"";
     }
 
     private String successfullyCreateMetadataResponse(Doi newDoi) {
