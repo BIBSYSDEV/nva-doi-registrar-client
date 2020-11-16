@@ -156,7 +156,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
-              detail-type: "Lambda Function Invocation Result - Success"
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
