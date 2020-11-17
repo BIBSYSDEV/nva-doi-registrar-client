@@ -143,7 +143,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Environment:
