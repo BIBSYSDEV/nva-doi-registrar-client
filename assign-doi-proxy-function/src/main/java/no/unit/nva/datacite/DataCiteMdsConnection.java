@@ -15,6 +15,10 @@ import java.util.HashMap;
 
 import static nva.commons.utils.JsonUtils.objectMapper;
 
+/**
+ * Deprecated. See assign-doi-datacite module and new impl.
+ */
+@Deprecated(forRemoval = true)
 public class DataCiteMdsConnection {
 
     public static final String HTTPS = "https";
