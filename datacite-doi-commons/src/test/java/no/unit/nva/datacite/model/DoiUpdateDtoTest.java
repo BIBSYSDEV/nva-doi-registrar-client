@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,7 @@ public class DoiUpdateDtoTest {
     private final ObjectMapper objectMapper = JsonUtils.objectMapper;
 
     @Test
-    public void test() throws JsonProcessingException {
+    public void canWriteDoiUpdateDtoToJsonAndBack() throws JsonProcessingException {
         DoiUpdateDto doiUpdateDto = new DoiUpdateDto.Builder()
             .withDoi("http://sample.doi")
             .withModifiedDate(Instant.now())
@@ -24,9 +25,7 @@ public class DoiUpdateDtoTest {
         String json = objectMapper.writeValueAsString(doiUpdateDto);
         DoiUpdateDto parsedDoiUpdateDto = objectMapper.readValue(json, DoiUpdateDto.class);
 
-        assertEquals(doiUpdateDto.getDoi(), parsedDoiUpdateDto.getDoi());
-        assertEquals(doiUpdateDto.getModifiedDate(), parsedDoiUpdateDto.getModifiedDate());
-        assertEquals(doiUpdateDto.getPublicationId(), parsedDoiUpdateDto.getPublicationId());
+        assertThat(doiUpdateDto, doesNotHaveNullOrEmptyFields());
     }
 
 

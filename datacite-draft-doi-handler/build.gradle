@@ -1,9 +1,12 @@
 dependencies {
     implementation (project(":event-handler-template")){
-        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
     }
     implementation (project(":datacite-doi-commons")){
-        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
     }
     implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
+
+    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: 'e55beea47b3cb8478fb24d8bc6f692da0af78270'
 }
