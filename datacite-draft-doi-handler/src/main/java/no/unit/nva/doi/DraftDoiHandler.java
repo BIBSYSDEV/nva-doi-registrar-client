@@ -1,10 +1,10 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
 import javax.xml.bind.JAXBException;
-import no.unit.nva.datacite.model.DoiUpdateDto;
+import no.unit.nva.doi.model.DoiUpdateDto;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateDto> {
 
-    private DoiClient doiClient;
+    private TemporaryDoiClient doiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
 
@@ -31,9 +31,9 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     }
 
     @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
+    private static TemporaryDoiClient defaultDoiClient() {
         // TODO: replace with real datacite client
-        return new DoiClient() {
+        return new TemporaryDoiClient() {
             @JacocoGenerated
             @Override
             public String createDoi(String customerId, String metadataDataciteXml) {
@@ -59,7 +59,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
      *
      * @param doiClient doiClient
      */
-    public DraftDoiHandler(DoiClient doiClient) {
+    public DraftDoiHandler(TemporaryDoiClient doiClient) {
         super(PublicationHolder.class);
         this.doiClient = doiClient;
     }

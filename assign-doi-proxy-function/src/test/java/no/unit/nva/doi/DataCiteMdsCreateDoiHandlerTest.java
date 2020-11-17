@@ -1,4 +1,4 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -21,18 +21,18 @@ import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 
 import static java.util.Collections.singletonMap;
-import static no.unit.nva.datacite.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_START;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_STOP;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.CHARACTER_WHITESPACE;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_DATACITE_XML;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_INSTITUTION_ID;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_URL;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_MISSING_REQUEST_JSON_BODY;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_METADATA;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL;
-import static no.unit.nva.datacite.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA;
+import static no.unit.nva.doi.DataCiteMdsConnectionTest.DATACITE_MDS_POST_METADATA_RESPONSE;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_START;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.CHARACTER_PARENTHESES_STOP;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.CHARACTER_WHITESPACE;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_INSTITUTION_IS_NOT_SET_UP_AS_DATACITE_PROVIDER;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_DATACITE_XML;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_INSTITUTION_ID;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_MISSING_JSON_ATTRIBUTE_VALUE_URL;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_MISSING_REQUEST_JSON_BODY;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_METADATA;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL;
+import static no.unit.nva.doi.DataCiteMdsCreateDoiHandler.ERROR_SETTING_DOI_URL_COULD_NOT_DELETE_METADATA;
 import static nva.commons.handlers.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;

@@ -1,4 +1,4 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static nva.commons.utils.attempt.Try.attempt;
@@ -15,7 +15,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
-import no.unit.nva.datacite.model.DoiUpdateDto;
+import no.unit.nva.doi.model.DoiUpdateDto;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Publication;

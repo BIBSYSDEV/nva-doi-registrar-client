@@ -1,4 +1,4 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;

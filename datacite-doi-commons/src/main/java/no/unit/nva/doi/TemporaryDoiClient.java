@@ -1,11 +1,11 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import java.net.URI;
 
 /**
  * NVAs supported DOI operations.
  */
-public interface DoiClient {
+public interface TemporaryDoiClient {
 
     /**
      * Create a DOI where registry agency (ie datacite) auto generates the suffix under the associated customer

@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.exception;
+package no.unit.nva.doi.exception;
 
 import nva.commons.exceptions.ApiGatewayException;
 import org.apache.http.HttpStatus;

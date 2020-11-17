@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.model;
+package no.unit.nva.doi.model;
 
 import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static org.hamcrest.MatcherAssert.assertThat;

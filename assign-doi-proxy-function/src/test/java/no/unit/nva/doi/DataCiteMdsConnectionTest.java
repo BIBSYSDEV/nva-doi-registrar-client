@@ -1,4 +1,4 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import nva.commons.utils.IoUtils;
 

@@ -1,4 +1,4 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

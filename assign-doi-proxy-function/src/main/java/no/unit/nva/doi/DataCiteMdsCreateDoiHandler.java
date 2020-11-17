@@ -1,11 +1,11 @@
-package no.unit.nva.datacite;
+package no.unit.nva.doi;
 
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import no.unit.nva.datacite.exception.DataCiteException;
-import no.unit.nva.datacite.exception.InstitutionIdUnknownException;
-import no.unit.nva.datacite.exception.MissingParametersException;
+import no.unit.nva.doi.exception.DataCiteException;
+import no.unit.nva.doi.exception.InstitutionIdUnknownException;
+import no.unit.nva.doi.exception.MissingParametersException;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
 

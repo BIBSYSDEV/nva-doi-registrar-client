@@ -15,7 +15,7 @@ import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
  *
  * <p>{@link #getConfig(String)} for obtaining configuration for a specific customer, and
  * {@link #getCredentials(String)} for obtaining secret configuration, but this is restricted for implementations scoped
- * under package {@link no.unit.nva.datacite.config}.
+ * under package {@link no.unit.nva.doi.config}.
  */
 public class DataCiteConfigurationFactory {
 
