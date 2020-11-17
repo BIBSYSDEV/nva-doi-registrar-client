@@ -1,32 +1,28 @@
 package no.unit.nva.datacite;
 
+import static java.util.Objects.isNull;
+import static nva.commons.utils.JsonUtils.objectMapper;
+import static nva.commons.utils.StringUtils.isBlank;
+import static nva.commons.utils.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.substringBetween;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.lambda.runtime.Context;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.datacite.exception.DataCiteException;
 import no.unit.nva.datacite.exception.InstitutionIdUnknownException;
 import no.unit.nva.datacite.exception.MissingParametersException;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
-
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.LoggerFactory;
-
-import static nva.commons.utils.JsonUtils.objectMapper;
-
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_OK;
 
 
 public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequest, CreateDoiResponse> {
@@ -88,16 +84,16 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
 
     private void validateInput(CreateDoiRequest input) throws InstitutionIdUnknownException,
             MissingParametersException {
-        if (Objects.isNull(input)) {
+        if (isNull(input)) {
             throw new MissingParametersException(ERROR_MISSING_REQUEST_JSON_BODY);
         }
-        if (StringUtils.isEmpty(input.getDataciteXml())) {
+        if (isBlank(input.getDataciteXml())) {
             throw new MissingParametersException(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_DATACITE_XML);
         }
-        if (StringUtils.isEmpty(input.getUrl())) {
+        if (isBlank(input.getUrl())) {
             throw new MissingParametersException(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_URL);
         }
-        if (StringUtils.isEmpty(input.getInstitutionId())) {
+        if (isEmpty(input.getInstitutionId())) {
             throw new MissingParametersException(ERROR_MISSING_JSON_ATTRIBUTE_VALUE_INSTITUTION_ID);
         }
         if (!dataCiteMdsClientConfigsMap.containsKey(input.getInstitutionId())) {
@@ -156,7 +152,7 @@ public class DataCiteMdsCreateDoiHandler extends ApiGatewayHandler<CreateDoiRequ
                         + CHARACTER_PARENTHESES_STOP);
             }
             String createMetadataResponseBody = createMetadataResponse.body();
-            createdDoi = StringUtils.substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
+            createdDoi = substringBetween(createMetadataResponseBody, CHARACTER_PARENTHESES_START,
                     CHARACTER_PARENTHESES_STOP);
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new DataCiteException(ERROR_SETTING_DOI_METADATA);
