@@ -17,7 +17,7 @@ public class DoiUpdateDtoTest {
     @Test
     public void canWriteDoiUpdateDtoToJsonAndBack() throws JsonProcessingException {
         DoiUpdateDto doiUpdateDto = new DoiUpdateDto.Builder()
-            .withDoi("http://sample.doi")
+            .withDoi(URI.create("http://sample.doi"))
             .withModifiedDate(Instant.now())
             .withPublicationId(URI.create("http://sample.publication.id"))
             .build();

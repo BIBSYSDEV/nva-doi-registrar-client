@@ -3,6 +3,7 @@ package no.unit.nva.doi;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Optional;
 import javax.xml.bind.JAXBException;
 import no.unit.nva.doi.model.DoiUpdateDto;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
@@ -18,6 +19,9 @@ import org.slf4j.LoggerFactory;
 
 public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateDto> {
 
+    public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
+    public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
+    public static final String TRANSFORMING_PUBLICATION_ERROR = "Error transforming publication to datacite XML";
     private TemporaryDoiClient doiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
@@ -36,8 +40,8 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         return new TemporaryDoiClient() {
             @JacocoGenerated
             @Override
-            public String createDoi(String customerId, String metadataDataciteXml) {
-                return "http://example.doi";
+            public URI createDoi(String customerId, String metadataDataciteXml) {
+                return URI.create("http://example.doi");
             }
 
             @JacocoGenerated
@@ -64,7 +68,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         this.doiClient = doiClient;
     }
 
-    private DoiUpdateDto createUpdateDoi(Publication input, String doi) {
+    private DoiUpdateDto createUpdateDoi(Publication input, URI doi) {
         return new DoiUpdateDto.Builder()
             .withDoi(doi)
             .withPublicationId(input.getId())
@@ -76,15 +80,28 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     protected DoiUpdateDto processInputPayload(PublicationHolder input,
                                                AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
                                                Context context) {
-        Publication publication = input.getItem();
-        String customerId = publication.getInstitutionOwner().toString();
+        Publication publication = getPublication(input);
+        URI customerId = getCustomerId(publication);
         logger.debug("Received request to create draft new DOI for {}", customerId);
 
         String dataciteXml = getDataciteXml(publication);
-        String doi = doiClient.createDoi(customerId, dataciteXml);
+        URI doi = doiClient.createDoi(customerId.toString(), dataciteXml);
         logger.debug("Drafted new DOI: {}", doi);
 
         return createUpdateDoi(publication, doi);
+    }
+
+    private URI getCustomerId(Publication publication) {
+        return Optional
+            .ofNullable(publication.getInstitutionOwner())
+            .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
+
+    }
+
+    private Publication getPublication(PublicationHolder input) {
+        return Optional
+            .ofNullable(input.getItem())
+            .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
     }
 
     private String getDataciteXml(Publication publication) {
@@ -92,7 +109,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         try {
             return new Transformer(dynamoRecordDto).asXml();
         } catch (JAXBException e) {
-            throw new RuntimeException("Error transforming publication to datacite XML", e);
+            throw new RuntimeException(TRANSFORMING_PUBLICATION_ERROR, e);
         }
     }
 }

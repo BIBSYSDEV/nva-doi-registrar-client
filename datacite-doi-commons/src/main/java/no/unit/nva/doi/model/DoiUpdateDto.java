@@ -7,7 +7,7 @@ import java.time.Instant;
 
 public class DoiUpdateDto {
 
-    private final String doi;
+    private final URI doi;
     private final URI publicationId;
     private final Instant modifiedDate;
 
@@ -19,7 +19,7 @@ public class DoiUpdateDto {
      * @param modifiedDate  modifiedDate
      */
     @JsonCreator
-    public DoiUpdateDto(@JsonProperty("doi") String doi,
+    public DoiUpdateDto(@JsonProperty("doi") URI doi,
                         @JsonProperty("publicationId") URI publicationId,
                         @JsonProperty("modifiedDate") Instant modifiedDate) {
         this.doi = doi;
@@ -27,7 +27,7 @@ public class DoiUpdateDto {
         this.modifiedDate = modifiedDate;
     }
 
-    public String getDoi() {
+    public URI getDoi() {
         return doi;
     }
 
@@ -41,14 +41,14 @@ public class DoiUpdateDto {
 
     public static class Builder {
 
-        private String doi;
+        private URI doi;
         private URI publicationId;
         private Instant modifiedDate;
 
         public Builder() {
         }
 
-        public Builder withDoi(String doi) {
+        public Builder withDoi(URI doi) {
             this.doi = doi;
             return this;
         }

@@ -23,6 +23,7 @@ import no.unit.nva.publication.doi.dto.PublicationDtoTestDataGenerator;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +48,7 @@ public class DraftDoiHandlerTest {
 
     @Test
     public void handleRequestReturnsDoiUpdateDtoWithPublicationUriWhenInputIsValid() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_request_event.json"));
+        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_valid.json"));
         handler.handleRequest(inputStream,outputStream,context);
         DoiUpdateDto response = parseResponse();
         assertThat(response.getPublicationId(), is(not(nullValue())));
@@ -56,6 +57,24 @@ public class DraftDoiHandlerTest {
     private DoiUpdateDto parseResponse() {
         return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateDto.class))
             .orElseThrow();
+    }
+
+    @Test
+    public void handleRequestThrowsExceptionOnMissingEventItem() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_empty_item.json"));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> handler.handleRequest(inputStream, outputStream, context));
+
+        MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR));
+    }
+
+    @Test
+    public void handleRequestThrowsExceptionOnMissingCustomerId() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_empty_institution_owner.json"));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> handler.handleRequest(inputStream, outputStream, context));
+
+        MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR));
     }
 
     @Test

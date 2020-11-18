@@ -16,7 +16,7 @@ public interface TemporaryDoiClient {
      * @return DOI from provider in the following syntax: prefix/suffix
      */
 
-    String createDoi(String customerId, String metadataDataciteXml);
+    URI createDoi(String customerId, String metadataDataciteXml);
 
     /**
      * Update metadata for a given DOI.
