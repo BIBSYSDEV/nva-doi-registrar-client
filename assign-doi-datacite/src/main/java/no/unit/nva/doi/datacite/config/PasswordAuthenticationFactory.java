@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.config;
 
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.Optional;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
@@ -20,7 +21,7 @@ public class PasswordAuthenticationFactory {
         this.dataciteConfigurationFactory = dataciteConfigurationFactory;
     }
 
-    public PasswordAuthentication getCredentials(String customerId) {
+    public PasswordAuthentication getCredentials(URI customerId) {
         return Optional.ofNullable(dataciteConfigurationFactory.getCredentials(customerId))
             .map(secretConfig -> new PasswordAuthentication(
                 secretConfig.getDataCiteMdsClientUsername(),

@@ -3,10 +3,12 @@ package no.unit.nva.doi.datacite.clients;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -23,12 +25,12 @@ import org.junit.jupiter.api.Test;
 class DataCiteClientTest extends DataciteClientTestBase {
 
     public static final String ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI = "deleteDraftDoi";
-    private static final String EXAMPLE_CUSTOMER_ID = "https://example.net/customer/id/4512";
+    private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final String DEMO_PREFIX = "10.5072";
-    private static final String INSTITUTION_PREFIX = DEMO_PREFIX;
+    private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
-    private final String mdsHost = "example.net";
+    private final URI mdsHost = URI.create("https://example.net");
     private DataCiteMdsClientSecretConfig validSecretConfig;
 
     private DataCiteConfigurationFactory configurationFactory;
@@ -44,7 +46,8 @@ class DataCiteClientTest extends DataciteClientTestBase {
 
         mdsConnectionFactory = mock(DataCiteMdsConnectionFactory.class);
         mdsConnectionThrowingIoException = mock(DataCiteMdsConnection.class);
-        when(mdsConnectionFactory.getAuthenticatedConnection(anyString())).thenReturn(mdsConnectionThrowingIoException);
+        when(mdsConnectionFactory.getAuthenticatedConnection(any(URI.class)))
+            .thenReturn(mdsConnectionThrowingIoException);
 
         when(mdsConnectionThrowingIoException.deleteDoi(anyString())).thenThrow(IOException.class);
 
@@ -70,7 +73,7 @@ class DataCiteClientTest extends DataciteClientTestBase {
 
     private DataCiteConfigurationFactoryForSystemTests createDataConfigurationFactoryForTest() {
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
-            INSTITUTION_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+            EXAMPLE_CUSTOMER_DOI_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
         return new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
     }
