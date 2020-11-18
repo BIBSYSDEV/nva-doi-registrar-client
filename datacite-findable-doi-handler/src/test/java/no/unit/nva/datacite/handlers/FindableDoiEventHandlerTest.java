@@ -43,7 +43,7 @@ public class FindableDoiEventHandlerTest {
 
     @Test
     public void handleRequestTransformsPublicationToDataciteXmlFormatWhenInputIsPublicationWithAprrovedDoiRequest() {
-        ;
+        throw new RuntimeException();
     }
 
     private DoiUpdateDto parseResponse() {
