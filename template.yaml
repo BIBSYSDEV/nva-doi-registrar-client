@@ -17,30 +17,12 @@ Metadata:
 Globals:
   Function:
     Timeout: 20
-  Api:
-    Cors:
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      AllowMethods: "'OPTIONS, POST'"
-      AllowOrigin: "'*'"
 
 Parameters:
-  CognitoAuthorizerArn:
-    Type: String
-    Description: Reference to Cognito UserPool for the stage
-  CustomDomain:
-    Type: String
-    Description: Custom API to connect this lambda to
-  CustomDomainBasePath:
-    Type: String
-    Description: Base path mapping in CustomDomain
   DataCiteMdsConfigs:
     Type: String
     Description: Institution configs for DataCite MDS API
     Default: '{{resolve:secretsmanager:dataCiteMdsConfigs:SecretString}}'
-  DynamoDBStreamArn:
-    Type: String
-    Description: Amazon DynamoDB Stream ARN.
-
   EventBusName:
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusName
@@ -52,75 +34,6 @@ Parameters:
     Default: nvaDqlArn
 
 Resources:
-  NvaDataCiteMdsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      Auth:
-        Authorizers:
-          MyCognitoAuthorizer:
-            UserPoolArn: !Ref CognitoAuthorizerArn
-      EndpointConfiguration: Regional
-      DefinitionBody:
-        openapi: 3.0.0
-        info:
-          title: NVA DataCite MDS
-          version: '1.0'
-        paths:
-          /:
-            post:
-              summary:  Create DOI
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaAssignDoiProxyFunction.Arn}/invocations
-                responses: {}
-                httpMethod: POST
-                type: AWS_PROXY
-              responses:
-                '201':
-                  description: Created.
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/createDoiResponseBody'
-                '400':
-                  description: Bad request.
-                  schema:
-                    $ref: '#/definitions/Problem'
-                '402':
-                  description: Payment required.
-                  schema:
-                    $ref: '#/definitions/Problem'
-                '500':
-                  description: Internal server error.
-                  schema:
-                    $ref: '#/definitions/Problem'
-        components:
-          securitySchemes:
-            CognitoUserPool:
-              type: apiKey
-              name: Authorization
-              in: header
-              x-amazon-apigateway-authtype: cognito_user_pools
-              x-amazon-apigateway-authorizer:
-                type: cognito_user_pools
-                providerARNs:
-                  - !Ref CognitoAuthorizerArn
-          schemas:
-            createDoiResponseBody:
-              title: Doi created
-              type: string
-              description: The created doi
-            Problem:
-              type: object
-              properties:
-                title:
-                  type: string
-                status:
-                  type: integer
-                detail:
-                  type: string
-
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -158,11 +71,3 @@ Resources:
           OnFailure:
             Type: SQS
             Destination: !Ref DlqArn
-
-  NvaDataCiteMdsBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      BasePath: !Ref CustomDomainBasePath
-      DomainName: !Ref CustomDomain
-      RestApiId: !Ref NvaDataCiteMdsApi
-      Stage: !Ref NvaDataciteMdsApi.Stage
