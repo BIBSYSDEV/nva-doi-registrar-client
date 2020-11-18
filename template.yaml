@@ -42,14 +42,14 @@ Parameters:
     Description: Amazon DynamoDB Stream ARN.
 
   EventBusName:
-    Type: String
-    Default: '{{resolve:ssm:nva-eventbus-name:1}}'
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: nvaEventBusName
   EventBusArn:
-    Type: String
-    Default: '{{resolve:ssm:nva-eventbus-name:1}}'
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: nvaEventBusArn
   DlqArn:
-    Type: String
-    Default: '{{resolve:ssm:nva-dlq-arn:1}}'
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: nvaDqlArn
 
 Resources:
   NvaDataCiteMdsApi:

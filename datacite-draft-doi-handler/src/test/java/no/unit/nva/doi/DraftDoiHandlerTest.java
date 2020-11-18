@@ -48,7 +48,8 @@ public class DraftDoiHandlerTest {
 
     @Test
     public void handleRequestReturnsDoiUpdateDtoWithPublicationUriWhenInputIsValid() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_valid.json"));
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            Path.of("doi_publication_event_valid.json"));
         handler.handleRequest(inputStream,outputStream,context);
         DoiUpdateDto response = parseResponse();
         assertThat(response.getPublicationId(), is(not(nullValue())));
@@ -61,7 +62,8 @@ public class DraftDoiHandlerTest {
 
     @Test
     public void handleRequestThrowsExceptionOnMissingEventItem() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_empty_item.json"));
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            Path.of("doi_publication_event_empty_item.json"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
@@ -70,7 +72,8 @@ public class DraftDoiHandlerTest {
 
     @Test
     public void handleRequestThrowsExceptionOnMissingCustomerId() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(Path.of("doi_publication_event_empty_institution_owner.json"));
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            Path.of("doi_publication_event_empty_institution_owner.json"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
