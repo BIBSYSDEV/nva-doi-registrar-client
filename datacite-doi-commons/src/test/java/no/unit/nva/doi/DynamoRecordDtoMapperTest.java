@@ -14,7 +14,7 @@ public class DynamoRecordDtoMapperTest {
 
     @Test
     public void canMapPublicationDtoToDynamoRecordDto() {
-        Publication publication = PublicationDtoTestDataGenerator.createPublication();
+        Publication publication = new PublicationDtoTestDataGenerator().createRandomStreamRecord().asPublicationDto();
 
         DynamoRecordDto dynamoRecordDto = DynamoRecordDtoMapper.fromPublication(publication);
 

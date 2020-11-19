@@ -7,8 +7,8 @@ Description: >
 
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: NvaDataciteMds
-    Description: Backend for communicating with the DataCite MDS API
+    Name: NvaDoiRegistrarClient
+    Description: Client for communicating with DOI Registrars (DataCite)
     Author: Unit
     SemanticVersion: 1.0.0
     SpdxLicenseId: MIT

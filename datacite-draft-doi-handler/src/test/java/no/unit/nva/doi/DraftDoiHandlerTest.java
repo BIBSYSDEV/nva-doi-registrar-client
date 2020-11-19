@@ -82,7 +82,7 @@ public class DraftDoiHandlerTest {
 
     @Test
     public void draftDoiHandlerReturnsDoiUpdateDtoOnValidPublicationDto() {
-        Publication publication = PublicationDtoTestDataGenerator.createPublication();
+        Publication publication = new PublicationDtoTestDataGenerator().createRandomStreamRecord().asPublicationDto();
         PublicationHolder publicationHolder = new PublicationHolder(DOI_PUBLICATION, publication);
 
         DoiUpdateDto doiUpdateDto = handler.processInputPayload(publicationHolder, event, context);

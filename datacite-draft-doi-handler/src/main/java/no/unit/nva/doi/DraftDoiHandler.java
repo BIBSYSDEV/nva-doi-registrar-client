@@ -21,7 +21,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
-    public static final String TRANSFORMING_PUBLICATION_ERROR = "Error transforming publication to datacite XML";
+    public static final String TRANSFORMING_PUBLICATION_ERROR = "Error transforming Publication to DataCite XML";
     private TemporaryDoiClient doiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
@@ -36,17 +36,17 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     @JacocoGenerated
     private static TemporaryDoiClient defaultDoiClient() {
-        // TODO: replace with real datacite client
+        // TODO: replace with real DataCite client
         return new TemporaryDoiClient() {
             @JacocoGenerated
             @Override
-            public URI createDoi(String customerId, String metadataDataciteXml) {
+            public URI createDoi(String customerId, String metadataDataCiteXml) {
                 return URI.create("http://example.doi");
             }
 
             @JacocoGenerated
             @Override
-            public void updateMetadata(String customerId, String doi, String metadataDataciteXml) {
+            public void updateMetadata(String customerId, String doi, String metadataDataCiteXml) {
 
             }
 
@@ -84,8 +84,8 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         URI customerId = getCustomerId(publication);
         logger.debug("Received request to create draft new DOI for {}", customerId);
 
-        String dataciteXml = getDataciteXml(publication);
-        URI doi = doiClient.createDoi(customerId.toString(), dataciteXml);
+        String dataCiteXml = getDataCiteXml(publication);
+        URI doi = doiClient.createDoi(customerId.toString(), dataCiteXml);
         logger.debug("Drafted new DOI: {}", doi);
 
         return createUpdateDoi(publication, doi);
@@ -104,7 +104,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
             .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
     }
 
-    private String getDataciteXml(Publication publication) {
+    private String getDataCiteXml(Publication publication) {
         DynamoRecordDto dynamoRecordDto = DynamoRecordDtoMapper.fromPublication(publication);
         try {
             return new Transformer(dynamoRecordDto).asXml();
