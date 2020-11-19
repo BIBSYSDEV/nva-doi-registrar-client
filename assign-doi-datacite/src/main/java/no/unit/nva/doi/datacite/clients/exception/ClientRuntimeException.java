@@ -4,8 +4,16 @@ import no.unit.nva.doi.DoiClient;
 import nva.commons.utils.JacocoGenerated;
 
 /**
- *  Wrapper exception thrown for all {@link DoiClient} runtime exceptions.
+ * Wrapper exception thrown for all {@link DoiClient} runtime exceptions.
  */
 @JacocoGenerated
 public class ClientRuntimeException extends RuntimeException {
+
+    public ClientRuntimeException() {
+        super();
+    }
+
+    public ClientRuntimeException(ClientException e) {
+        super(e);
+    }
 }

@@ -9,7 +9,7 @@ import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationType;
 import no.unit.nva.transformer.Transformer;
 import no.unit.nva.transformer.dto.CreatorDto;
-import no.unit.nva.transformer.dto.DynamoRecordDto;
+import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import no.unit.nva.transformer.dto.IdentifierDto;
 import no.unit.nva.transformer.dto.PublisherDto;
 import no.unit.nva.transformer.dto.ResourceTypeDto;
@@ -23,9 +23,9 @@ public class DataciteTransformService implements TransformService {
 
     @Override
     public String getXml(Publication publication) {
-        DynamoRecordDto dynamoRecordDto = fromPublication(publication);
+        DataCiteMetadataDto dataCiteMetadataDto = fromPublication(publication);
         try {
-            Transformer transformer = new Transformer(dynamoRecordDto);
+            Transformer transformer = new Transformer(dataCiteMetadataDto);
             return transformer.asXml();
         } catch (JAXBException e) {
             logger.error("Error transforming publication ({}) to datacite XML", publication.getId(), e);
@@ -33,8 +33,8 @@ public class DataciteTransformService implements TransformService {
         }
     }
 
-    private DynamoRecordDto fromPublication(Publication input) {
-        return new DynamoRecordDto.Builder()
+    private DataCiteMetadataDto fromPublication(Publication input) {
+        return new DataCiteMetadataDto.Builder()
             .withCreator(toCreatorDtoList(input.getContributor()))
             .withIdentifier(toIdentifierDto(input.getId()))
             .withPublicationYear(input.getPublicationDate().getYear())
