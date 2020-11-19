@@ -18,6 +18,7 @@ allprojects {
         awsSdkVersion = '1.11.875'
         nvaCommonsVersion = '0.7.0'
         nvaTestUtilsVersion = "0.1.15"
+        jacksonVersion = '2.10.2'
     }
 }
 
@@ -27,6 +28,9 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'checkstyle'
     apply plugin: 'pmd'
+    if (name.equalsIgnoreCase('assign-doi-datacite-example')) {
+        apply plugin: 'application'
+    }
 
     sourceCompatibility = JavaVersion.VERSION_11
     // source-code version and must be <= targetCompatibility
@@ -35,7 +39,7 @@ subprojects {
     def junit5Version = '5.6.0'
 
     dependencies {
-        testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: 'v0.1.7'
+        testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: '0.1.15'
         testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
