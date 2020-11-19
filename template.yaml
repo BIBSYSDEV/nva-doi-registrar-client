@@ -31,7 +31,7 @@ Parameters:
     Default: nvaEventBusArn
   DlqArn:
     Type : 'AWS::SSM::Parameter::Value<String>'
-    Default: nvaDqlArn
+    Default: nvaDlqArn
 
 Resources:
   DataCiteDraftDoiHandlerFunction:
