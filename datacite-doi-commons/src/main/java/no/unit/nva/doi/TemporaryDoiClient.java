@@ -8,24 +8,24 @@ import java.net.URI;
 public interface TemporaryDoiClient {
 
     /**
-     * Create a DOI where registry agency (ie datacite) auto generates the suffix under the associated customer
+     * Create a DOI where registry agency (ie DataCite) auto generates the suffix under the associated customer
      * repository for NVA.
      *
      * @param customerId NVAs customerId
-     * @param metadataDataciteXml datacite schema serialized xml as string
+     * @param metadataDataCiteXml DataCite schema serialized xml as string
      * @return DOI from provider in the following syntax: prefix/suffix
      */
 
-    URI createDoi(String customerId, String metadataDataciteXml);
+    URI createDoi(String customerId, String metadataDataCiteXml);
 
     /**
      * Update metadata for a given DOI.
      *
      * @param customerId NVAs customerId
      * @param doi DOI in the format of prefix/suffix
-     * @param metadataDataciteXml datacite schema serialized xml as string
+     * @param metadataDataCiteXml DataCite schema serialized xml as string
      */
-    void updateMetadata(String customerId, String doi, String metadataDataciteXml);
+    void updateMetadata(String customerId, String doi, String metadataDataCiteXml);
 
     /**
      * Request to mark DOI as findable.
