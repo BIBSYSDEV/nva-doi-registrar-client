@@ -1,61 +1,76 @@
 package no.unit.nva.doi;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import javax.xml.bind.JAXBException;
-import no.unit.nva.doi.model.DoiUpdateDto;
+import no.unit.nva.doi.datacite.clients.DataCiteClient;
+import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
+import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import no.unit.nva.transformer.Transformer;
-import no.unit.nva.transformer.dto.DynamoRecordDto;
+import no.unit.nva.transformer.dto.DataCiteMetadataDto;
+import nva.commons.utils.IoUtils;
 import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateDto> {
 
+    // exception messages
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
     public static final String TRANSFORMING_PUBLICATION_ERROR = "Error transforming Publication to DataCite XML";
-    private TemporaryDoiClient doiClient;
+
+    // log messages
+    public static final String RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG =
+        "Received request to create draft new DOI for {}";
+    public static final String DRAFTED_NEW_DOI_LOG = "Drafted new DOI: {}";
+    public static final String ERROR_DRAFTING_DOI_LOG = "Error drafting DOI ";
+
+    private DoiClient doiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
 
     /**
      * Default constructor for DraftDoiHandler.
+     *
+     * @throws IOException  IOException
      */
     @JacocoGenerated
-    public  DraftDoiHandler() {
+    public  DraftDoiHandler() throws IOException {
         this(defaultDoiClient());
     }
 
     @JacocoGenerated
-    private static TemporaryDoiClient defaultDoiClient() {
-        // TODO: replace with real DataCite client
-        return new TemporaryDoiClient() {
-            @JacocoGenerated
-            @Override
-            public URI createDoi(String customerId, String metadataDataCiteXml) {
-                return URI.create("http://example.doi");
-            }
+    private static DataCiteConfigurationFactory defaultConfigFactory() {
+        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
+        return new DataCiteConfigurationFactory(IoUtils.stringToStream(dataCiteConfigJson));
+    }
 
-            @JacocoGenerated
-            @Override
-            public void updateMetadata(String customerId, String doi, String metadataDataCiteXml) {
+    @JacocoGenerated
+    private static DataCiteMdsConnectionFactory defaultMdsConnectionFactory(
+        DataCiteConfigurationFactory configFactory) {
+        String host = AppEnv.getDataCiteHost();
+        Integer port = AppEnv.getDataCitePort();
+        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configFactory);
+        return new DataCiteMdsConnectionFactory(authenticationFactory, host, port);
+    }
 
-            }
-
-            @JacocoGenerated
-            @Override
-            public void setLandingPage(String customerId, String doi, URI url) {
-
-            }
-        };
+    @JacocoGenerated
+    private static DoiClient defaultDoiClient() {
+        DataCiteConfigurationFactory configurationFactory = defaultConfigFactory();
+        return new DataCiteClient(configurationFactory, defaultMdsConnectionFactory(configurationFactory));
     }
 
     /**
@@ -63,14 +78,14 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
      *
      * @param doiClient doiClient
      */
-    public DraftDoiHandler(TemporaryDoiClient doiClient) {
+    public DraftDoiHandler(DoiClient doiClient) {
         super(PublicationHolder.class);
         this.doiClient = doiClient;
     }
 
-    private DoiUpdateDto createUpdateDoi(Publication input, URI doi) {
+    private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
         return new DoiUpdateDto.Builder()
-            .withDoi(doi)
+            .withDoi(doi.toId())
             .withPublicationId(input.getId())
             .withModifiedDate(Instant.now())
             .build();
@@ -82,13 +97,17 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
                                                Context context) {
         Publication publication = getPublication(input);
         URI customerId = getCustomerId(publication);
-        logger.debug("Received request to create draft new DOI for {}", customerId);
+        logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
         String dataCiteXml = getDataCiteXml(publication);
-        URI doi = doiClient.createDoi(customerId.toString(), dataCiteXml);
-        logger.debug("Drafted new DOI: {}", doi);
+        try {
+            Doi doi = doiClient.createDoi(customerId, dataCiteXml);
+            logger.debug(DRAFTED_NEW_DOI_LOG, doi);
+            return createUpdateDoi(publication, doi);
+        } catch (ClientException e) {
+            throw new RuntimeException(ERROR_DRAFTING_DOI_LOG, e);
+        }
 
-        return createUpdateDoi(publication, doi);
     }
 
     private URI getCustomerId(Publication publication) {
@@ -105,9 +124,9 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     }
 
     private String getDataCiteXml(Publication publication) {
-        DynamoRecordDto dynamoRecordDto = DynamoRecordDtoMapper.fromPublication(publication);
+        DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
         try {
-            return new Transformer(dynamoRecordDto).asXml();
+            return new Transformer(dataCiteMetadataDto).asXml();
         } catch (JAXBException e) {
             throw new RuntimeException(TRANSFORMING_PUBLICATION_ERROR, e);
         }

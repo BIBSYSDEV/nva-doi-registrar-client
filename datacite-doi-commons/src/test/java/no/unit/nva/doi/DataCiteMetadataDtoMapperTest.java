@@ -6,28 +6,28 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationDtoTestDataGenerator;
-import no.unit.nva.transformer.dto.DynamoRecordDto;
+import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class DynamoRecordDtoMapperTest {
+public class DataCiteMetadataDtoMapperTest {
 
     @Test
     public void canMapPublicationDtoToDynamoRecordDto() {
         Publication publication = new PublicationDtoTestDataGenerator().createRandomStreamRecord().asPublicationDto();
 
-        DynamoRecordDto dynamoRecordDto = DynamoRecordDtoMapper.fromPublication(publication);
+        DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
 
-        assertThat(dynamoRecordDto, doesNotHaveNullOrEmptyFields());
+        assertThat(dataCiteMetadataDto, doesNotHaveNullOrEmptyFields());
     }
 
     @Test
     public void canMapEmptyPublicationDtoToEmptyDynamoRecord() {
         Publication publication = Mockito.mock(Publication.class);
 
-        DynamoRecordDto dynamoRecordDto = DynamoRecordDtoMapper.fromPublication(publication);
+        DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
 
-        assertThat(dynamoRecordDto, notNullValue());
+        assertThat(dataCiteMetadataDto, notNullValue());
     }
 
 }

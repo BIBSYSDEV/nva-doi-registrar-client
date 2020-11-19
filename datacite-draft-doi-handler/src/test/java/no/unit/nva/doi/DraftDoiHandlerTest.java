@@ -1,50 +1,49 @@
 package no.unit.nva.doi;
 
-import static no.unit.nva.hamcrest.DoesNotHaveNullOrEmptyFields.doesNotHaveNullOrEmptyFields;
 import static nva.commons.utils.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
-import no.unit.nva.doi.model.DoiUpdateDto;
-import no.unit.nva.events.models.AwsEventBridgeDetail;
-import no.unit.nva.events.models.AwsEventBridgeEvent;
-import no.unit.nva.publication.doi.dto.Publication;
-import no.unit.nva.publication.doi.dto.PublicationDtoTestDataGenerator;
-import no.unit.nva.publication.doi.dto.PublicationHolder;
+import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class DraftDoiHandlerTest {
 
-    public static final String DOI_PUBLICATION = "doi.publication";
-    public static final String ERROR_MESSAGE = "error";
-
+    public static final String DOI_IDENTIFIER = "doi/identifier";
+    private DoiClient doiClient;
     private DraftDoiHandler handler;
     private ByteArrayOutputStream outputStream;
     private Context context;
-    private AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event;
 
     @BeforeEach
-    public void setUp() {
-        handler = new DraftDoiHandler();
+    public void setUp() throws ClientException {
+        doiClient = getDoiClientMock();
+        handler = new DraftDoiHandler(doiClient);
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
-        event = mock(AwsEventBridgeEvent.class);
     }
 
+    private DoiClient getDoiClientMock() throws ClientException {
+        DoiClient doiClient = mock(DoiClient.class);
+        Doi doi = Doi.builder().identifier(DOI_IDENTIFIER).build();
+        Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
+        return doiClient;
+    }
 
     @Test
     public void handleRequestReturnsDoiUpdateDtoWithPublicationUriWhenInputIsValid() {
@@ -61,7 +60,7 @@ public class DraftDoiHandlerTest {
     }
 
     @Test
-    public void handleRequestThrowsExceptionOnMissingEventItem() {
+    public void handleRequestThrowsIllegalArgumentExceptionOnMissingEventItem() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             Path.of("doi_publication_event_empty_item.json"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -71,40 +70,12 @@ public class DraftDoiHandlerTest {
     }
 
     @Test
-    public void handleRequestThrowsExceptionOnMissingCustomerId() {
+    public void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             Path.of("doi_publication_event_empty_institution_owner.json"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
         MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR));
-    }
-
-    @Test
-    public void draftDoiHandlerReturnsDoiUpdateDtoOnValidPublicationDto() {
-        Publication publication = new PublicationDtoTestDataGenerator().createRandomStreamRecord().asPublicationDto();
-        PublicationHolder publicationHolder = new PublicationHolder(DOI_PUBLICATION, publication);
-
-        DoiUpdateDto doiUpdateDto = handler.processInputPayload(publicationHolder, event, context);
-
-        assertThat(doiUpdateDto, doesNotHaveNullOrEmptyFields());
-    }
-
-    @Test
-    public void draftDoiHandlerThrowsExceptionOnInvalidPublicationDto() {
-        PublicationHolder publicationHolder = getFailingPublicationHolder();
-
-        RuntimeException exception = assertThrows(
-            RuntimeException.class,
-            () -> handler.processInputPayload(publicationHolder, event, context)
-        );
-
-        assertThat(exception.getMessage(), equalTo(ERROR_MESSAGE));
-    }
-
-    private PublicationHolder getFailingPublicationHolder() {
-        PublicationHolder publicationHolder = mock(PublicationHolder.class);
-        when(publicationHolder.getItem()).thenThrow(new RuntimeException(ERROR_MESSAGE));
-        return publicationHolder;
     }
 }

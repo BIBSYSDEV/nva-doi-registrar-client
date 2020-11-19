@@ -8,25 +8,25 @@ import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationDate;
 import no.unit.nva.publication.doi.dto.PublicationType;
 import no.unit.nva.transformer.dto.CreatorDto;
-import no.unit.nva.transformer.dto.DynamoRecordDto;
+import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import no.unit.nva.transformer.dto.IdentifierDto;
 import no.unit.nva.transformer.dto.PublisherDto;
 import no.unit.nva.transformer.dto.ResourceTypeDto;
 import no.unit.nva.transformer.dto.TitleDto;
 
-public final class DynamoRecordDtoMapper {
+public final class DataCiteMetadataDtoMapper {
 
-    private DynamoRecordDtoMapper() {
+    private DataCiteMetadataDtoMapper() {
     }
 
     /**
-     * Maps a Publication to DynamoRecordDto. For use in the nva doi partner data Transformer.
+     * Maps a Publication to DataCiteMetadataDto. For use in the nva doi partner data Transformer.
      *
      * @param publication   publication
      * @return  dynamoRecordDto
      */
-    public static DynamoRecordDto fromPublication(Publication publication) {
-        return new DynamoRecordDto.Builder()
+    public static DataCiteMetadataDto fromPublication(Publication publication) {
+        return new DataCiteMetadataDto.Builder()
             .withCreator(toCreatorDtoList(publication.getContributor()))
             .withIdentifier(toIdentifierDto(publication.getId()))
             .withPublicationYear(toPublicationYear(publication.getPublicationDate()))
@@ -84,7 +84,7 @@ public final class DynamoRecordDtoMapper {
             return null;
         }
         return contributors.stream()
-            .map(DynamoRecordDtoMapper::toCreatorDto)
+            .map(DataCiteMetadataDtoMapper::toCreatorDto)
             .collect(Collectors.toList());
     }
 

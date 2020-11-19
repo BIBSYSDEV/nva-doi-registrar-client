@@ -23,6 +23,12 @@ Parameters:
     Type: String
     Description: Institution configs for DataCite MDS API
     Default: '{{resolve:secretsmanager:dataCiteMdsConfigs:SecretString}}'
+  DataCiteHost:
+    Type: String
+    Default: mds.test.datacite.org
+  DataCitePort:
+    Type: String
+    Default: 443
   EventBusName:
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusName
@@ -45,6 +51,9 @@ Resources:
         Variables:
           EVENT_BUS: !Ref EventBusName
           AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          DATACITE_CONFIG: !Ref DataCiteMdsConfigs
+          DATACITE_HOST: !Ref DataCiteHost
+          DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
