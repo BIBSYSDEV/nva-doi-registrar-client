@@ -36,15 +36,15 @@ public class DataCiteConfigurationFactory {
      * @param secretId    id to look up in AWS Secret Manager
      */
     public DataCiteConfigurationFactory(SecretCache secretCache, String secretId) {
-        this(secretCache.getSecretString(secretId));
+        this(IoUtils.stringToStream(secretCache.getSecretString(secretId)));
     }
 
     public DataCiteConfigurationFactory(InputStream jsonConfig) {
-        this(IoUtils.streamToString(jsonConfig));
+        parseConfig(jsonConfig);
     }
 
-    protected DataCiteConfigurationFactory(String secretConfigAsJsonString) {
-        parseConfig(secretConfigAsJsonString);
+    public DataCiteConfigurationFactory(String secretConfigAsJsonString) {
+        this(IoUtils.stringToStream(secretConfigAsJsonString));
     }
 
     /**
@@ -75,6 +75,19 @@ public class DataCiteConfigurationFactory {
     }
 
     /**
+     * Retrieve numbver of configured configurations.
+     *
+     * <p>It may contain configuration which is not fully configured and not valid!
+     *
+     * <p>They are evaluated and validated during runtime to avoid having to validate all records on startup
+     *
+     * @return number of configured customers
+     */
+    public int getNumbersOfConfiguredCustomers() {
+        return customerConfigurations.size();
+    }
+
+    /**
      * Retrieve DataCite secret configuration for given NVA customer.
      *
      * @param customerId NVA customer id in format https://example.net/nva/customer/923923
@@ -87,13 +100,9 @@ public class DataCiteConfigurationFactory {
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
     }
 
-    public int getNumbersOfConfiguredCustomers() {
-        return customerConfigurations.size();
-    }
-
-    private void parseConfig(String secretConfigAsJsonString) {
+    private void parseConfig(InputStream secretConfig) {
         try {
-            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfigAsJsonString,
+            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfig,
                 DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
