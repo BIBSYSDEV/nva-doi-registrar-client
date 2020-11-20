@@ -6,7 +6,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import javax.xml.bind.JAXBException;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
@@ -38,7 +37,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     public static final String DRAFTED_NEW_DOI_LOG = "Drafted new DOI: {}";
     public static final String ERROR_DRAFTING_DOI_LOG = "Error drafting DOI ";
 
-    private DoiClient doiClient;
+    private final DoiClient doiClient;
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
 
@@ -53,24 +52,15 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     }
 
     @JacocoGenerated
-    private static DataCiteConfigurationFactory defaultConfigFactory() {
-        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
-        return new DataCiteConfigurationFactory(IoUtils.stringToStream(dataCiteConfigJson));
-    }
-
-    @JacocoGenerated
-    private static DataCiteMdsConnectionFactory defaultMdsConnectionFactory(
-        DataCiteConfigurationFactory configFactory) {
-        String host = AppEnv.getDataCiteHost();
-        Integer port = AppEnv.getDataCitePort();
-        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configFactory);
-        return new DataCiteMdsConnectionFactory(authenticationFactory, host, port);
-    }
-
-    @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-        DataCiteConfigurationFactory configurationFactory = defaultConfigFactory();
-        return new DataCiteClient(configurationFactory, defaultMdsConnectionFactory(configurationFactory));
+        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
+        DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
+            IoUtils.stringToStream(dataCiteConfigJson));
+        DataCiteMdsConnectionFactory dataCiteMdsConnectionFactory = new DataCiteMdsConnectionFactory(
+            new PasswordAuthenticationFactory(dataCiteConfigurationFactory),
+            AppEnv.getDataCiteHost(),
+            AppEnv.getDataCitePort());
+        return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
     /**
