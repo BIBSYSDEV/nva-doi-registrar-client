@@ -19,7 +19,6 @@ import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import no.unit.nva.transformer.Transformer;
 import no.unit.nva.transformer.dto.DataCiteMetadataDto;
-import nva.commons.utils.IoUtils;
 import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,13 +53,12 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
         String dataCiteConfigJson = AppEnv.getDataCiteConfig();
-        DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
-            IoUtils.stringToStream(dataCiteConfigJson));
-        DataCiteMdsConnectionFactory dataCiteMdsConnectionFactory = new DataCiteMdsConnectionFactory(
-            new PasswordAuthenticationFactory(dataCiteConfigurationFactory),
+        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(dataCiteConfigJson);
+        DataCiteMdsConnectionFactory connectionFactory = new DataCiteMdsConnectionFactory(
+            new PasswordAuthenticationFactory(configFactory),
             AppEnv.getDataCiteHost(),
             AppEnv.getDataCitePort());
-        return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+        return DoiClientFactory.getClient(configFactory, connectionFactory);
     }
 
     /**
