@@ -39,6 +39,7 @@ public class FindableDoiEventHandlerTest {
         "doi_request_event_invalid_publication_id.json");
 
     private static final String DEMO_PREFIX = "10.5072";
+    public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
     private ByteArrayOutputStream outputStream;
@@ -73,7 +74,7 @@ public class FindableDoiEventHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_EVENT);
         findableDoiHandler.handleRequest(inputStream, outputStream, context);
 
-        assertThat(testingAppender.getMessages(), containsString("Successfully handled request for Doi"));
+        assertThat(testingAppender.getMessages(), containsString(SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI));
     }
 
     @Test
