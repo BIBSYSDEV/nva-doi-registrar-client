@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
 import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
+import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
@@ -32,8 +33,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     public static final String RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG =
         "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
     public static final String EVENT_SOURCE = "doi.updateDoiStatus";
-    static final String DOI_IS_MISSING_ERROR = "Doi is missing";
-    static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
+    public static final String DOI_IS_MISSING_OR_INVALID_ERROR = "Doi is missing or invalid";
+    public static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
     private final DoiClient doiClient;
@@ -55,27 +56,27 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
 
         Publication publication = getPublication(input);
         URI customerId = getCustomerId(publication);
-        URI doiUri = getDoi(publication);
+        Doi doi = getDoi(publication);
 
         URI publicationId = getPublicationId(publication);
         URI landingPage = getLandingPage(publicationId);
-        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doiUri, landingPage, customerId);
+        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
 
         try {
-            Doi doi = Doi.builder().withDoi(doiUri).build();
             doiClient.setLandingPage(customerId, doi, landingPage);
             DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE,
                 new Builder()
                     .withPublicationId(publicationId)
                     .withModifiedDate(Instant.now())
-                    .withDoi(doiUri).build());
-            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doiUri, doiUpdateHolder.toJsonString());
+                    .withDoi(doi.toUri()).build());
+            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.toUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
         }
     }
 
+    @JacocoGenerated
     private static DoiClient defaultDoiClient() {
         String dataCiteConfigJson = AppEnv.getDataCiteConfig();
         DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
@@ -88,9 +89,11 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
-    private URI getDoi(Publication input) {
-        return Optional.ofNullable(input.getDoi())
-            .orElseThrow(() -> new IllegalArgumentException(DOI_IS_MISSING_ERROR));
+    private Doi getDoi(Publication input) {
+        return attempt(() -> Optional.ofNullable(input.getDoi())
+            .map(doiUri -> Doi.builder().withDoi(doiUri).build())
+            .orElseThrow(() -> new IllegalArgumentException(DOI_IS_MISSING_OR_INVALID_ERROR)))
+            .orElseThrow((e) -> new IllegalArgumentException(DOI_IS_MISSING_OR_INVALID_ERROR, e.getException()));
     }
 
     private URI getPublicationId(Publication input) {

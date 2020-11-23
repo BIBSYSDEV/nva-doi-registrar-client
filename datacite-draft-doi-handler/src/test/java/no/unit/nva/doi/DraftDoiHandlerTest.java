@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
@@ -24,7 +24,7 @@ import org.mockito.Mockito;
 
 public class DraftDoiHandlerTest {
 
-    public static final String DOI_IDENTIFIER = "doi/identifier";
+    public static final String DOI_IDENTIFIER = "10.1052/identifier";
     private DoiClient doiClient;
     private DraftDoiHandler handler;
     private ByteArrayOutputStream outputStream;
@@ -74,7 +74,7 @@ public class DraftDoiHandlerTest {
 
     private DoiClient getDoiClientMock() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.builder().identifier(DOI_IDENTIFIER).build();
+        Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
         Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
         return doiClient;
     }

@@ -7,10 +7,10 @@ import java.time.Instant;
 import java.util.Optional;
 import javax.xml.bind.JAXBException;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
@@ -73,7 +73,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
         return new DoiUpdateDto.Builder()
-            .withDoi(doi.toId())
+            .withDoi(doi.toUri())
             .withPublicationId(input.getId())
             .withModifiedDate(Instant.now())
             .build();
@@ -90,7 +90,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         String dataCiteXml = getDataCiteXml(publication);
         try {
             Doi doi = doiClient.createDoi(customerId, dataCiteXml);
-            logger.debug(DRAFTED_NEW_DOI_LOG, doi);
+            logger.debug(DRAFTED_NEW_DOI_LOG, doi.toUri());
             return createUpdateDoi(publication, doi);
         } catch (ClientException e) {
             throw new RuntimeException(ERROR_DRAFTING_DOI_LOG, e);
