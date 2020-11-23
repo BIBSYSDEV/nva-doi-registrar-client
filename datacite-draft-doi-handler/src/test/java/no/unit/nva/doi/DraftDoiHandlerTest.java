@@ -38,13 +38,6 @@ public class DraftDoiHandlerTest {
         context = mock(Context.class);
     }
 
-    private DoiClient getDoiClientMock() throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.builder().identifier(DOI_IDENTIFIER).build();
-        Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
-        return doiClient;
-    }
-
     @Test
     public void handleRequestReturnsDoiUpdateDtoWithPublicationUriWhenInputIsValid() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
@@ -52,11 +45,6 @@ public class DraftDoiHandlerTest {
         handler.handleRequest(inputStream,outputStream,context);
         DoiUpdateDto response = parseResponse();
         assertThat(response.getPublicationId(), is(not(nullValue())));
-    }
-
-    private DoiUpdateDto parseResponse() {
-        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateDto.class))
-            .orElseThrow();
     }
 
     @Test
@@ -77,5 +65,17 @@ public class DraftDoiHandlerTest {
             () -> handler.handleRequest(inputStream, outputStream, context));
 
         MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR));
+    }
+
+    private DoiUpdateDto parseResponse() {
+        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateDto.class))
+            .orElseThrow();
+    }
+
+    private DoiClient getDoiClientMock() throws ClientException {
+        DoiClient doiClient = mock(DoiClient.class);
+        Doi doi = Doi.builder().identifier(DOI_IDENTIFIER).build();
+        Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
+        return doiClient;
     }
 }
