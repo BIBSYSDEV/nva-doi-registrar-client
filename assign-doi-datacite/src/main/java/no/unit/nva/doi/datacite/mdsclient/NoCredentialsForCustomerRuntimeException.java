@@ -7,8 +7,10 @@ import nva.commons.utils.JacocoGenerated;
 @JacocoGenerated
 public class NoCredentialsForCustomerRuntimeException extends ClientRuntimeException {
 
+    public static final String NO_CREDENTIALS_FOR_CUSTOMER = "No credentials for customer!";
+
     public NoCredentialsForCustomerRuntimeException() {
-        super();
+        super(NO_CREDENTIALS_FOR_CUSTOMER);
     }
 
     public NoCredentialsForCustomerRuntimeException(ClientException e) {
