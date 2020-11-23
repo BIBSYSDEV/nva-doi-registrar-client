@@ -35,6 +35,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
+    public static final String EVENT_SOURCE = "doi.updateDoiStatus";
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -63,7 +64,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         try {
             Doi doi = null; // Use PR for Doi.
             doiClient.setLandingPage(customerId, doi, landingPage);
-            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder("doi.updateDoiStatus",
+            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE,
                 new Builder()
                     .withPublicationId(publicationId)
                     .withModifiedDate(Instant.now())
