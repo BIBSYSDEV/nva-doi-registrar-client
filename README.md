@@ -48,10 +48,10 @@ Value of secret should be stored in JSON format like this:
 
 #### Description of configuration
 
-- customerId: IRI for NVA customer.
-- customerDoiPrefix:  A reserved NVA repository containing associated DOI prefix for NVA usage.
-- dataCiteMdsClientUrl: API endpoint to DataCite MDS API.
-- dataCiteMdsClientPassowrd: Organization's repository user password.
+  - customerId: IRI for NVA customer.
+  - customerDoiPrefix:  A reserved NVA repository containing associated DOI prefix for NVA usage.
+  - dataCiteMdsClientUrl: API endpoint to DataCite MDS API.
+  - dataCiteMdsClientPassword: Organization's repository user password.
 
 ## assignd-doi-datecite-example CLI client
 
