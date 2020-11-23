@@ -10,6 +10,9 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalMatchers.and;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -58,8 +61,7 @@ public class FindableDoiEventHandlerTest {
 
         URI expectedCustomerId = URI.create(
             "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934");
-        // TODO: verify(doiClient).updateMetadata(expectedCustomerId, createExpectedDoi(),
-        // getExpectedMetadataXmlString());
+        verify(doiClient).updateMetadata(eq(expectedCustomerId), eq(createExpectedDoi()), verifyPartsOfMetadata());
         verify(doiClient).setLandingPage(expectedCustomerId, createExpectedDoi(),
             getLandingPage(response.getItem().getPublicationId()));
     }
@@ -138,8 +140,13 @@ public class FindableDoiEventHandlerTest {
             is(equalTo(LandingPageUtil.ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED)));
     }
 
-    private String getExpectedMetadataXmlString() {
-        return "foo";
+    private String verifyPartsOfMetadata() {
+        return and(
+            contains("JOURNAL_ARTICLE"),
+            and(
+                contains("<title>Conformality loss"),
+                contains(
+                    "identifierType=\"URL\">https://example.net/unittest/namespace/publication/654321</identifier>")));
     }
 
     private Doi createExpectedDoi() {

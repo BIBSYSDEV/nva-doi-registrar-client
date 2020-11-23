@@ -6,6 +6,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
+import javax.xml.bind.JAXBException;
+import no.unit.nva.doi.DataCiteMetadataDtoMapper;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.DoiClientFactory;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -21,6 +23,8 @@ import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto.Builder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
+import no.unit.nva.transformer.Transformer;
+import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JacocoGenerated;
 import org.slf4j.Logger;
@@ -37,6 +41,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     public static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
+    private static final String TRANSFORMING_PUBLICATION_ERROR = "Failed transforming publication into XML matching "
+        + "DataCite XMLSchema";
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -63,6 +69,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
 
         try {
+            doiClient.updateMetadata(customerId, doi, getDataCiteXmlMetadata(publication));
             doiClient.setLandingPage(customerId, doi, landingPage);
             DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE,
                 new Builder()
@@ -111,5 +118,14 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         return Optional
             .ofNullable(input.getItem())
             .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
+    }
+
+    private String getDataCiteXmlMetadata(Publication publication) {
+        DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
+        try {
+            return new Transformer(dataCiteMetadataDto).asXml();
+        } catch (JAXBException e) {
+            throw new RuntimeException(TRANSFORMING_PUBLICATION_ERROR, e);
+        }
     }
 }
