@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 public class DataCiteMetadataDtoMapperTest {
 
     @Test
-    public void canMapPublicationDtoToDynamoRecordDto() {
+    public void fromPublicationReturnsDataCiteMetadataDto() {
         Publication publication = new PublicationDtoTestDataGenerator().createRandomStreamRecord().asPublicationDto();
 
         DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
@@ -22,7 +22,7 @@ public class DataCiteMetadataDtoMapperTest {
     }
 
     @Test
-    public void canMapEmptyPublicationDtoToEmptyDynamoRecord() {
+    public void fromPublicationReturnsDataCiteMetadataDtoWithNullFieldsWhenPublicationIsEmpty() {
         Publication publication = Mockito.mock(Publication.class);
 
         DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);

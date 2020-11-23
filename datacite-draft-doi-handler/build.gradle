@@ -1,7 +1,14 @@
 dependencies {
-    implementation project(":event-handler-template")
-    implementation project(":datacite-doi-commons")
     implementation project(":assign-doi-datacite")
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: project.ext.awsSdkVersion
 
+    implementation (project(":event-handler-template")){
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation (project(":datacite-doi-commons")){
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
+
+    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: '0.1.13'
 }
