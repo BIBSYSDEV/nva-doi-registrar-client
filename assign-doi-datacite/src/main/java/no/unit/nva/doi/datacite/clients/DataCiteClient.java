@@ -11,10 +11,10 @@ import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteMetadataException;
 import no.unit.nva.doi.datacite.clients.exception.SetLandingPageException;
 import no.unit.nva.doi.datacite.clients.exception.UpdateMetadataException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.models.Doi;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +172,7 @@ public class DataCiteClient implements DoiClient {
         var identifier = StringUtils.substringBetween(createMetadataResponseBody,
             CHARACTER_PARENTHESES_START,
             CHARACTER_PARENTHESES_STOP);
-        return Doi.builder().identifier(identifier).build();
+        return Doi.builder().withIdentifier(identifier).build();
     }
 
     private boolean isUnsuccessfulResponse(HttpResponse<String> response) {

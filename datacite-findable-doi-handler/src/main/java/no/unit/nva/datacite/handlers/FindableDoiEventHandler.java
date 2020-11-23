@@ -9,10 +9,10 @@ import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.DoiClientFactory;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
@@ -31,11 +31,11 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";// log messages
     public static final String RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG =
         "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
+    public static final String EVENT_SOURCE = "doi.updateDoiStatus";
     static final String DOI_IS_MISSING_ERROR = "Doi is missing";
     static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
-    public static final String EVENT_SOURCE = "doi.updateDoiStatus";
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -62,7 +62,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doiUri, landingPage, customerId);
 
         try {
-            Doi doi = null; // Use PR for Doi.
+            Doi doi = Doi.builder().withDoi(doiUri).build();
             doiClient.setLandingPage(customerId, doi, landingPage);
             DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE,
                 new Builder()
@@ -71,7 +71,6 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
                     .withDoi(doiUri).build());
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doiUri, doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
-
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
         }

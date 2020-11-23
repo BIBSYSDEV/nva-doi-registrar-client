@@ -3,7 +3,7 @@ package no.unit.nva.doi;
 import java.net.URI;
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.models.Doi;
 
 /**
  * NVAs supported DOI operations.

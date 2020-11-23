@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,8 +17,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.clients.models.ImmutableDoi;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
@@ -42,15 +42,17 @@ public class FindableDoiEventHandlerTest {
     }
 
     @Test
-    public void handleRequestReturnsDoiUpdateHolderWithDtoContainingPublicationUriWhenInputIsValid()
+    public void handleRequestReturnsDoiUpdateHolderOnSuccessWhenInputIsValid()
         throws ClientException {
         InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_EVENT);
         findableDoiHandler.handleRequest(inputStream, outputStream, context);
         DoiUpdateHolder response = parseResponse();
         assertThat(response.getItem().getPublicationId(), is(not(nullValue())));
+        assertThat(response.getItem().getModifiedDate(), is(notNullValue()));
 
         URI expectedCustomerId = URI.create(
             "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934");
+        verify(doiClient).updateMetadata(expectedCustomerId, createExpectedDoi(), getExpectedMetadataXmlString());
         verify(doiClient).setLandingPage(expectedCustomerId, createExpectedDoi(),
             getLandingPage(response.getItem().getPublicationId()));
     }
@@ -65,15 +67,14 @@ public class FindableDoiEventHandlerTest {
         assertThat(testingAppender.getMessages(), containsString("Successfully handled request for Doi"));
     }
 
-    @Test
-    public void handleRequestTransformsPublicationToDataciteXmlFormatWhenInputIsPublicationWithAprrovedDoiRequest() {
-        throw new RuntimeException();
+    private String getExpectedMetadataXmlString() {
+        return "foo";
     }
 
-    private ImmutableDoi createExpectedDoi() {
+    private Doi createExpectedDoi() {
         return Doi.builder()
-            .withPrefix(DEMO_PREFIX)
-            .withSuffix("need-pr-BIBSYSDEV-nva-publication-api-pull-96")
+            .withPrefix("10.1103")
+            .withSuffix("physrevd.100.085005")
             .build();
     }
 

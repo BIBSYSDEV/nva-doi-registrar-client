@@ -1,6 +1,7 @@
 dependencies {
     implementation project(":event-handler-template")
     implementation project(":datacite-doi-commons")
+    implementation project(":assign-doi-datacite")
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: project.ext.awsSdkVersion
 
 }
