@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -59,6 +60,19 @@ class DataCiteConfigurationFactoryTest {
     void constructorWithExampleConfigAsInputstreamThenContains2KnownCustomers()
         throws DataCiteMdsConfigValidationFailedException {
         dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromInputStream();
+
+        assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
+        var customerConfig1 = dataCiteConfigurationFactory.getConfig(KNOWN_CUSTOMER_ID);
+        assertThat(customerConfig1.getCustomerId(), is(equalTo(KNOWN_CUSTOMER_ID)));
+        var customerConfig2 = dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER2_ID);
+        assertThat(customerConfig2.getCustomerId(), is(equalTo(KNOWN_CUSTOMER2_ID)));
+        assertThat(customerConfig2.getDataCiteMdsClientPassword(), is(equalTo(KNOWN_CUSTOMER2_PASSWORD)));
+    }
+
+    @Test
+    void constructorCreates2CustomersWhenConstructorInputIsJsonStringAndConfigHasTwoValidAndOneInvalidEntry()
+        throws DataCiteMdsConfigValidationFailedException {
+        dataCiteConfigurationFactory = createDataCiteConfigurationFactoryFromString();
 
         assertThat(dataCiteConfigurationFactory.getNumbersOfConfiguredCustomers(), is(equalTo(3)));
         var customerConfig1 = dataCiteConfigurationFactory.getConfig(KNOWN_CUSTOMER_ID);
@@ -146,9 +160,17 @@ class DataCiteConfigurationFactoryTest {
             () -> new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
     }
 
+    private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromString() {
+        return new DataCiteConfigurationFactory(IoUtils.streamToString(getJsonConfigAsInputStream()));
+    }
+
     private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromInputStream() {
-        return new DataCiteConfigurationFactory(IoUtils.inputStreamFromResources(
-            Path.of("example-mds-config.json")));
+        return new DataCiteConfigurationFactory(getJsonConfigAsInputStream());
+    }
+
+    private InputStream getJsonConfigAsInputStream() {
+        return IoUtils.inputStreamFromResources(
+            Path.of("example-mds-config.json"));
     }
 
     private void setupSystemUnderTest() {
