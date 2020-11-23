@@ -21,6 +21,7 @@ import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
+import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto.Builder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import no.unit.nva.transformer.Transformer;
@@ -70,11 +71,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         try {
             doiClient.updateMetadata(customerId, doi, getDataCiteXmlMetadata(publication));
             doiClient.setLandingPage(customerId, doi, landingPage);
-            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE,
-                new Builder()
-                    .withPublicationId(publicationId)
-                    .withModifiedDate(Instant.now())
-                    .withDoi(doi.toUri()).build());
+            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE, createDoiUpdateDto(doi, publicationId));
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.toUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
@@ -93,6 +90,13 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
             AppEnv.getDataCitePort());
 
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+    }
+
+    private DoiUpdateDto createDoiUpdateDto(Doi doi, URI publicationId) {
+        return new Builder()
+            .withPublicationId(publicationId)
+            .withModifiedDate(Instant.now())
+            .withDoi(doi.toUri()).build();
     }
 
     private Doi getDoi(Publication input) {
