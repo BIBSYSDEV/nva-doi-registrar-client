@@ -2,7 +2,7 @@ def zalandoVersion = '0.23.0'
 
 dependencies {
     implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: 'v0.3.3'
-    api(group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-type', version: '8833d0008d22e01ee5dd46b882ec463dc1645132') {
+    api(group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-type', version: project.ext.nvaDoiTypeAndCommons) {
         because 'It has DOI datatype'
     }
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
