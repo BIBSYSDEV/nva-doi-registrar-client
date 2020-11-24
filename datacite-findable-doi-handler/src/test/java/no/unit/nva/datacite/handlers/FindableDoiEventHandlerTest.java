@@ -34,9 +34,9 @@ import org.junit.jupiter.api.Test;
 
 public class FindableDoiEventHandlerTest {
 
-    public static final Path PUBLICATION_EVENT = Path.of("doi_request_event.json");
+    public static final Path PUBLICATION_EVENT = Path.of("doi_publication_event.json");
     public static final Path PUBLICATION_EVENT_INVALID_PUBLICATION_ID = Path.of(
-        "doi_request_event_invalid_publication_id.json");
+        "doi_publication_event_invalid_publication_id.json");
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
@@ -76,6 +76,16 @@ public class FindableDoiEventHandlerTest {
     }
 
     @Test
+    void handleRequestThrowsIllegalArgumentExceptionOnNonApprovedDoiRequestStatus() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            Path.of("doi_publication_event_wrong_doirequeststatus.json"));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
+
+        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.DOI_REQUEST_STATUS_WRONG_ERROR)));
+    }
+
+    @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             Path.of("doi_publication_event_empty_institution_owner.json"));
@@ -98,7 +108,7 @@ public class FindableDoiEventHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingPublicationId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_request_event_empty_publication_id.json"));
+            Path.of("doi_publication_event_empty_publication_id.json"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 

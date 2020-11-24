@@ -19,6 +19,7 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
+import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
@@ -39,6 +40,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     public static final String EVENT_SOURCE = "doi.updateDoiStatus";
     public static final String DOI_IS_MISSING_OR_INVALID_ERROR = "Doi is missing or invalid";
     public static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
+    public static final String DOI_REQUEST_STATUS_WRONG_ERROR = "DoiRequestStatus is not APPROVED";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
     private static final String TRANSFORMING_PUBLICATION_ERROR = "Failed transforming publication into XML matching "
@@ -61,6 +63,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
                                                   Context context) {
 
         Publication publication = getPublication(input);
+        verifyPublicationIsCurratorApproved(publication);
         URI customerId = getCustomerId(publication);
         Doi doi = getDoi(publication);
 
@@ -90,6 +93,14 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
             AppEnv.getDataCitePort());
 
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+    }
+
+    private void verifyPublicationIsCurratorApproved(Publication publication) {
+        Optional.ofNullable(publication.getDoiRequest())
+            .flatMap(e -> Optional.ofNullable(e.getStatus()))
+            .filter(status -> status
+                .equals(DoiRequestStatus.APPROVED))
+            .orElseThrow(() -> new IllegalArgumentException(DOI_REQUEST_STATUS_WRONG_ERROR));
     }
 
     private DoiUpdateDto createDoiUpdateDto(Doi doi, URI publicationId) {
