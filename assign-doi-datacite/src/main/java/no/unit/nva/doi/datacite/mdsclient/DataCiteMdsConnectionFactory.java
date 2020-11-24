@@ -20,9 +20,9 @@ import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
  * <p>Our {@link PasswordAuthentication} will only provide credentials for valid endpoints for the {@link HttpClient}
  * during server challenge (pre-emptive authentication).
  *
- * <p>Use {@link #getAuthenticatedConnection(String)} to construct a new authenticated API connection.
+ * <p>Use {@link #getAuthenticatedConnection(URI)} to construct a new authenticated API connection.
  *
- * @see #createNvaCustomerAuthenticator(String)
+ * @see #createNvaCustomerAuthenticator(URI)
  */
 public class DataCiteMdsConnectionFactory {
 

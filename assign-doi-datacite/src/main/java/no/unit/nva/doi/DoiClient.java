@@ -61,7 +61,7 @@ public interface DoiClient {
      * Delete metadata from DOI.
      *
      * <p>Findable DOIs can be transitioned to the registered state (the metadata are no longer included in the search
-     * index) using this ${@link #deleteMetadata(String, Doi)}.
+     * index) using this ${@link #deleteMetadata(URI, Doi)}.
      *
      * <p>Notice: Updating metadata for a DOI that has been in deleted state (registered) will turn it into findable
      * state.
