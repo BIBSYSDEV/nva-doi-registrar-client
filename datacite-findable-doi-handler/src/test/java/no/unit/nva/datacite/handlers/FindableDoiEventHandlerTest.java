@@ -37,8 +37,6 @@ public class FindableDoiEventHandlerTest {
     public static final Path PUBLICATION_EVENT = Path.of("doi_request_event.json");
     public static final Path PUBLICATION_EVENT_INVALID_PUBLICATION_ID = Path.of(
         "doi_request_event_invalid_publication_id.json");
-
-    private static final String DEMO_PREFIX = "10.5072";
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
