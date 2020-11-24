@@ -66,9 +66,9 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         verifyPublicationIsCurratorApproved(publication);
         URI customerId = getCustomerId(publication);
         Doi doi = getDoi(publication);
-
         URI publicationId = getPublicationId(publication);
         URI landingPage = getLandingPage(publicationId);
+
         logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
 
         try {
