@@ -29,7 +29,8 @@ dataciteXml: Metadata of resource, expected format: https://schema.datacite.org/
 
 ### Secrets Manager (AWS)
 
-Secret with id "dataciteMdsConfigs" must present. 
+Secret with id "dataCiteCustomerSecrets" with key 'dataCiteCustomerSecrets'
+must be present. 
 
 Value of secret should be stored in JSON format like this:
 
