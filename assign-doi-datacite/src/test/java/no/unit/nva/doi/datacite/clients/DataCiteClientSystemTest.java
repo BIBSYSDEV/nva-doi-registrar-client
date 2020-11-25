@@ -21,8 +21,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
@@ -52,7 +50,6 @@ import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.log.LogUtils;
 import nva.commons.utils.log.TestAppender;
@@ -61,7 +58,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -131,20 +127,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
-    @Test
-    @Tag("online")
-    void createDoiTest() throws ClientException {
-        final String dataciteRestpApi = "https://api.test.datacite.org/dois";
-        DataCiteConfigurationFactory configFactory = mockConfigFactory(dataciteRestpApi);
 
-        var passwordFactory = new PasswordAuthenticationFactory(configFactory);
-        URI targetUri = URI.create(dataciteRestpApi);
-
-        var connectionFactory = new DataCiteConnectionFactory(passwordFactory, targetUri.getHost(), -1);
-        var doiClient = new DataCiteClient(configFactory, connectionFactory);
-        Doi doi = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
-        assertThat(doi, is(not(nullValue())));
-    }
 
     @Test
     void createDoiWithPrefixForCustomerReturnsDoiOnSuccess() throws ClientException {
@@ -243,22 +226,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
 
-    private DataCiteConfigurationFactory mockConfigFactory(String dataciteRestApi) {
 
-        URI dataciteApi = URI.create(dataciteRestApi);
-        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
-
-        String unitDoiPrefix = "10.16903";
-
-        String nvaTestDataciteAccount = "TESTTO.NVA";
-        var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
-            unitDoiPrefix,
-            dataciteApi,
-            nvaTestDataciteAccount,
-            password);
-
-        return new DataCiteConfigurationFactoryForSystemTests(Map.of(EXAMPLE_CUSTOMER_ID, config));
-    }
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
         return metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
