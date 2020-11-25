@@ -35,9 +35,6 @@ Parameters:
   EventBusArn:
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusArn
-  DlqArn:
-    Type : 'AWS::SSM::Parameter::Value<String>'
-    Default: nvaDlqArn
 
 Resources:
   DataCiteDraftDoiHandlerFunction:
@@ -77,12 +74,14 @@ Resources:
         DestinationConfig:
           OnSuccess:
             Type: SQS
-            Destination: !Ref DlqArn
+            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !Ref DlqArn
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+  DataCiteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
 
-  FindableDoiHandlerFunction:
+  DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
@@ -117,7 +116,9 @@ Resources:
         DestinationConfig:
           OnSuccess:
             Type: SQS
-            Destination: !Ref DlqArn
+            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !Ref DlqArn
+            Destination: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+  DataCiteFindableDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
