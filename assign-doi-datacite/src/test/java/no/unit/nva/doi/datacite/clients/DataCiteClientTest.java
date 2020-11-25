@@ -29,10 +29,7 @@ import org.junit.jupiter.api.Test;
 class DataCiteClientTest extends DataciteClientTestBase {
 
     public static final String ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI = "deleteDraftDoi";
-    public static final String NVA_TEST_ACCOUNT_PREFIX = "10.16903";
-    public static final URI TEST_DOI_ACCOUNT_URI = URI.create("https://api.test.datacite.org/dois");
-    public static final String DATACITE_TEST_DOIS_URL = "api.test.datacite.org/dois";
-    public static final String DATACITE_TEST_DOIS_HTTPS = "https://api.test.datacite.org/dois";
+
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final String DEMO_PREFIX = "10.5072";
     private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
@@ -77,25 +74,6 @@ class DataCiteClientTest extends DataciteClientTestBase {
 
         assertThrows(ClientException.class, () -> sut.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(appender.getMessages(), containsString(ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI));
-    }
-
-    private PasswordAuthenticationFactory nvaCredentialsFactory() {
-        PasswordAuthenticationFactory nvaPasswordFactory = mock(PasswordAuthenticationFactory.class);
-        String username = "TESTTO.NVA";
-        char[] password = "kVDbg^7$4VbY9$7Q".toCharArray();
-        when(nvaPasswordFactory.getCredentials(any(URI.class)))
-            .thenReturn(new PasswordAuthentication(username, password));
-        return nvaPasswordFactory;
-    }
-
-    private DataCiteConfigurationFactory nvaTestAccountClientConfig()
-        throws DataCiteMdsConfigValidationFailedException {
-        DataCiteConfigurationFactory factory = mock(DataCiteConfigurationFactory.class);
-        DataCiteMdsClientConfig nvaTestAccountConfig = new DataCiteMdsClientConfig(EXAMPLE_CUSTOMER_ID,
-            NVA_TEST_ACCOUNT_PREFIX,
-            TEST_DOI_ACCOUNT_URI);
-        when(factory.getConfig(any(URI.class))).thenReturn(nvaTestAccountConfig);
-        return factory;
     }
 
     private DataCiteConfigurationFactoryForSystemTests createDataConfigurationFactoryForTest() {
