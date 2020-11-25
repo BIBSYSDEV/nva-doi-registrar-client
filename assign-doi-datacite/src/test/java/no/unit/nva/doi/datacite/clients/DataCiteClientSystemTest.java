@@ -139,8 +139,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Disabled
     @Test
     void createDoiTest() throws ClientException {
-        String randomSuffix = UUID.randomUUID().toString();
-
         DataCiteConfigurationFactory configFactory = mockConfigFactory();
 
         var passwordFactory = new PasswordAuthenticationFactory(configFactory);
