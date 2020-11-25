@@ -5,6 +5,9 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+/**
+ * Utility class to generate landing page URI for NVA publications.
+ */
 public final class LandingPageUtil {
 
     public static final String LANDING_PAGE_PATH_FORMAT = "/registration/%s/public";
@@ -15,6 +18,12 @@ public final class LandingPageUtil {
     private LandingPageUtil() {
     }
 
+    /**
+     * Create publication landing page URI.
+     *
+     * @param publicationId IRI for publication.
+     * @return landing page for publication.
+     */
     public static URI getLandingPage(URI publicationId) {
         return Optional.of(publicationId)
             .filter(checkUriHasPath())
