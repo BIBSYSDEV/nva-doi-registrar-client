@@ -37,7 +37,7 @@ public class DataCiteClient implements DoiClient {
     public static final String ERROR_DELETING_DOI = "Error deleting DOI";
     public static final String ERROR_COMMUNICATION_TEMPLATE = "Error during API communication: ({})";
     public static final String COLON_SPACE = ": ";
-    private static final String PREFIX_TEMPLATE_ENTRY = "{}";
+    public static final String PREFIX_TEMPLATE_ENTRY = "{}";
 
     public static final String DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES = COLON_SPACE
         + PREFIX_TEMPLATE_ENTRY
@@ -77,26 +77,14 @@ public class DataCiteClient implements DoiClient {
      */
     @Override
     public Doi createDoi(URI customerId) throws ClientException {
-        DataCiteMdsClientConfig config = configFactory.getConfig(customerId);
-        var prefix = config.getCustomerDoiPrefix();
+        DataCiteMdsClientConfig customerConfigInfo = configFactory.getConfig(customerId);
         try {
-            HttpResponse<String> response = sendDraftDoiRequest(customerId, config, prefix);
+            HttpResponse<String> response = sendDraftDoiRequest(customerId, customerConfigInfo);
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
             return responseBody.toDoi();
         } catch (IOException | InterruptedException e) {
             throw logAndCreateClientException("createDoi", e);
         }
-    }
-
-    private HttpResponse<String> sendDraftDoiRequest(URI customerId, DataCiteMdsClientConfig config, String prefix)
-        throws IOException, InterruptedException, CreateDoiException {
-        var response = prepareAuthenticatedDataCiteRestConnection(customerId)
-            .createDoi(config);
-        if (isUnsuccessfulResponse(response)) {
-            logger.error(ERROR_CREATING_DOI_TEMPLATE, prefix, response.statusCode(), response.body());
-            throw new CreateDoiException(prefix, response.statusCode(), response.body());
-        }
-        return response;
     }
 
     /**
@@ -165,6 +153,22 @@ public class DataCiteClient implements DoiClient {
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw logAndCreateClientException("deleteDraftDoi", e);
         }
+    }
+
+    private HttpResponse<String> sendDraftDoiRequest(URI customerId, DataCiteMdsClientConfig config)
+        throws IOException, InterruptedException, CreateDoiException {
+        DataCiteRestConnection connection = prepareAuthenticatedDataCiteRestConnection(customerId);
+        HttpResponse<String> response = connection.createDoi(config);
+        if (isUnsuccessfulResponse(response)) {
+            String prefix = config.getCustomerDoiPrefix();
+            throw handleUnsuccessfulResponse(prefix, response);
+        }
+        return response;
+    }
+
+    private CreateDoiException handleUnsuccessfulResponse(String prefix, HttpResponse<String> response) {
+        logger.error(ERROR_CREATING_DOI_TEMPLATE, prefix, response.statusCode(), response.body());
+        return new CreateDoiException(prefix, response.statusCode(), response.body());
     }
 
     private DataCiteMdsConnection prepareAuthenticatedDataCiteConnection(URI customerId) {
