@@ -35,7 +35,6 @@ import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Map;
@@ -62,7 +61,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -76,7 +74,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
             + "wiremock server and local signed SSL certificate for now.";
     public static final String DOIS_PATH_PREFIX = "/dois";
-    public static final String DATACITE_RESTP_API = "https://api.test.datacite.org/dois";
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -90,10 +87,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
-    private DataCiteConfigurationFactory configurationFactory;
-    private PasswordAuthenticationFactory authenticationFactory;
     private DataCiteClient doiClient;
-    private DataCiteConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
 
     void startProxyToWireMock() {
@@ -122,15 +116,15 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         startProxyToWireMock();
         stubRequireAuthenticationForAllApiCalls();
 
-        configurationFactory = new DataCiteConfigurationFactoryForSystemTests(
+        DataCiteConfigurationFactory configurationFactory = new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
-        authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
+        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
 
         var httpClientBuilder = HttpClient.newBuilder()
             .connectTimeout(Duration.ofMinutes(1))
             .sslContext(createInsecureSslContextTrustingEverything());
 
-        mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
+        DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
             authenticationFactory,
             mdsHost,
             mdsPort);
@@ -140,10 +134,11 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     @Test
     @Tag("online")
     void createDoiTest() throws ClientException {
-        DataCiteConfigurationFactory configFactory = mockConfigFactory();
+        final String dataciteRestpApi = "https://api.test.datacite.org/dois";
+        DataCiteConfigurationFactory configFactory = mockConfigFactory(dataciteRestpApi);
 
         var passwordFactory = new PasswordAuthenticationFactory(configFactory);
-        URI targetUri = URI.create(DATACITE_RESTP_API);
+        URI targetUri = URI.create(dataciteRestpApi);
 
         var connectionFactory = new DataCiteConnectionFactory(passwordFactory, targetUri.getHost(), -1);
         var doiClient = new DataCiteClient(configFactory, connectionFactory);
@@ -248,9 +243,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
 
-    private DataCiteConfigurationFactory mockConfigFactory() {
+    private DataCiteConfigurationFactory mockConfigFactory(String dataciteRestApi) {
 
-        URI dataciteApi = URI.create(DATACITE_RESTP_API);
+        URI dataciteApi = URI.create(dataciteRestApi);
         String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
 
         String unitDoiPrefix = "10.16903";
@@ -405,36 +400,32 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         return new X509ExtendedTrustManager() {
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
-                throws CertificateException {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
-                throws CertificateException {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
 
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-                throws CertificateException {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
-                throws CertificateException {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
 
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
 
             }
 
