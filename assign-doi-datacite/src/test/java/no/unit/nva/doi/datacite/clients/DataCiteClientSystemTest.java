@@ -14,17 +14,21 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.APPLICATION_XML_CHARSET_UTF_8;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.LANDING_PAGE_BODY_FORMAT;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8;
+import static no.unit.nva.doi.datacite.restclient.DataCiteRestConnection.JSON_API_CONTENT_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -40,21 +44,27 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
+import nva.commons.utils.log.LogUtils;
+import nva.commons.utils.log.TestAppender;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 class DataCiteClientSystemTest extends DataciteClientTestBase {
 
@@ -64,6 +74,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
             + "wiremock server and local signed SSL certificate for now.";
+    public static final String DOIS_PATH_PREFIX = "/dois";
+    public static final String DATACITE_RESTP_API = "https://api.test.datacite.org/dois";
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -74,14 +86,13 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final char COLON = ':';
     private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
-
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
     private DataCiteConfigurationFactory configurationFactory;
     private PasswordAuthenticationFactory authenticationFactory;
     private DataCiteClient doiClient;
-    private DataCiteMdsConnectionFactory mdsConnectionFactory;
+    private DataCiteConnectionFactory mdsConnectionFactory;
     private WireMockServer wireMockServer;
 
     void startProxyToWireMock() {
@@ -118,24 +129,67 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .connectTimeout(Duration.ofMinutes(1))
             .sslContext(createInsecureSslContextTrustingEverything());
 
-        mdsConnectionFactory = new DataCiteMdsConnectionFactory(httpClientBuilder,
+        mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
             authenticationFactory,
             mdsHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
+    @Disabled
     @Test
-    void createDoiWithPrefixAndMetadataForCustomerReturnsDoiOnSuccess() throws ClientException {
-        var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, UUID.randomUUID().toString());
-        stubCreateDoiResponse(expectedCreatedServerDoi);
+    void createDoiTest() throws ClientException {
+        String randomSuffix = UUID.randomUUID().toString();
 
-        Doi actual = doiClient.createDoi(EXAMPLE_CUSTOMER_ID, getValidMetadataPayload());
+        DataCiteConfigurationFactory configFactory = mockConfigFactory();
+
+        var passwordFactory = new PasswordAuthenticationFactory(configFactory);
+        URI targetUri = URI.create(DATACITE_RESTP_API);
+
+        var connectionFactory = new DataCiteConnectionFactory(passwordFactory, targetUri.getHost(), -1);
+        var doiClient = new DataCiteClient(configFactory, connectionFactory);
+        Doi doi = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
+        assertThat(doi, is(not(nullValue())));
+    }
+
+    @Test
+    void createDoiWithPrefixForCustomerReturnsDoiOnSuccess() throws ClientException {
+        String randomSuffix = UUID.randomUUID().toString();
+        DraftDoiDto draftDoiDto = DraftDoiDto.create(DEMO_PREFIX, randomSuffix);
+        var expectedCreatedServerDoi = createDoi(DEMO_PREFIX, randomSuffix);
+
+        stubCreateDoiResponse(draftDoiDto);
+
+        Doi actual = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
         assertThat(actual, is(instanceOf(Doi.class)));
         assertThat(actual.getPrefix(), is(equalTo(expectedCreatedServerDoi.getPrefix())));
         assertThat(actual.getSuffix(), is(equalTo(expectedCreatedServerDoi.getSuffix())));
 
-        verifyCreateDoiResponse(actual);
+        verifyCreateDoiResponse(actual.getPrefix());
+    }
+
+    @Test
+    void createDoiLogsResponseFromDataCiteWhenRequestFails() {
+        TestAppender logAppender = LogUtils.getTestingAppender(DataCiteClient.class);
+        String expectedResponseMessage = "ExpectedResponseMessage";
+        stubCreateFailedResponse(expectedResponseMessage);
+        Executable action = () -> doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
+
+        CreateDoiException exception = assertThrows(CreateDoiException.class, action);
+        assertThat(exception.getMessage(), containsString(expectedResponseMessage));
+        assertThat(logAppender.getMessages(), containsString(expectedResponseMessage));
+    }
+
+    @Test
+    void createDoiIncludesResponseFromDataciteInExceptionWhenRequestFails() {
+        TestAppender logAppender = LogUtils.getTestingAppender(DataCiteClient.class);
+        String expectedResponseMessage = "ExpectedResponseMessage";
+        stubCreateFailedResponse(expectedResponseMessage);
+        Executable action = () -> doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
+
+        CreateDoiException exception = assertThrows(CreateDoiException.class, action);
+        assertThat(exception.getMessage(), containsString(expectedResponseMessage));
+        assertThat(logAppender.getMessages(), containsString(expectedResponseMessage));
     }
 
     @Test
@@ -193,6 +247,23 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+    }
+
+    private DataCiteConfigurationFactory mockConfigFactory() {
+
+        URI dataciteApi = URI.create(DATACITE_RESTP_API);
+        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
+
+        String unitDoiPrefix = "10.16903";
+
+        String nvaTestDataciteAccount = "TESTTO.NVA";
+        var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
+            unitDoiPrefix,
+            dataciteApi,
+            nvaTestDataciteAccount,
+            password);
+
+        return new DataCiteConfigurationFactoryForSystemTests(Map.of(EXAMPLE_CUSTOMER_ID, config));
     }
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
@@ -267,6 +338,13 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
     }
 
+    private void verifyCreateDoiResponse(String doiPrefix) {
+        verify(postRequestedFor(urlEqualTo(DOIS_PATH_PREFIX))
+            .withBasicAuth(getExpectedAuthenticatedCredentials())
+            .withRequestBody(WireMock.containing(doiPrefix))
+            .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(JSON_API_CONTENT_TYPE)));
+    }
+
     private void stubUpdateMetadataResponse(String expectedPathForUpdatingMetadata) {
         stubFor(post(urlEqualTo(expectedPathForUpdatingMetadata))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
@@ -275,16 +353,22 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
                 .withBody(HTTP_RESPONSE_OK)));
     }
 
-    private void verifyCreateDoiResponse(Doi actual) {
-        verifyUpdateMetadataResponse(metadataPathPrefix + FORWARD_SLASH + actual.getPrefix());
-    }
+    private void stubCreateDoiResponse(DraftDoiDto expectedResponseBody) {
 
-    private void stubCreateDoiResponse(Doi expectedCreatedServerDoi) {
-        stubFor(post(urlEqualTo(metadataPathPrefix + FORWARD_SLASH + DEMO_PREFIX))
+        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
             .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
             .willReturn(aResponse()
                 .withStatus(HttpStatus.SC_CREATED)
-                .withBody(successfullyCreateMetadataResponse(expectedCreatedServerDoi))));
+                .withBody(expectedResponseBody.toJson())));
+    }
+
+    private void stubCreateFailedResponse(String expectedBody) {
+
+        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
+            .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+            .willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_FORBIDDEN)
+                .withBody(expectedBody)));
     }
 
     private void stubRequireAuthenticationForAllApiCalls() {
@@ -297,10 +381,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     private String createRealm() {
         return "Basic realm=\"" + mdsHost + "\"";
-    }
-
-    private String successfullyCreateMetadataResponse(Doi newDoi) {
-        return String.format("OK (%s)", newDoi.toIdentifier());
     }
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {

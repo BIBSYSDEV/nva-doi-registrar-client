@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import org.junit.jupiter.api.Test;
 
 class DoiClientFactoryTest {
@@ -15,7 +15,7 @@ class DoiClientFactoryTest {
     @Test
     void getClientWithDataciteThenReturnDoiClient() {
         var dataciteConfigurationFactory = mock(DataCiteConfigurationFactory.class);
-        var dataciteMdsConnectionFactory = mock(DataCiteMdsConnectionFactory.class);
+        var dataciteMdsConnectionFactory = mock(DataCiteConnectionFactory.class);
         var actual = DoiClientFactory.getClient(dataciteConfigurationFactory, dataciteMdsConnectionFactory);
         assertThat(actual, is(instanceOf(DataCiteClient.class)));
         assertThat(actual, isA(DoiClient.class));
