@@ -10,6 +10,7 @@ import java.net.http.HttpClient.Builder;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
 
 /**
@@ -72,9 +73,10 @@ public class DataCiteConnectionFactory {
         return new DataCiteMdsConnection(httpClient, apiHostName, apiPort);
     }
 
-    public DataCiteRestConnection getAuthenticatedRestConnection(URI customerId) {
+    public DataCiteRestConnection getAuthenticatedRestConnection(
+        URI customerId, DataCiteMdsClientSecretConfig clientConfigWithSecrets) {
         HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
-        return new DataCiteRestConnection(httpClient, apiHostName, apiPort);
+        return new DataCiteRestConnection(httpClient, apiHostName, apiPort, clientConfigWithSecrets);
     }
 
     public HttpClient getAuthenticatedHttpClientForDatacite(URI customerId) {

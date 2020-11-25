@@ -44,6 +44,7 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;

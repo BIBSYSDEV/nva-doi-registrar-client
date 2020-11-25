@@ -9,8 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.Base64;
-import no.unit.nva.doi.datacite.clients.DraftDoiDto;
-import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
+import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -22,11 +21,12 @@ public class DataCiteRestConnection {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ERROR_CONFIG_WITHOUT_SECRETS =
         "Creating a doi requires a client configuration with secrets (%s)";
+    public static final String COLON = ":";
     private static final String AUTHORIZATION_HEADER = "Authotization";
-
     private final HttpClient httpClient;
     private final String host;
     private final int port;
+    private final DataCiteMdsClientSecretConfig configWithSecretes;
 
     /**
      * A DataCite connection for the RestApi.
@@ -35,10 +35,12 @@ public class DataCiteRestConnection {
      * @param host       the host address without scheme and path
      * @param port       the port (for https 443)
      */
-    public DataCiteRestConnection(HttpClient httpClient, String host, int port) {
+    public DataCiteRestConnection(HttpClient httpClient, String host, int port,
+                                  DataCiteMdsClientSecretConfig configWithSecrets) {
         this.httpClient = httpClient;
         this.host = host;
         this.port = port;
+        this.configWithSecretes = configWithSecrets;
     }
 
     /**
@@ -48,11 +50,11 @@ public class DataCiteRestConnection {
      * @throws IOException          IOException
      * @throws InterruptedException InterruptedException
      */
-    public HttpResponse<String> createDoi(DataCiteMdsClientConfig config)
+    public HttpResponse<String> createDoi()
         throws IOException, InterruptedException {
 
-        String bodyJson = requetBodyContainingTheDoiPrefix(config);
-        String authString = createAuthenticationString(config);
+        String bodyJson = requestBodyContainingTheDoiPrefix();
+        String authString = createAuthenticationString();
         HttpRequest postRequest = HttpRequest.newBuilder()
             .uri(requestTargetUri())
             .POST(BodyPublishers.ofString(bodyJson))
@@ -63,30 +65,21 @@ public class DataCiteRestConnection {
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
-    private String requetBodyContainingTheDoiPrefix(DataCiteMdsClientConfig config) {
-        DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(config.getCustomerDoiPrefix());
+    private static String basicAuth(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
+    }
+
+    private String requestBodyContainingTheDoiPrefix() {
+        DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(configWithSecretes.getCustomerDoiPrefix());
         return bodyObject.toJson();
     }
 
-    private static String basicAuth(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-    }
+    private String createAuthenticationString() {
 
-    private String createAuthenticationString(DataCiteMdsClientConfig config) {
-        DataCiteMdsClientSecretConfig configWithSecrets = convertConfigToConfigWithSecrets(config);
         return basicAuth(
-            configWithSecrets.getDataCiteMdsClientUsername(),
-            configWithSecrets.getDataCiteMdsClientPassword()
+            configWithSecretes.getDataCiteMdsClientUsername(),
+            configWithSecretes.getDataCiteMdsClientPassword()
         );
-    }
-
-    private DataCiteMdsClientSecretConfig convertConfigToConfigWithSecrets(DataCiteMdsClientConfig config) {
-
-        if (config instanceof DataCiteMdsClientSecretConfig) {
-            return (DataCiteMdsClientSecretConfig) config;
-        }
-        String className = DataCiteMdsClientSecretConfig.class.getName();
-        throw new IllegalStateException(String.format(ERROR_CONFIG_WITHOUT_SECRETS, className));
     }
 
     private URI requestTargetUri() {

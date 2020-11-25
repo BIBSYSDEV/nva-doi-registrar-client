@@ -1,4 +1,4 @@
-package no.unit.nva.doi.datacite.clients;
+package no.unit.nva.doi.datacite.restclient.models;
 
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static nva.commons.utils.attempt.Try.attempt;
