@@ -59,6 +59,7 @@ public class DataCiteRestConnection {
             .uri(apiEndpointBase)
             .POST(BodyPublishers.ofString(bodyJson))
             .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+            // TODO: remove when DataCite REST-API prompts for Authentication
             .headers(AUTHORIZATION_HEADER, authString)
             .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
