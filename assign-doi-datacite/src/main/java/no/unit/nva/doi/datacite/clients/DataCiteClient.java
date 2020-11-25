@@ -12,14 +12,11 @@ import no.unit.nva.doi.datacite.clients.exception.DeleteMetadataException;
 import no.unit.nva.doi.datacite.clients.exception.SetLandingPageException;
 import no.unit.nva.doi.datacite.clients.exception.UpdateMetadataException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.clients.models.ImmutableDoi;
-import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
-import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
-import org.apache.commons.lang3.StringUtils;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
+import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
+import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +37,8 @@ public class DataCiteClient implements DoiClient {
     public static final String ERROR_DELETING_DOI = "Error deleting DOI";
     public static final String ERROR_COMMUNICATION_TEMPLATE = "Error during API communication: ({})";
     public static final String COLON_SPACE = ": ";
-    protected static final String CHARACTER_PARENTHESES_START = "(";
-    protected static final String CHARACTER_PARENTHESES_STOP = ")";
-
-    protected static final char FORWARD_SLASH = '/';
     private static final String PREFIX_TEMPLATE_ENTRY = "{}";
+
     public static final String DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES = COLON_SPACE
         + PREFIX_TEMPLATE_ENTRY
         + HTTP_STATUS_LOG_TEMPLATE;
@@ -60,12 +54,15 @@ public class DataCiteClient implements DoiClient {
     public static final String ERROR_SETTING_DOI_URL_TEMPLATE =
         ERROR_SETTING_DOI_URL
             + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
-    private static final String HTTP_STATTUS_LOG_MESSAGE = "{}";
+
+    protected static final char FORWARD_SLASH = '/';
+
+    private static final String HTTP_STATUS_LOG_MESSAGE = "{}";
     public static final String ERROR_CREATING_DOI_TEMPLATE =
         ERROR_CREATING_DOI
             + PREFIX_TEMPLATE_ENTRY
-            + HTTP_STATUS_LOG_TEMPLATE +
-              HTTP_STATTUS_LOG_MESSAGE;
+            + HTTP_STATUS_LOG_TEMPLATE
+            + HTTP_STATUS_LOG_MESSAGE;
     private static final Logger logger = LoggerFactory.getLogger(DataCiteClient.class);
     private final DataCiteConnectionFactory dataCiteApiConnectionFactory;
     private final DataCiteConfigurationFactory configFactory;
@@ -81,27 +78,27 @@ public class DataCiteClient implements DoiClient {
      * {@inheritDoc}
      */
     @Override
-    public Doi createDoi(URI customerId ) throws ClientException {
-        DataCiteMdsClientSecretConfig config = (DataCiteMdsClientSecretConfig) configFactory.getConfig(customerId);
+    public Doi createDoi(URI customerId) throws ClientException {
+        DataCiteMdsClientConfig config = configFactory.getConfig(customerId);
         var prefix = config.getCustomerDoiPrefix();
         try {
-
-            var response = prepareAuthenticatedDataCiteRestConnection(customerId)
-                .createDoi(config);
-            if (isUnsuccessfulResponse(response)) {
-                logger.error(ERROR_CREATING_DOI_TEMPLATE, prefix, response.statusCode(),response.body());
-                throw new CreateDoiException(prefix, response.statusCode(), response.body());
-            }
-
+            HttpResponse<String> response = sendDraftDoiRequest(customerId, config, prefix);
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
-            return Doi.builder()
-                .withSuffix(responseBody.getSuffix())
-                .withPrefix(responseBody.getPrefix())
-                .build();
-
-        } catch (IOException  | InterruptedException e) {
+            return responseBody.toDoi();
+        } catch (IOException | InterruptedException e) {
             throw logAndCreateClientException("createDoi", e);
         }
+    }
+
+    private HttpResponse<String> sendDraftDoiRequest(URI customerId, DataCiteMdsClientConfig config, String prefix)
+        throws IOException, InterruptedException, CreateDoiException {
+        var response = prepareAuthenticatedDataCiteRestConnection(customerId)
+            .createDoi(config);
+        if (isUnsuccessfulResponse(response)) {
+            logger.error(ERROR_CREATING_DOI_TEMPLATE, prefix, response.statusCode(), response.body());
+            throw new CreateDoiException(prefix, response.statusCode(), response.body());
+        }
+        return response;
     }
 
     /**
@@ -176,20 +173,13 @@ public class DataCiteClient implements DoiClient {
         return dataCiteApiConnectionFactory.getAuthenticatedMdsConnection(customerId);
     }
 
-    private DataCiteRestConnection prepareAuthenticatedDataCiteRestConnection(URI customerId){
+    private DataCiteRestConnection prepareAuthenticatedDataCiteRestConnection(URI customerId) {
         return dataCiteApiConnectionFactory.getAuthenticatedRestConnection(customerId);
     }
 
     private ClientException logAndCreateClientException(String doiClientMethodName, Exception parentException) {
         logger.error(ERROR_COMMUNICATION_TEMPLATE, doiClientMethodName);
         return new ClientException(doiClientMethodName, parentException);
-    }
-
-    private Doi extractDoiPrefixAndSuffix(String createMetadataResponseBody) {
-        var identifier = StringUtils.substringBetween(createMetadataResponseBody,
-            CHARACTER_PARENTHESES_START,
-            CHARACTER_PARENTHESES_STOP);
-        return Doi.builder().identifier(identifier).build();
     }
 
     private boolean isUnsuccessfulResponse(HttpResponse<String> response) {

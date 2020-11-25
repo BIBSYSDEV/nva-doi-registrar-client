@@ -63,6 +63,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -136,8 +137,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
-    @Disabled
     @Test
+    @Tag("online")
     void createDoiTest() throws ClientException {
         DataCiteConfigurationFactory configFactory = mockConfigFactory();
 

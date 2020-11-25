@@ -2,9 +2,6 @@ package no.unit.nva.doi.datacite.clients;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,23 +47,6 @@ class DataCiteClientTest extends DataciteClientTestBase {
     private DataCiteConnectionFactory mdsConnectionFactory;
 
     private DataCiteMdsConnection mdsConnectionThrowingIoException;
-//
-//    @Test
-//    public void createDoiCreatesDraftDoiWhenCustomerCredentialsAreCorrect()
-//        throws DataCiteMdsConfigValidationFailedException {
-//        DataCiteConfigurationFactory notUsedConfigFactory = nvaTestAccountClientConfig();
-//        DataCiteMdsConnectionFactory notUserConnectionFactory = mock(DataCiteMdsConnectionFactory.class);
-//
-//        PasswordAuthenticationFactory nvaCredentialsFactory = nvaCredentialsFactory();
-//
-//        DataCiteClient client = new DataCiteClient(notUsedConfigFactory, notUserConnectionFactory);
-//
-//        DataciteConnection dataciteConnection = new DataciteConnection(EXAMPLE_CUSTOMER_ID,
-//            nvaCredentialsFactory, DATACITE_TEST_DOIS_HTTPS);
-//        Doi doi = client.createDoi(EXAMPLE_CUSTOMER_ID, dataciteConnection, URI.create(DATACITE_TEST_DOIS_HTTPS));
-//
-//        assertThat(doi, is(not(nullValue())));
-//    }
 
     @BeforeEach
     void setUp() throws InterruptedException, IOException, URISyntaxException {
