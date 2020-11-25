@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 public class OnlineTests {
 
     public static final URI DATACITE_DRAFT_DOI_REST_API = URI.create("https://api.test.datacite.org/dois");
+    public static final int DEFAULT_HTTPS_PORT = 443;
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
 
     @Test
@@ -30,7 +31,7 @@ public class OnlineTests {
         var passwordFactory = new PasswordAuthenticationFactory(configFactory);
 
         var connectionFactory = new DataCiteConnectionFactory(passwordFactory, DATACITE_DRAFT_DOI_REST_API.getHost(),
-            -1);
+            DEFAULT_HTTPS_PORT);
         var doiClient = new DataCiteClient(configFactory, connectionFactory);
         Doi doi = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
         assertThat(doi, is(not(nullValue())));
