@@ -46,13 +46,14 @@ import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+
+import no.unit.nva.doi.models.Doi;
 import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.log.LogUtils;
@@ -62,7 +63,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -248,19 +248,20 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
 
+    /*This method is used only for the online test*/
     private DataCiteConfigurationFactory mockConfigFactory() {
 
         URI dataciteApi = URI.create(DATACITE_RESTP_API);
-        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
+        String testDataciteAccountUsername = "TESTTO.NVA";
+        String testDataciteAccountpassword = new Environment().readEnv("TESTTO_NVA_PASSWORD");
 
         String unitDoiPrefix = "10.16903";
 
-        String nvaTestDataciteAccount = "TESTTO.NVA";
         var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             unitDoiPrefix,
             dataciteApi,
-            nvaTestDataciteAccount,
-            password);
+            testDataciteAccountpassword,
+            testDataciteAccountpassword);
 
         return new DataCiteConfigurationFactoryForSystemTests(Map.of(EXAMPLE_CUSTOMER_ID, config));
     }
