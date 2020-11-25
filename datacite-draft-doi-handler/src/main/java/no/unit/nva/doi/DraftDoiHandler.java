@@ -10,7 +10,7 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
@@ -42,11 +42,10 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     /**
      * Default constructor for DraftDoiHandler.
-     *
-     * @throws IOException  IOException
+
      */
     @JacocoGenerated
-    public  DraftDoiHandler() throws IOException {
+    public  DraftDoiHandler()  {
         this(defaultDoiClient());
     }
 
@@ -54,7 +53,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     private static DoiClient defaultDoiClient() {
         String dataCiteConfigJson = AppEnv.getDataCiteConfig();
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(dataCiteConfigJson);
-        DataCiteMdsConnectionFactory connectionFactory = new DataCiteMdsConnectionFactory(
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
             new PasswordAuthenticationFactory(configFactory),
             AppEnv.getDataCiteHost(),
             AppEnv.getDataCitePort());
@@ -87,9 +86,8 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         URI customerId = getCustomerId(publication);
         logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
-        String dataCiteXml = getDataCiteXml(publication);
         try {
-            Doi doi = doiClient.createDoi(customerId, dataCiteXml);
+            Doi doi = doiClient.createDoi(customerId);
             logger.debug(DRAFTED_NEW_DOI_LOG, doi);
             return createUpdateDoi(publication, doi);
         } catch (ClientException e) {
@@ -111,12 +109,5 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
             .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
     }
 
-    private String getDataCiteXml(Publication publication) {
-        DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
-        try {
-            return new Transformer(dataCiteMetadataDto).asXml();
-        } catch (JAXBException e) {
-            throw new RuntimeException(TRANSFORMING_PUBLICATION_ERROR, e);
-        }
-    }
+
 }
