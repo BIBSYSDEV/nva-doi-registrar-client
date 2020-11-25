@@ -75,14 +75,17 @@ public class DraftDoiDto {
         return attempt(() -> objectMapper.writeValueAsString(rootNode)).orElseThrow();
     }
 
+    @JacocoGenerated
     public String getDoi() {
         return doi;
     }
 
+    @JacocoGenerated
     public String getPrefix() {
         return prefix;
     }
 
+    @JacocoGenerated
     public String getSuffix() {
         return suffix;
     }
