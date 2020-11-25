@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -15,8 +16,11 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
+import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
+import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.utils.log.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +29,7 @@ import org.junit.jupiter.api.Test;
 class DataCiteClientTest extends DataciteClientTestBase {
 
     public static final String ERROR_DOICLIENT_METHOD_DELETE_DRAFT_DOI = "deleteDraftDoi";
+
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final String DEMO_PREFIX = "10.5072";
     private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
@@ -36,7 +41,7 @@ class DataCiteClientTest extends DataciteClientTestBase {
     private DataCiteConfigurationFactory configurationFactory;
 
     private DataCiteClient sut;
-    private DataCiteMdsConnectionFactory mdsConnectionFactory;
+    private DataCiteConnectionFactory mdsConnectionFactory;
 
     private DataCiteMdsConnection mdsConnectionThrowingIoException;
 
@@ -44,9 +49,9 @@ class DataCiteClientTest extends DataciteClientTestBase {
     void setUp() throws InterruptedException, IOException, URISyntaxException {
         configurationFactory = createDataConfigurationFactoryForTest();
 
-        mdsConnectionFactory = mock(DataCiteMdsConnectionFactory.class);
+        mdsConnectionFactory = mock(DataCiteConnectionFactory.class);
         mdsConnectionThrowingIoException = mock(DataCiteMdsConnection.class);
-        when(mdsConnectionFactory.getAuthenticatedConnection(any(URI.class)))
+        when(mdsConnectionFactory.getAuthenticatedMdsConnection(any(URI.class)))
             .thenReturn(mdsConnectionThrowingIoException);
 
         when(mdsConnectionThrowingIoException.deleteDoi(anyString())).thenThrow(IOException.class);
