@@ -66,10 +66,10 @@ public class DataCiteClient implements DoiClient {
     private final DataCiteConfigurationFactory configFactory;
 
     public DataCiteClient(DataCiteConfigurationFactory configFactory,
-                          DataCiteConnectionFactory mdsConnectionFactory
+                          DataCiteConnectionFactory connectionFactory
     ) {
         this.configFactory = configFactory;
-        this.dataCiteApiConnectionFactory = mdsConnectionFactory;
+        this.dataCiteApiConnectionFactory = connectionFactory;
     }
 
     /**
