@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import nva.commons.utils.JacocoGenerated;
 
+/**
+ * Class for exchanging data with DataCite when requesting a draft DOI. The data-structure defined here is used by both
+ * request and response to the POST /doi method.
+ */
 public class DraftDoiDto {
 
     public static final String DATA_FIELD = "data";
