@@ -14,7 +14,7 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
@@ -92,7 +92,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
             dataCiteConfigJson);
 
-        DataCiteMdsConnectionFactory dataCiteMdsConnectionFactory = new DataCiteMdsConnectionFactory(
+        DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
             new PasswordAuthenticationFactory(dataCiteConfigurationFactory), AppEnv.getDataCiteHost(),
             AppEnv.getDataCitePort());
 

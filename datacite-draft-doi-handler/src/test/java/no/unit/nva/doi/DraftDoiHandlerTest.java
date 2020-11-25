@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
@@ -75,7 +76,7 @@ public class DraftDoiHandlerTest {
     private DoiClient getDoiClientMock() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
-        Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
+        Mockito.when(doiClient.createDoi(Mockito.any(URI.class))).thenReturn(doi);
         return doiClient;
     }
 }

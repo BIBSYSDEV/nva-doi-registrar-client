@@ -11,4 +11,9 @@ dependencies {
     runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
 
     testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: '0.1.13'
+
+    compileOnly( group: 'com.amazonaws', name: 'aws-java-sdk-api-gateway', version: awsSdkVersion) {
+        because "PMD complains for the com/amazonaws/regions/Regions class"
+    }
+
 }
