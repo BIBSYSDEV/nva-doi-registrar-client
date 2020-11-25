@@ -55,8 +55,6 @@ public class DataCiteClient implements DoiClient {
         ERROR_SETTING_DOI_URL
             + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
 
-    protected static final char FORWARD_SLASH = '/';
-
     private static final String HTTP_STATUS_LOG_MESSAGE = "{}";
     public static final String ERROR_CREATING_DOI_TEMPLATE =
         ERROR_CREATING_DOI
