@@ -22,7 +22,7 @@ Parameters:
   DataCiteMdsConfigs:
     Type: String
     Description: Institution configs for DataCite MDS API
-    Default: '{{resolve:secretsmanager:dataciteMdsConfigs:SecretString}}'
+    Default: '{{resolve:secretsmanager:dataCiteCustomerSecrets:SecretString}}'
   DataCiteHost:
     Type: String
     Default: mds.test.datacite.org
