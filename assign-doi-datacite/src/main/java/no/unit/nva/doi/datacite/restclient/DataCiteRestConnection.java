@@ -51,18 +51,21 @@ public class DataCiteRestConnection {
     public HttpResponse<String> createDoi(DataCiteMdsClientConfig config)
         throws IOException, InterruptedException {
 
-        DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(config.getCustomerDoiPrefix());
-        String bodyJson = bodyObject.toJson();
-        URI apiEndpointBase = createApiEndpointBase();
+        String bodyJson = requetBodyContainingTheDoiPrefix(config);
         String authString = createAuthenticationString(config);
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(apiEndpointBase)
+            .uri(requestTargetUri())
             .POST(BodyPublishers.ofString(bodyJson))
             .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
             // TODO: remove when DataCite REST-API prompts for Authentication
             .headers(AUTHORIZATION_HEADER, authString)
             .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String requetBodyContainingTheDoiPrefix(DataCiteMdsClientConfig config) {
+        DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(config.getCustomerDoiPrefix());
+        return bodyObject.toJson();
     }
 
     private static String basicAuth(String username, String password) {
@@ -86,7 +89,7 @@ public class DataCiteRestConnection {
         throw new IllegalStateException(String.format(ERROR_CONFIG_WITHOUT_SECRETS, className));
     }
 
-    private URI createApiEndpointBase() {
+    private URI requestTargetUri() {
         return attempt(this::buildUri).orElseThrow();
     }
 
