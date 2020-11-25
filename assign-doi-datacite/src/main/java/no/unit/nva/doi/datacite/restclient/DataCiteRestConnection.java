@@ -50,36 +50,35 @@ public class DataCiteRestConnection {
      * @throws IOException          IOException
      * @throws InterruptedException InterruptedException
      */
+    // TODO: remove the Authorization Header when DataCite REST-API prompts for Authentication
     public HttpResponse<String> createDoi()
         throws IOException, InterruptedException {
 
         String bodyJson = requestBodyContainingTheDoiPrefix();
-        String authString = createAuthenticationString();
         HttpRequest postRequest = HttpRequest.newBuilder()
             .uri(requestTargetUri())
             .POST(BodyPublishers.ofString(bodyJson))
             .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
-            // TODO: remove when DataCite REST-API prompts for Authentication
-            .headers(AUTHORIZATION_HEADER, authString)
+            .headers(AUTHORIZATION_HEADER, authorizationString())
             .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
-    private static String basicAuth(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
-    }
 
     private String requestBodyContainingTheDoiPrefix() {
         DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(configWithSecretes.getCustomerDoiPrefix());
         return bodyObject.toJson();
     }
 
-    private String createAuthenticationString() {
-
+    private String authorizationString() {
         return basicAuth(
             configWithSecretes.getDataCiteMdsClientUsername(),
             configWithSecretes.getDataCiteMdsClientPassword()
         );
+    }
+
+    private static String basicAuth(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
     private URI requestTargetUri() {
