@@ -11,13 +11,14 @@ import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteMetadataException;
 import no.unit.nva.doi.datacite.clients.exception.SetLandingPageException;
 import no.unit.nva.doi.datacite.clients.exception.UpdateMetadataException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
+
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
+import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
+import no.unit.nva.doi.models.Doi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

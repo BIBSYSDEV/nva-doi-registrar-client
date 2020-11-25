@@ -43,14 +43,14 @@ import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
-import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
 import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
+import no.unit.nva.doi.models.Doi;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.log.LogUtils;
 import nva.commons.utils.log.TestAppender;
@@ -127,8 +127,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
-
-
 
     @Test
     void createDoiWithPrefixForCustomerReturnsDoiOnSuccess() throws ClientException {
@@ -226,8 +224,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
-
-
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
         return metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
