@@ -37,6 +37,44 @@ Parameters:
     Default: nvaEventBusArn
 
 Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaDefaults
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - sts:AssumeRole
+                  - sts:TagSession
+                Resource: "*"
+        - PolicyName: Events
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:*
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:*
+                  - lambda:InvokeFunction
+                Resource: "*"
+
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -51,6 +89,7 @@ Resources:
           DATACITE_CONFIG: !Ref DataCiteMdsConfigs
           DATACITE_HOST: !Ref DataCiteHost
           DATACITE_PORT: !Ref DataCitePort
+      Role: !GetAtt LambdaRole.Arn
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
@@ -95,6 +134,7 @@ Resources:
           DATACITE_CONFIG: !Ref DataCiteMdsConfigs
           DATACITE_HOST: !Ref DataCiteHost
           DATACITE_PORT: !Ref DataCitePort
+      Role: !GetAtt LambdaRole.Arn
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
