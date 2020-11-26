@@ -19,18 +19,18 @@ import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
+import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import nva.commons.utils.JacocoGenerated;
 import nva.commons.utils.attempt.Failure;
 import nva.commons.utils.aws.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateDto> {
+public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateHolder> {
 
     // exception messages
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
-    public static final String TRANSFORMING_PUBLICATION_ERROR = "Error transforming Publication to DataCite XML";
 
     // log messages
     public static final String RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG =
@@ -63,15 +63,16 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     }
 
     @Override
-    protected DoiUpdateDto processInputPayload(PublicationHolder input,
-                                               AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
-                                               Context context) {
+    protected DoiUpdateHolder processInputPayload(PublicationHolder input,
+                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
+                                                  Context context) {
         Publication publication = getPublication(input);
         if (doiRequestIsApproved(publication)) {
             URI customerId = getCustomerId(publication);
             logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
             return attempt(() -> createNewDoi(publication, customerId))
+                .map(doiUpdateDto -> new DoiUpdateHolder(DoiUpdateHolder.DEFAULT_TYPE, doiUpdateDto))
                 .orElseThrow(this::handleCreatingNewDoiError);
         }
         throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getId().toString());
@@ -94,7 +95,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         return publication.getDoiRequest().getStatus().equals(DoiRequestStatus.APPROVED);
     }
 
-    private RuntimeException handleCreatingNewDoiError(Failure<DoiUpdateDto> fail) {
+    private <T> RuntimeException handleCreatingNewDoiError(Failure<T> fail) {
         return new RuntimeException(ERROR_DRAFTING_DOI_LOG, fail.getException());
     }
 
