@@ -23,16 +23,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
-
 import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.datacite.handlers.DraftDoiHandler;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
-import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
+import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import nva.commons.utils.IoUtils;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -46,6 +44,8 @@ public class DraftDoiHandlerTest {
     public static final String EXPECTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
     public static final String SAMPLE_DOI_PREFIX = "10.1234";
     public static final int SAMPLE_STATUS_CODE = 500;
+    public static final URI PUBLICATION_ID_IN_RESOURCE_FILES = URI.create(
+        "https://example.net/unittest/namespace/publication/654321");
 
     private DoiClient doiClient;
     private DraftDoiHandler handler;
@@ -69,8 +69,9 @@ public class DraftDoiHandlerTest {
             Path.of("doi_publication_event_valid.json"));
         handler.handleRequest(inputStream, outputStream, context);
 
-        DoiUpdateDto response = parseResponse();
-        assertThat(response.getPublicationId(), is(not(nullValue())));
+        DoiUpdateHolder response = parseResponse();
+        URI actualPublicationId = response.getItem().getPublicationId();
+        assertThat(actualPublicationId, is(PUBLICATION_ID_IN_RESOURCE_FILES));
     }
 
     @Test
@@ -94,7 +95,7 @@ public class DraftDoiHandlerTest {
             context);
         RuntimeException exception = assertThrows(RuntimeException.class, action);
         Throwable actualCause = exception.getCause();
-        assertThat(actualCause.getMessage(),containsString(EXPECTED_ERROR_MESSAGE));
+        assertThat(actualCause.getMessage(), containsString(EXPECTED_ERROR_MESSAGE));
     }
 
     @Test
@@ -137,8 +138,8 @@ public class DraftDoiHandlerTest {
         return publicationHolder.getItem().getInstitutionOwner();
     }
 
-    private DoiUpdateDto parseResponse() {
-        return attempt(() -> objectMapper.readValue(outputStream.toString(), DoiUpdateDto.class))
+    private DoiUpdateHolder parseResponse() {
+        return attempt(() -> objectMapper.readValue(outputStream.toString(), DoiUpdateHolder.class))
             .orElseThrow();
     }
 

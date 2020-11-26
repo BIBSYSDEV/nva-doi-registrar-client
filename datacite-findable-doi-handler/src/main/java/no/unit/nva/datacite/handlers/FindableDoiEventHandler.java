@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateHolder> {
 
-    public static final String EVENT_SOURCE = "doi.updateDoiStatus";
+
     // Data validation exceptions
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
@@ -77,7 +77,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         try {
             doiClient.updateMetadata(customerId, doi, getDataCiteXmlMetadata(publication));
             doiClient.setLandingPage(customerId, doi, landingPage);
-            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(EVENT_SOURCE, createDoiUpdateDto(doi, publicationId));
+            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(DoiUpdateHolder.DEFAULT_TYPE,
+                createDoiUpdateDto(doi, publicationId));
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.toUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
