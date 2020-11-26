@@ -103,6 +103,7 @@ Resources:
       Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
           EVENT_BUS: !Ref EventBusName
