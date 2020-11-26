@@ -1,8 +1,8 @@
 package no.unit.nva.doi;
 
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 
 /**
  * Factory for obtaining a {@link DoiClient}.
@@ -17,7 +17,7 @@ public final class DoiClientFactory {
     }
 
     public static DoiClient getClient(DataCiteConfigurationFactory configFactory,
-                                      DataCiteMdsConnectionFactory mdsConnectionFactory) {
+                                      DataCiteConnectionFactory mdsConnectionFactory) {
         return new DataCiteClient(configFactory, mdsConnectionFactory);
     }
 }

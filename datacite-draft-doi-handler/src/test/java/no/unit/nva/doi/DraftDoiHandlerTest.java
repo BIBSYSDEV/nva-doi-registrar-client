@@ -75,7 +75,7 @@ public class DraftDoiHandlerTest {
     private DoiClient getDoiClientMock() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
-        Mockito.when(doiClient.createDoi(Mockito.any(), Mockito.anyString())).thenReturn(doi);
+        Mockito.when(doiClient.createDoi(Mockito.any())).thenReturn(doi);
         return doiClient;
     }
 }

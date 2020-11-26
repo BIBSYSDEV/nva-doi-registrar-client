@@ -25,11 +25,20 @@ public interface DoiClient {
      * their own repository with associated prefix that will be used for NVA.
      *
      * @param customerId          NVAs customerId
-     * @param metadataDataCiteXml datacite schema serialized xml as string
      * @return {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()}) from provider
      * @throws ClientException Error while communicating with Registry Agency
      */
-    Doi createDoi(URI customerId, String metadataDataCiteXml) throws ClientException;
+    Doi createDoi(URI customerId) throws ClientException;
+
+    /**
+     * Creates a draft DOI.
+     *
+     * @param customerId NVA customerId
+     * @param doiProxy   a {@link URI} for custom DOI proxies (default being https://doi.org/.
+     * @return a Doi.
+     * @throws ClientException when communication with Registry Agency fails.
+     */
+    Doi createDoi(URI customerId, URI doiProxy) throws ClientException;
 
     /**
      * Update metadata for a DOI.

@@ -50,11 +50,14 @@ subprojects {
     }
 
     test {
-        useJUnitPlatform()
+        useJUnitPlatform{
+            excludeTags('online')
+        }
         failFast = true
         testLogging {
             events "passed", "skipped", "failed"
         }
+
         finalizedBy jacocoTestReport
     }
 

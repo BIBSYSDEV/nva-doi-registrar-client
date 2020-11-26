@@ -5,3 +5,4 @@ include 'datacite-draft-doi-handler'
 include 'datacite-findable-doi-handler'
 include 'event-handler-template'
 include 'event-handler-template-examples'
+

@@ -15,15 +15,16 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
+import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DataCiteMdsConnectionFactoryTest {
+class DataCiteConnectionFactoryTest {
 
     private static final String DEMO_PREFIX = "10.5072";
     private static final URI KNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/1234");
@@ -40,28 +41,28 @@ class DataCiteMdsConnectionFactoryTest {
     private static final URI UNKNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/41515-unknown-customer");
 
     private DataCiteConfigurationFactory configurationFactory;
-    private DataCiteMdsConnectionFactory sut;
+    private DataCiteConnectionFactory sut;
 
     @BeforeEach
     void configure() throws DataCiteMdsConfigValidationFailedException {
 
         configurationFactory = mock(DataCiteConfigurationFactory.class);
         when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
-        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
-        sut = new DataCiteMdsConnectionFactory(authenticationFactory,
+
+        sut = new DataCiteConnectionFactory(configurationFactory,
             EXAMPLE_MDS_API_ENDPOINT.getHost(),
             EXAMPLE_MDS_API_ENDPOINT.getPort());
     }
 
     @Test
     void getAuthenticatedConnectionIsInstanceOfDataciteMdsConnectionForKnownCustomer() {
-        assertThat(sut.getAuthenticatedConnection(KNOWN_CUSTOMER_ID), is(instanceOf((DataCiteMdsConnection.class))));
+        assertThat(sut.getAuthenticatedMdsConnection(KNOWN_CUSTOMER_ID), is(instanceOf((DataCiteMdsConnection.class))));
     }
 
     @Test
     void getAuthenticatedConnectionHasAuthenticatorButThrowsExceptionForUnknownCustomerWhenAskedForCredentials() {
 
-        var authenticator = sut.getAuthenticatedConnection(UNKNOWN_CUSTOMER_ID)
+        var authenticator = sut.getAuthenticatedMdsConnection(UNKNOWN_CUSTOMER_ID)
             .getHttpClient()
             .authenticator();
         assertThat(authenticator.isPresent(), is(true));
@@ -71,7 +72,7 @@ class DataCiteMdsConnectionFactoryTest {
 
     @Test
     void getAuthenticatedConnectionAttachesPasswordAuthenticationOnHttpClient() {
-        Optional<Authenticator> authenticator = sut.getAuthenticatedConnection(KNOWN_CUSTOMER_ID)
+        Optional<Authenticator> authenticator = sut.getAuthenticatedMdsConnection(KNOWN_CUSTOMER_ID)
             .getHttpClient()
             .authenticator();
         assertThat(authenticator.isPresent(), is(true));
