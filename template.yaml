@@ -73,8 +73,8 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource:
-                  - !GetAtt DataCiteDraftDoiHandlerFunction.Arn
+                #Allow all resources to avoid circular dependencies.
+                Resource: '*'
 
         - PolicyName: SqsEvents
           PolicyDocument:
