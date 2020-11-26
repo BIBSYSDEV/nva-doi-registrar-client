@@ -1,10 +1,13 @@
-package no.unit.nva.doi;
+package no.unit.nva.datacite.handlers;
 
+import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
+import no.unit.nva.doi.DoiClient;
+import no.unit.nva.doi.DoiClientFactory;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
@@ -12,10 +15,13 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
+import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import nva.commons.utils.JacocoGenerated;
+import nva.commons.utils.attempt.Failure;
+import nva.commons.utils.aws.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +37,9 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         "Received request to create draft new DOI for {}";
     public static final String DRAFTED_NEW_DOI_LOG = "Drafted new DOI: {}";
     public static final String ERROR_DRAFTING_DOI_LOG = "Error drafting DOI ";
+
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
+    public static final String NOT_APPROVED_DOI_REQUEST_ERROR = "DoiRequest has not been approved for publication:";
     private final DoiClient doiClient;
 
     /**
@@ -40,7 +48,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
      * @throws IOException IOException
      */
     @JacocoGenerated
-    public DraftDoiHandler()  {
+    public DraftDoiHandler() {
         this(defaultDoiClient());
     }
 
@@ -59,27 +67,41 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
                                                AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
                                                Context context) {
         Publication publication = getPublication(input);
-        URI customerId = getCustomerId(publication);
-        logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
+        if (doiRequestIsApproved(publication)) {
+            URI customerId = getCustomerId(publication);
+            logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
-        try {
-            Doi doi = doiClient.createDoi(customerId);
-            logger.debug(DRAFTED_NEW_DOI_LOG, doi.toUri());
-            return createUpdateDoi(publication, doi);
-        } catch (ClientException e) {
-            throw new RuntimeException(ERROR_DRAFTING_DOI_LOG, e);
+            return attempt(() -> createNewDoi(publication, customerId))
+                .orElseThrow(this::handleCreatingNewDoiError);
         }
+        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getId().toString());
     }
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(dataCiteConfigJson);
 
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory,
-            AppEnv.getDataCiteHost(),
+        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
+            new SecretsReader(), AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
+
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
+            configFactory,
+            AppEnv.getDataCiteRestApiHost(),
             AppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);
+    }
+
+    private boolean doiRequestIsApproved(Publication publication) {
+        return publication.getDoiRequest().getStatus().equals(DoiRequestStatus.APPROVED);
+    }
+
+    private RuntimeException handleCreatingNewDoiError(Failure<DoiUpdateDto> fail) {
+        return new RuntimeException(ERROR_DRAFTING_DOI_LOG, fail.getException());
+    }
+
+    private DoiUpdateDto createNewDoi(Publication publication, URI customerId) throws ClientException {
+        Doi doi = doiClient.createDoi(customerId);
+        logger.debug(DRAFTED_NEW_DOI_LOG, doi);
+        return createUpdateDoi(publication, doi);
     }
 
     private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {

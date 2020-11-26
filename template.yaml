@@ -19,37 +19,111 @@ Globals:
     Timeout: 20
 
 Parameters:
-  DataCiteMdsConfigs:
-    Type: String
-    Description: Institution configs for DataCite MDS API
-    Default: '{{resolve:secretsmanager:dataCiteCustomerSecrets:SecretString}}'
-  DataCiteHost:
+
+  DataCiteMdsHost:
     Type: String
     Default: mds.test.datacite.org
+  DataCiteRestHost:
+    Type: String
+    Default: api.test.datacite.org
   DataCitePort:
     Type: String
     Default: 443
   EventBusName:
-    Type : 'AWS::SSM::Parameter::Value<String>'
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusName
   EventBusArn:
-    Type : 'AWS::SSM::Parameter::Value<String>'
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusArn
+  CustomerSecretsSecretName:
+    Type: String
+    Default: dataCiteCustomerSecrets
+  CustomerSecretsSecretKey:
+    Type: String
+    Default: dataCiteCustomerSecrets
 
 Resources:
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaDefaults
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                #Allow all resources to avoid circular dependencies.
+                Resource: '*'
+
+        - PolicyName: SqsEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:DeleteMessage
+                Resource: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+        - PolicyName: EventBridgeEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                  - events:PutRule
+                Resource: !Ref EventBusArn
+        - PolicyName: ReadSecrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetResourcePolicy
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:ListSecretVersionIds
+                Resource:
+                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
+
+
+
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
           EVENT_BUS: !Ref EventBusName
           AWC_ACCOUNT_ID: !Ref AWS::AccountId
-          DATACITE_CONFIG: !Ref DataCiteMdsConfigs
-          DATACITE_HOST: !Ref DataCiteHost
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:
@@ -73,52 +147,14 @@ Resources:
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
-            Type: SQS
+            Type: EventBridge
             Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
   DataCiteDraftDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
-  DataCiteFindableDoiHandlerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1408
-      Environment:
-        Variables:
-          EVENT_BUS: !Ref EventBusName
-          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-          DATACITE_CONFIG: !Ref DataCiteMdsConfigs
-          DATACITE_HOST: !Ref DataCiteHost
-          DATACITE_PORT: !Ref DataCitePort
-      Events:
-        EventBridgeEvent:
-          Type: EventBridgeRule
-          Properties:
-            EventBusName: !Ref EventBusName
-            Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
-              detail:
-                responsePayload:
-                  type:
-                    - doi.publication
-                  item:
-                    doiRequest:
-                      status:
-                        - APPROVED
-                    doi:
-                      - exists: true
-      EventInvokeConfig:
-        DestinationConfig:
-          OnSuccess:
-            Type: SQS
-            Destination: !Ref EventBusArn
-          OnFailure:
-            Type: SQS
-            Destination: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-  DataCiteFindableDoiHandlerDLQ:
-    Type: "AWS::SQS::Queue"
+
+

@@ -2,9 +2,8 @@ package no.unit.nva.doi.datacite.connectionfactories;
 
 import static java.util.Objects.isNull;
 import static nva.commons.utils.JsonUtils.objectMapper;
-import com.amazonaws.secretsmanager.caching.SecretCache;
+import static nva.commons.utils.attempt.Try.attempt;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import nva.commons.utils.IoUtils;
+import nva.commons.utils.aws.SecretsReader;
 
 /**
  * DataCite configuration factory to obtain DataCite related configuration.
@@ -23,7 +22,8 @@ import nva.commons.utils.IoUtils;
  */
 public class DataCiteConfigurationFactory {
 
-    public static final String ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS = "DATACITE_MDS_CONFIGS";
+    public static final String CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR = "CUSTOMER_SECRETS_SECRET_NAME";
+    public static final String CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR = "CUSTOMER_SECRETS_SECRET_KEY";
     public static final String ERROR_NOT_PRESENT_IN_CONFIG = " not present in config";
     public static final String ERROR_HAS_INVALID_CONFIGURATION = " has invalid configuration!";
 
@@ -32,19 +32,16 @@ public class DataCiteConfigurationFactory {
     /**
      * Construct a new DataCite configuration factory.
      *
-     * @param secretCache to obtain secret configuration from
-     * @param secretId    id to look up in AWS Secret Manager
+     * @param secretsReader to read the secret
+     * @param secretName    the secret's name
+     * @param secretKey     secret's key
      */
-    public DataCiteConfigurationFactory(SecretCache secretCache, String secretId) {
-        this(IoUtils.stringToStream(secretCache.getSecretString(secretId)));
+    public DataCiteConfigurationFactory(SecretsReader secretsReader, String secretName, String secretKey) {
+        this(fetchSecret(secretsReader, secretName, secretKey));
     }
 
-    public DataCiteConfigurationFactory(InputStream jsonConfig) {
+    public DataCiteConfigurationFactory(String jsonConfig) {
         parseConfig(jsonConfig);
-    }
-
-    public DataCiteConfigurationFactory(String secretConfigAsJsonString) {
-        this(IoUtils.stringToStream(secretConfigAsJsonString));
     }
 
     /**
@@ -100,7 +97,11 @@ public class DataCiteConfigurationFactory {
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
     }
 
-    private void parseConfig(InputStream secretConfig) {
+    private static String fetchSecret(SecretsReader secretsReader, String secretName, String secretKey) {
+        return attempt(() -> secretsReader.fetchSecret(secretName, secretKey)).orElseThrow();
+    }
+
+    private void parseConfig(String secretConfig) {
         try {
             var secretConfigurations =
                 Optional.ofNullable(objectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));

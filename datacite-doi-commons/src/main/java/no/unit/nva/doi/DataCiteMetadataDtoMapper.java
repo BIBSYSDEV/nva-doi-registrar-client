@@ -14,6 +14,7 @@ import no.unit.nva.transformer.dto.PublisherDto;
 import no.unit.nva.transformer.dto.ResourceTypeDto;
 import no.unit.nva.transformer.dto.TitleDto;
 
+
 /**
  * DataCiteMetadataDtoMapper is mapping event sources (ie {@link Publication}) into a {@link DataCiteMetadataDto}.
  *
@@ -99,4 +100,5 @@ public final class DataCiteMetadataDtoMapper {
             .withCreatorName(contributor.getName())
             .build();
     }
+
 }
