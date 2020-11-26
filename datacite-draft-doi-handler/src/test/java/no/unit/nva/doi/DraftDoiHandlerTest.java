@@ -1,5 +1,8 @@
 package no.unit.nva.doi;
 
+import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
+import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
+import static no.unit.nva.datacite.handlers.DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR;
 import static nva.commons.utils.IoUtils.stringToStream;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static nva.commons.utils.attempt.Try.attempt;
@@ -101,7 +104,7 @@ public class DraftDoiHandlerTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
-        MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR));
+        assertThat(exception.getMessage(), is(PUBLICATION_IS_MISSING_ERROR));
     }
 
     @Test
@@ -111,7 +114,17 @@ public class DraftDoiHandlerTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
-        MatcherAssert.assertThat(exception.getMessage(), is(DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR));
+        assertThat(exception.getMessage(), is(CUSTOMER_ID_IS_MISSING_ERROR));
+    }
+
+    @Test
+    public void handleRequestThrowsIllegalStateExceptionWhenPublicationHasNotBeenApproved() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            Path.of("doi_publication_event_publication_not_approved.json"));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> handler.handleRequest(inputStream, outputStream, context));
+
+        assertThat(exception.getMessage(), containsString(NOT_APPROVED_DOI_REQUEST_ERROR));
     }
 
     @SuppressWarnings("unchecked")

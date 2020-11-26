@@ -15,6 +15,7 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
+import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
@@ -38,6 +39,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     public static final String ERROR_DRAFTING_DOI_LOG = "Error drafting DOI ";
 
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
+    public static final String NOT_APPROVED_DOI_REQUEST_ERROR = "DoiRequest has not been approved for publication:";
     private final DoiClient doiClient;
 
     /**
@@ -65,24 +67,31 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
                                                AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
                                                Context context) {
         Publication publication = getPublication(input);
-        URI customerId = getCustomerId(publication);
-        logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
+        if (doiRequestIsApproved(publication)) {
+            URI customerId = getCustomerId(publication);
+            logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
-        return attempt(() -> createNewDoi(publication, customerId))
-            .orElseThrow(this::handleCreatingNewDoiError);
+            return attempt(() -> createNewDoi(publication, customerId))
+                .orElseThrow(this::handleCreatingNewDoiError);
+        }
+        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getId().toString());
     }
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-        SecretsReader secretsReader = new SecretsReader();
+
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            secretsReader, AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
+            new SecretsReader(), AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
             configFactory,
             AppEnv.getDataCiteRestApiHost(),
             AppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);
+    }
+
+    private boolean doiRequestIsApproved(Publication publication) {
+        return publication.getDoiRequest().getStatus().equals(DoiRequestStatus.APPROVED);
     }
 
     private RuntimeException handleCreatingNewDoiError(Failure<DoiUpdateDto> fail) {
