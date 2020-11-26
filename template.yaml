@@ -37,11 +37,51 @@ Parameters:
     Default: nvaEventBusArn
 
 Resources:
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaDefaults
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - sts:AssumeRole
+                  - sts:TagSession
+                Resource: "*"
+        - PolicyName: Events
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:*
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:*
+                  - lambda:InvokeFunction
+                Resource: "*"
+
+
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Environment:
@@ -74,52 +114,13 @@ Resources:
         DestinationConfig:
           OnSuccess:
             Type: SQS
-            Destination: !Ref EventBusArn
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
   DataCiteDraftDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
-  DataCiteFindableDoiHandlerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1408
-      Environment:
-        Variables:
-          EVENT_BUS: !Ref EventBusName
-          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-          DATACITE_CONFIG: !Ref DataCiteMdsConfigs
-          DATACITE_HOST: !Ref DataCiteHost
-          DATACITE_PORT: !Ref DataCitePort
-      Events:
-        EventBridgeEvent:
-          Type: EventBridgeRule
-          Properties:
-            EventBusName: !Ref EventBusName
-            Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
-              detail:
-                responsePayload:
-                  type:
-                    - doi.publication
-                  item:
-                    doiRequest:
-                      status:
-                        - APPROVED
-                    doi:
-                      - exists: true
-      EventInvokeConfig:
-        DestinationConfig:
-          OnSuccess:
-            Type: SQS
-            Destination: !Ref EventBusArn
-          OnFailure:
-            Type: SQS
-            Destination: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-  DataCiteFindableDoiHandlerDLQ:
-    Type: "AWS::SQS::Queue"
+
 

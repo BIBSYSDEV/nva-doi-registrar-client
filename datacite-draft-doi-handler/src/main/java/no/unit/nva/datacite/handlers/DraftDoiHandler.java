@@ -1,4 +1,4 @@
-package no.unit.nva.doi;
+package no.unit.nva.datacite.handlers;
 
 import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
+import no.unit.nva.doi.DoiClient;
+import no.unit.nva.doi.DoiClientFactory;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
