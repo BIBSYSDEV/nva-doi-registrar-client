@@ -33,6 +33,7 @@ import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Map;
@@ -43,10 +44,11 @@ import javax.net.ssl.X509ExtendedTrustManager;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactoryForSystemTests;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
+import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
@@ -109,20 +111,22 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws DataCiteMdsConfigValidationFailedException {
         startProxyToWireMock();
         stubRequireAuthenticationForAllApiCalls();
 
         DataCiteConfigurationFactory configurationFactory = new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
-        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
 
         var httpClientBuilder = HttpClient.newBuilder()
             .connectTimeout(Duration.ofMinutes(1))
             .sslContext(createInsecureSslContextTrustingEverything());
 
+        DataCiteMdsClientSecretConfig configWithSecrets = (DataCiteMdsClientSecretConfig)
+            configurationFactory.getConfig(EXAMPLE_CUSTOMER_ID);
+
         DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
-            authenticationFactory,
+            configurationFactory,
             mdsHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
@@ -365,32 +369,36 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         return new X509ExtendedTrustManager() {
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
+                throws CertificateException {
 
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                throws CertificateException {
 
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 
             }
 

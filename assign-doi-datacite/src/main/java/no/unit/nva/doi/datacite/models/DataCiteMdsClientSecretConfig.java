@@ -2,7 +2,7 @@ package no.unit.nva.doi.datacite.models;
 
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 import java.net.URI;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import nva.commons.utils.JacocoGenerated;
 
 /**

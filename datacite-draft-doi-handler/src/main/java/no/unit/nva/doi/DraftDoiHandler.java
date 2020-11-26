@@ -6,9 +6,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
@@ -76,8 +75,8 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     private static DoiClient defaultDoiClient() {
         String dataCiteConfigJson = AppEnv.getDataCiteConfig();
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(dataCiteConfigJson);
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
-            new PasswordAuthenticationFactory(configFactory),
+
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory,
             AppEnv.getDataCiteHost(),
             AppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);

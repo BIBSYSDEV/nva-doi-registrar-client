@@ -1,8 +1,8 @@
-package no.unit.nva.doi.datacite.config;
+package no.unit.nva.doi.datacite.connectionfactories;
 
-import static no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory.ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS;
-import static no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory.ERROR_HAS_INVALID_CONFIGURATION;
-import static no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory.ERROR_NOT_PRESENT_IN_CONFIG;
+import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS;
+import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_HAS_INVALID_CONFIGURATION;
+import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_NOT_PRESENT_IN_CONFIG;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;

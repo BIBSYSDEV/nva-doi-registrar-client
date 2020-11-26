@@ -7,10 +7,9 @@ import static org.hamcrest.core.IsNot.not;
 import java.net.URI;
 import java.util.Map;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactoryForSystemTests;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactoryForSystemTests;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.utils.Environment;
@@ -28,9 +27,8 @@ public class OnlineTests {
     void createDoiTest() throws ClientException {
         DataCiteConfigurationFactory configFactory = mockConfigFactory();
 
-        var passwordFactory = new PasswordAuthenticationFactory(configFactory);
-
-        var connectionFactory = new DataCiteConnectionFactory(passwordFactory, DATACITE_DRAFT_DOI_REST_API.getHost(),
+        var connectionFactory = new DataCiteConnectionFactory(configFactory,
+            DATACITE_DRAFT_DOI_REST_API.getHost(),
             DEFAULT_HTTPS_PORT);
         var doiClient = new DataCiteClient(configFactory, connectionFactory);
         Doi doi = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);

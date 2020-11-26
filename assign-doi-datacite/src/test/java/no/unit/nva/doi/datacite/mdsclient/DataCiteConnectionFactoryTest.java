@@ -15,9 +15,10 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
-import no.unit.nva.doi.datacite.config.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.config.DataCiteMdsConfigValidationFailedException;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
+import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +48,8 @@ class DataCiteConnectionFactoryTest {
 
         configurationFactory = mock(DataCiteConfigurationFactory.class);
         when(configurationFactory.getConfig(KNOWN_CUSTOMER_ID)).thenReturn(MOCK_DATACITE_CONFIG);
-        PasswordAuthenticationFactory authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
-        sut = new DataCiteConnectionFactory(authenticationFactory,
+
+        sut = new DataCiteConnectionFactory(configurationFactory,
             EXAMPLE_MDS_API_ENDPOINT.getHost(),
             EXAMPLE_MDS_API_ENDPOINT.getPort());
     }

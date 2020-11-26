@@ -22,7 +22,7 @@ public class DataCiteRestConnection {
     public static final String ERROR_CONFIG_WITHOUT_SECRETS =
         "Creating a doi requires a client configuration with secrets (%s)";
     public static final String COLON = ":";
-    private static final String AUTHORIZATION_HEADER = "Authotization";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
     private final HttpClient httpClient;
     private final String host;
     private final int port;

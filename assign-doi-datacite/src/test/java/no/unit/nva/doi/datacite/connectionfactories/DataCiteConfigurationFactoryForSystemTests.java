@@ -1,4 +1,4 @@
-package no.unit.nva.doi.datacite.config;
+package no.unit.nva.doi.datacite.connectionfactories;
 
 import java.net.URI;
 import java.util.Map;

@@ -31,6 +31,16 @@ public interface DoiClient {
     Doi createDoi(URI customerId) throws ClientException;
 
     /**
+     * Crates a draft DOI.
+     *
+     * @param customerId NVA customerId
+     * @param doiProxy   a {@link URI} for custom DOI proxies (default being https://doi.org/.
+     * @return a Doi.
+     * @throws ClientException when communication with Registry Agency fails.
+     */
+    Doi createDoi(URI customerId, URI doiProxy) throws ClientException;
+
+    /**
      * Update metadata for a DOI.
      *
      * @param customerId          NVAs customerId
