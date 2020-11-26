@@ -79,14 +79,14 @@ Resources:
                   - sqs:DeleteMessage
                 Resource: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - events:PutEvents
-                    - events:PutRule
-                  Resource: !Ref EventBusArn
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                  - events:PutRule
+                Resource: !Ref EventBusArn
         - PolicyName: ReadSecrets
           PolicyDocument:
             Version: '2012-10-17'
