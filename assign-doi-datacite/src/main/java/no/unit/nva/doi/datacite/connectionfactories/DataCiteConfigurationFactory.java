@@ -36,16 +36,13 @@ public class DataCiteConfigurationFactory {
      * @param secretId    id to look up in AWS Secret Manager
      */
     public DataCiteConfigurationFactory(SecretCache secretCache, String secretId) {
-        this(IoUtils.stringToStream(secretCache.getSecretString(secretId)));
+        this(secretCache.getSecretString(secretId));
     }
 
-    public DataCiteConfigurationFactory(InputStream jsonConfig) {
+    public DataCiteConfigurationFactory(String jsonConfig) {
         parseConfig(jsonConfig);
     }
 
-    public DataCiteConfigurationFactory(String secretConfigAsJsonString) {
-        this(IoUtils.stringToStream(secretConfigAsJsonString));
-    }
 
     /**
      * Construct a new DataCite configuration factory for unit/system tests with pre populated secrets.
@@ -100,13 +97,13 @@ public class DataCiteConfigurationFactory {
             .orElseThrow(NoCredentialsForCustomerRuntimeException::new);
     }
 
-    private void parseConfig(InputStream secretConfig) {
+    private void parseConfig(String secretConfig) {
         try {
             var secretConfigurations =
                 Optional.ofNullable(objectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
-            throw new IllegalStateException("Could not parse secret configuration");
+            throw new IllegalStateException(e);
         }
     }
 
