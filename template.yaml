@@ -81,6 +81,19 @@ Resources:
                   - sqs:*
                   - lambda:InvokeFunction
                 Resource: "*"
+        - PolicyName: ReadSecrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetResourcePolicy
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:ListSecretVersionIds
+                Resource:
+                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::Account}:secret:dataCiteCustomerSecrets-aLjPCy
+
 
 
   DataCiteDraftDoiHandlerFunction:
