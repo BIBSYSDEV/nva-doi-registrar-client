@@ -9,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.util.Objects;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 

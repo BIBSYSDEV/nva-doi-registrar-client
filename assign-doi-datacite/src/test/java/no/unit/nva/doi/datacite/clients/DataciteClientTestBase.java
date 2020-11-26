@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.clients;
 
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.models.Doi;
 
 public class DataciteClientTestBase {
 

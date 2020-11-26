@@ -1,4 +1,4 @@
-package no.unit.nva.doi.datacite.config;
+package no.unit.nva.doi.datacite.connectionfactories;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

@@ -1,10 +1,13 @@
-package no.unit.nva.doi.datacite.clients;
+package no.unit.nva.doi.datacite.restclient.models;
 
+import static java.util.Objects.nonNull;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static nva.commons.utils.attempt.Try.attempt;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import java.net.URI;
+import no.unit.nva.doi.models.Doi;
+import no.unit.nva.doi.models.ImmutableDoi.Builder;
 import nva.commons.utils.JacocoGenerated;
 
 /**
@@ -99,11 +102,14 @@ public class DraftDoiDto {
      *
      * @return a {@link Doi} object.
      */
-    public Doi toDoi() {
-        return Doi.builder()
+    public Doi toDoi(URI doiProxy) {
+        Builder builder = Doi.builder()
             .withSuffix(getSuffix())
-            .withPrefix(getPrefix())
-            .build();
+            .withPrefix(getPrefix());
+        if (nonNull(doiProxy)) {
+            builder = builder.withProxy(doiProxy);
+        }
+        return builder.build();
     }
 
     private ObjectNode createJsonObjectWithNestedElements() {

@@ -22,7 +22,7 @@ Parameters:
   DataCiteMdsConfigs:
     Type: String
     Description: Institution configs for DataCite MDS API
-    Default: '{{resolve:secretsmanager:dataciteMdsConfigs:SecretString}}'
+    Default: '{{resolve:secretsmanager:dataCiteCustomerSecrets:SecretString}}'
   DataCiteHost:
     Type: String
     Default: mds.test.datacite.org
@@ -35,16 +35,13 @@ Parameters:
   EventBusArn:
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusArn
-  DlqArn:
-    Type : 'AWS::SSM::Parameter::Value<String>'
-    Default: nvaDlqArn
 
 Resources:
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.DraftDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Environment:
@@ -60,6 +57,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
               detail:
                 responsePayload:
                   type:
@@ -75,8 +73,53 @@ Resources:
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
-            Type: EventBridge
+            Type: SQS
             Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !Ref DlqArn
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+  DataCiteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  DataCiteFindableDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          DATACITE_CONFIG: !Ref DataCiteMdsConfigs
+          DATACITE_HOST: !Ref DataCiteHost
+          DATACITE_PORT: !Ref DataCitePort
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  type:
+                    - doi.publication
+                  item:
+                    doiRequest:
+                      status:
+                        - APPROVED
+                    doi:
+                      - exists: true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: SQS
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+  DataCiteFindableDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+

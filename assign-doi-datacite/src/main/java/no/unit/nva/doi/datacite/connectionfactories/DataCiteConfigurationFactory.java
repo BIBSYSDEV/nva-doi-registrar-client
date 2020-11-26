@@ -1,4 +1,4 @@
-package no.unit.nva.doi.datacite.config;
+package no.unit.nva.doi.datacite.connectionfactories;
 
 import static java.util.Objects.isNull;
 import static nva.commons.utils.JsonUtils.objectMapper;
@@ -19,7 +19,7 @@ import nva.commons.utils.IoUtils;
  *
  * <p>{@link #getConfig(URI)} for obtaining configuration for a specific customer, and
  * {@link #getCredentials(URI)} for obtaining secret configuration, but this is restricted for implementations scoped
- * under package {@link no.unit.nva.doi.datacite.config}.
+ * under package {@link no.unit.nva.doi.datacite.connectionfactories}.
  */
 public class DataCiteConfigurationFactory {
 
@@ -102,8 +102,8 @@ public class DataCiteConfigurationFactory {
 
     private void parseConfig(InputStream secretConfig) {
         try {
-            var secretConfigurations = Optional.ofNullable(objectMapper.readValue(secretConfig,
-                DataCiteMdsClientSecretConfig[].class));
+            var secretConfigurations =
+                Optional.ofNullable(objectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
             throw new IllegalStateException("Could not parse secret configuration");

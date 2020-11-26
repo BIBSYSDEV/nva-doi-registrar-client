@@ -4,6 +4,7 @@ import static nva.commons.utils.IoUtils.stringToStream;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static nva.commons.utils.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -22,7 +23,7 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import nva.commons.utils.IoUtils;
@@ -34,16 +35,18 @@ import org.mockito.invocation.InvocationOnMock;
 
 public class DraftDoiHandlerTest {
 
-    public static final String DOI_IDENTIFIER = "doi/identifier";
+    public static final String DOI_IDENTIFIER = "10.1052/identifier";
     public static final String EVENT_DETAIL_FIELD = "detail";
     public static final String DETAIL_RESPONSE_PAYLOAD_FIELD = "responsePayload";
-    public static final String EXCEPTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
+    public static final String EXPECTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
     public static final String SAMPLE_DOI_PREFIX = "10.1234";
     public static final int SAMPLE_STATUS_CODE = 500;
+
     private DoiClient doiClient;
     private DraftDoiHandler handler;
     private ByteArrayOutputStream outputStream;
     private Context context;
+
     private AtomicReference<URI> inputBuffer;
 
     @BeforeEach
@@ -60,6 +63,7 @@ public class DraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             Path.of("doi_publication_event_valid.json"));
         handler.handleRequest(inputStream, outputStream, context);
+
         DoiUpdateDto response = parseResponse();
         assertThat(response.getPublicationId(), is(not(nullValue())));
     }
@@ -78,13 +82,14 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsExceptionContainingTheCauseWhenDoiClientThrowsException()
         throws ClientException {
-        String inputString = IoUtils.stringFromResources(
-            Path.of("doi_publication_event_valid.json"));
+        String inputString = IoUtils.stringFromResources(Path.of("doi_publication_event_valid.json"));
 
         DraftDoiHandler handlerReceivingException = new DraftDoiHandler(doiClientThrowingException());
         Executable action = () -> handlerReceivingException.handleRequest(stringToStream(inputString), outputStream,
             context);
-        assertThrows(IllegalStateException.class, action);
+        RuntimeException exception = assertThrows(RuntimeException.class, action);
+        Throwable actualCause = exception.getCause();
+        assertThat(actualCause.getMessage(),containsString(EXPECTED_ERROR_MESSAGE));
     }
 
     @Test
@@ -124,7 +129,7 @@ public class DraftDoiHandlerTest {
 
     private DoiClient doiClientReturningDoi() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.builder().identifier(DOI_IDENTIFIER).build();
+        Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
         when(doiClient.createDoi(any()))
             .thenAnswer(invocation -> saveInputAndReturnSampleDoi(doi, invocation));
         return doiClient;
@@ -139,7 +144,7 @@ public class DraftDoiHandlerTest {
     private DoiClient doiClientThrowingException() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.createDoi(any())).thenAnswer(invocation -> {
-            throw new CreateDoiException(SAMPLE_DOI_PREFIX, SAMPLE_STATUS_CODE, EXCEPTED_ERROR_MESSAGE);
+            throw new CreateDoiException(SAMPLE_DOI_PREFIX, SAMPLE_STATUS_CODE, EXPECTED_ERROR_MESSAGE);
         });
         return doiClient;
     }

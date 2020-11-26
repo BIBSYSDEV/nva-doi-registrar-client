@@ -1,10 +1,9 @@
-package no.unit.nva.doi.datacite.config;
+package no.unit.nva.doi.datacite.connectionfactories;
 
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.util.Optional;
-import no.unit.nva.doi.datacite.mdsclient.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 
 /**

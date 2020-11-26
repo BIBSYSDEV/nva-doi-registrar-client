@@ -29,7 +29,8 @@ dataciteXml: Metadata of resource, expected format: https://schema.datacite.org/
 
 ### Secrets Manager (AWS)
 
-Secret with id "dataciteMdsConfigs" must present. 
+Secret with id "dataCiteCustomerSecrets" with key 'dataCiteCustomerSecrets'
+must be present. 
 
 Value of secret should be stored in JSON format like this:
 
@@ -37,14 +38,24 @@ Value of secret should be stored in JSON format like this:
 [
   {
     "customerId": "https://example.net/nva/customer/id/1234",
-    "customerDoiPrefix": "CUSTOMER-NVA-REPOSITORY-WITH-NVA-PREFIX",
+    "customerDoiPrefix": "10.5072",
     "dataCiteMdsClientUrl": "https://mds.test.datacite.org",
-    "dataCiteMdsClientUsername": "CUSTOMER-NVA-REPOSITORY_USERNAME",
+    "dataCiteMdsClientUsername": "org.repositoryuser",
     "dataCiteMdsClientPassword": "CUSTOMER-NVA-PASSWORD"
   },
   ...
 ]
 ```
+
+#### Description of configuration
+
+`customerId`: IRI for NVA customer.
+
+`customerDoiPrefix`:  A reserved NVA repository containing associated DOI prefix for NVA usage.
+
+`dataCiteMdsClientUrl`: API endpoint to DataCite MDS API.
+
+`dataCiteMdsClientPassword`: Organization's repository user password.
 
 ## assignd-doi-datecite-example CLI client
 

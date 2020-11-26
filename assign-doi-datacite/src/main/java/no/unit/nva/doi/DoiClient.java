@@ -3,7 +3,7 @@ package no.unit.nva.doi;
 import java.net.URI;
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.models.Doi;
+import no.unit.nva.doi.models.Doi;
 
 /**
  * NVAs supported DOI operations.
@@ -29,6 +29,16 @@ public interface DoiClient {
      * @throws ClientException Error while communicating with Registry Agency
      */
     Doi createDoi(URI customerId) throws ClientException;
+
+    /**
+     * Creates a draft DOI.
+     *
+     * @param customerId NVA customerId
+     * @param doiProxy   a {@link URI} for custom DOI proxies (default being https://doi.org/.
+     * @return a Doi.
+     * @throws ClientException when communication with Registry Agency fails.
+     */
+    Doi createDoi(URI customerId, URI doiProxy) throws ClientException;
 
     /**
      * Update metadata for a DOI.
@@ -60,7 +70,7 @@ public interface DoiClient {
      * Delete metadata from DOI.
      *
      * <p>Findable DOIs can be transitioned to the registered state (the metadata are no longer included in the search
-     * index) using this ${@link #deleteMetadata(String, Doi)}.
+     * index) using this ${@link #deleteMetadata(URI, Doi)}.
      *
      * <p>Notice: Updating metadata for a DOI that has been in deleted state (registered) will turn it into findable
      * state.

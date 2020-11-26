@@ -1,4 +1,4 @@
-package no.unit.nva.doi.datacite.mdsclient;
+package no.unit.nva.doi.datacite.connectionfactories;
 
 import java.net.Authenticator;
 import java.net.InetAddress;
@@ -9,7 +9,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Builder;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
-import no.unit.nva.doi.datacite.config.PasswordAuthenticationFactory;
+import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
+import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
+import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
 
 /**
@@ -20,6 +22,11 @@ import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
  *
  * <p>Our {@link PasswordAuthentication} will only provide credentials for valid endpoints for the {@link HttpClient}
  * during server challenge (pre-emptive authentication).
+ *
+ * <p>Use {@link #getAuthenticatedMdsConnection(URI)}}
+ * or {@link #getAuthenticatedRestConnection(URI)} to construct a new authenticated API connection.
+ *
+ * @see #createNvaCustomerAuthenticator(URI)
  */
 public class DataCiteConnectionFactory {
 
@@ -28,36 +35,39 @@ public class DataCiteConnectionFactory {
     private final String apiHostName;
     private final int apiPort;
     private final Builder httpBuilder;
+    private final DataCiteConfigurationFactory configurationFactory;
 
     /**
-     * Default constructor.
+     * Creates a dataciteConnectionFactory
      *
-     * @param authenticationFactory Authentication factory which is used for 401 challenge responses.
-     * @param hostName              MDS API hostname
-     * @param apiPort               MDS API port
+     * @param configurationFactory DataCiteConfiguration Factory
+     * @param hostName             the API hostname
+     * @param apiPort              the API port
      */
-    public DataCiteConnectionFactory(PasswordAuthenticationFactory authenticationFactory,
+    public DataCiteConnectionFactory(DataCiteConfigurationFactory configurationFactory,
                                      String hostName,
                                      int apiPort) {
-        this(HttpClient.newBuilder(), authenticationFactory, hostName, apiPort);
+        this(HttpClient.newBuilder(),
+            configurationFactory,
+            hostName, apiPort);
     }
 
     /**
      * Constructor for testing.
      *
-     * @param httpBuilder           HttpClient to override security configuration
-     * @param authenticationFactory Authentication factory which is used for 401 challenge responses.
-     * @param apiHostName           MDS API hostname
-     * @param apiPort               MDS API port
+     * @param httpBuilder HttpClient to override security configuration
+     * @param apiHostName MDS API hostname
+     * @param apiPort     MDS API port
      */
     public DataCiteConnectionFactory(HttpClient.Builder httpBuilder,
-                                     PasswordAuthenticationFactory authenticationFactory,
+                                     DataCiteConfigurationFactory configurationFactory,
                                      String apiHostName,
                                      int apiPort) {
-        this.authenticationFactory = authenticationFactory;
+        this.authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
         this.apiHostName = apiHostName;
         this.apiPort = apiPort;
         this.httpBuilder = httpBuilder;
+        this.configurationFactory = configurationFactory;
     }
 
     /**
@@ -74,7 +84,8 @@ public class DataCiteConnectionFactory {
 
     public DataCiteRestConnection getAuthenticatedRestConnection(URI customerId) {
         HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
-        return new DataCiteRestConnection(httpClient, apiHostName, apiPort);
+        DataCiteMdsClientSecretConfig clientConfigWithCredentials = configurationFactory.getCredentials(customerId);
+        return new DataCiteRestConnection(httpClient, apiHostName, apiPort, clientConfigWithCredentials);
     }
 
     public HttpClient getAuthenticatedHttpClientForDatacite(URI customerId) {
