@@ -1,6 +1,5 @@
 dependencies {
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
-    implementation (project(":datacite-doi-commons"))
 
     implementation (project(":assign-doi-datacite")) {
         exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'

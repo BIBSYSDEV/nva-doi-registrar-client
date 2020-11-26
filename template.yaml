@@ -67,8 +67,17 @@ Resources:
                   - logs:PutLogEvents
                   - sts:AssumeRole
                   - sts:TagSession
-                  - lambda:InvokeFunction
                 Resource: "*"
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - GetAttr DataCiteDraftDoiHandlerFunction.Arn
+
         - PolicyName: SqsEvents
           PolicyDocument:
             Version: '2012-10-17'
@@ -98,7 +107,7 @@ Resources:
                   - secretsmanager:DescribeSecret
                   - secretsmanager:ListSecretVersionIds
                 Resource:
-                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dataCiteCustomerSecrets-aLjPCy
+                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
 
 

@@ -107,7 +107,7 @@ public class DataCiteConfigurationFactory {
                 Optional.ofNullable(objectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Could not parse secret configuration");
         }
     }
 

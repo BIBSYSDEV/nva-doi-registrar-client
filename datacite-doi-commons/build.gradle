@@ -2,6 +2,8 @@ dependencies {
 
     api project(":event-handler-template")
 
+    implementation project (":assign-doi-datacite")
+
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
     api group: 'com.github.BIBSYSDEV.nva-doi-partner-data', name: 'datacite-transform', version: '0.4.0'
 
