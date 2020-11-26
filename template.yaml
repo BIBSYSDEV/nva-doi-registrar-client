@@ -74,7 +74,7 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource:
-                  - GetAttr DataCiteDraftDoiHandlerFunction.Arn
+                  - !GetAtt DataCiteDraftDoiHandlerFunction.Arn
 
         - PolicyName: SqsEvents
           PolicyDocument:
