@@ -67,20 +67,26 @@ Resources:
                   - logs:PutLogEvents
                   - sts:AssumeRole
                   - sts:TagSession
+                  - lambda:InvokeFunction
                 Resource: "*"
-        - PolicyName: Events
+        - PolicyName: SqsEvents
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - events:*
                   - sqs:SendMessage
-                  - sqs:ReceiveMessage
                   - sqs:DeleteMessage
-                  - sqs:*
-                  - lambda:InvokeFunction
-                Resource: "*"
+                Resource: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+        - PolicyName: EventBridgeEvents
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - events:PutEvents
+                    - events:PutRule
+                  Resource: !Ref EventBusArn
         - PolicyName: ReadSecrets
           PolicyDocument:
             Version: '2012-10-17'
@@ -134,8 +140,8 @@ Resources:
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
-            Type: SQS
-            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+            Type: EventBridge
+            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
