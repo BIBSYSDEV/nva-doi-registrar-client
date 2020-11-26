@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
-import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS;
+import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR;
+import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_HAS_INVALID_CONFIGURATION;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_NOT_PRESENT_IN_CONFIG;
 import static nva.commons.utils.JsonUtils.objectMapper;
@@ -13,9 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -23,7 +22,9 @@ import java.util.UUID;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+import nva.commons.exceptions.ForbiddenException;
 import nva.commons.utils.IoUtils;
+import nva.commons.utils.aws.SecretsReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,11 +47,11 @@ class DataCiteConfigurationFactoryTest {
         new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT,
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
     private static final String KNOWN_CUSTOMER2_PASSWORD = "randompasswd2";
-    private SecretCache secretCache;
+    private SecretsReader secretsReader;
     private DataCiteConfigurationFactory dataCiteConfigurationFactory;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws ForbiddenException {
         configureWithNoCredentials();
         prepareCredentials();
         setupSystemUnderTest();
@@ -126,7 +127,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void getConfigWithMissingCustomerThrowsConfigValidationException() {
+    void getConfigWithMissingCustomerThrowsConfigValidationException() throws ForbiddenException {
         configureWithNoCredentials();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
             () -> dataCiteConfigurationFactory.getConfig(UNKNOWN_CUSTOMER_ID));
@@ -141,7 +142,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() {
+    void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() throws ForbiddenException {
         configureWithNoCredentials();
         assertThrows(NoCredentialsForCustomerRuntimeException.class,
             () -> dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID));
@@ -156,49 +157,52 @@ class DataCiteConfigurationFactoryTest {
     @Test
     void constructorThrowsExceptionWhenConfigurationError() {
         prepareBadCredentialsConfig();
+
         assertThrows(IllegalStateException.class,
-            () -> new DataCiteConfigurationFactory(secretCache, ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS));
+            () -> new DataCiteConfigurationFactory(secretsReader, CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR,
+                CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR));
     }
 
     private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromString() {
-        return new DataCiteConfigurationFactory(IoUtils.streamToString(getJsonConfigAsInputStream()));
+        return new DataCiteConfigurationFactory(getJsonConfigAsInputStream());
     }
 
     private DataCiteConfigurationFactory createDataCiteConfigurationFactoryFromInputStream() {
         return new DataCiteConfigurationFactory(getJsonConfigAsInputStream());
     }
 
-    private InputStream getJsonConfigAsInputStream() {
-        return IoUtils.inputStreamFromResources(
+    private String getJsonConfigAsInputStream() {
+        String result = IoUtils.stringFromResources(
             Path.of("example-mds-config.json"));
+        return result;
     }
 
     private void setupSystemUnderTest() {
-        dataCiteConfigurationFactory = new DataCiteConfigurationFactory(secretCache,
-            ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS);
+        dataCiteConfigurationFactory = new DataCiteConfigurationFactory(secretsReader,
+            CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR);
     }
 
-    private void configureWithNoCredentials() {
-        secretCache = mock(SecretCache.class);
-        when(secretCache.getSecretString(ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS))
+    private void configureWithNoCredentials() throws ForbiddenException {
+        secretsReader = mock(SecretsReader.class);
+        when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
             .thenReturn(EMPTY_CREDENTIALS_CONFIGURED);
         setupSystemUnderTest();
     }
 
     private void prepareCredentials() {
         try {
-            when(secretCache.getSecretString(ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS))
+            when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
                 .thenReturn(objectMapper.writeValueAsString(FAKE_CLIENT_CONFIGS));
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | ForbiddenException e) {
             fail("Test configuration failed");
         }
     }
 
     private void prepareBadCredentialsConfig() {
         try {
-            when(secretCache.getSecretString(ENVIRONMENT_NAME_DATACITE_MDS_CONFIGS))
+            when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
                 .thenReturn(objectMapper.writeValueAsString(INVALID_JSON));
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | ForbiddenException e) {
             fail("Test configuration failed");
         }
     }

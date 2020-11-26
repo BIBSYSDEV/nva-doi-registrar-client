@@ -20,6 +20,7 @@ import no.unit.nva.publication.doi.dto.PublicationHolder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import nva.commons.utils.JacocoGenerated;
 import nva.commons.utils.attempt.Failure;
+import nva.commons.utils.aws.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +74,9 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(dataCiteConfigJson);
+        SecretsReader secretsReader = new SecretsReader();
+        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
+            secretsReader, AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
             configFactory,
