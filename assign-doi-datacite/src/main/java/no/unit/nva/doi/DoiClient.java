@@ -31,7 +31,7 @@ public interface DoiClient {
     Doi createDoi(URI customerId) throws ClientException;
 
     /**
-     * Crates a draft DOI.
+     * Creates a draft DOI.
      *
      * @param customerId NVA customerId
      * @param doiProxy   a {@link URI} for custom DOI proxies (default being https://doi.org/.
