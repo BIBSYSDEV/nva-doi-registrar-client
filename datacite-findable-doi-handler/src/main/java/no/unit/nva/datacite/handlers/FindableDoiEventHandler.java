@@ -27,6 +27,7 @@ import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import no.unit.nva.transformer.Transformer;
 import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import nva.commons.utils.JacocoGenerated;
+import nva.commons.utils.aws.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,9 +89,9 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-        String dataCiteConfigJson = AppEnv.getDataCiteConfig();
+
         DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
-            dataCiteConfigJson);
+            new SecretsReader(), AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
             dataCiteConfigurationFactory,
