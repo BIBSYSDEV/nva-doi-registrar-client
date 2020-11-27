@@ -106,6 +106,51 @@ Resources:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
 
+  DataCiteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_PORT: !Ref DataCitePort
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "IGNORE-Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  type:
+                    - doi.publication
+                  item:
+                    doiRequest:
+                      status:
+                        - APPROVED
+                    doi:
+                      - exists: false
+                    sameModifiedDateForDoiRequest:
+                      - true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
+
   DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -139,52 +184,6 @@ Resources:
                         - APPROVED
                     doi:
                       - exists: true
-      EventInvokeConfig:
-        DestinationConfig:
-          OnSuccess:
-            Type: EventBridge
-            Destination: !Ref EventBusArn
-          OnFailure:
-            Type: SQS
-            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-
-
-
-  DataCiteDraftDoiHandlerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: datacite-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1408
-      Role: !GetAtt LambdaRole.Arn
-      Environment:
-        Variables:
-          EVENT_BUS: !Ref EventBusName
-          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-          DATACITE_REST_HOST: !Ref DataCiteRestHost
-          DATACITE_PORT: !Ref DataCitePort
-      Events:
-        EventBridgeEvent:
-          Type: EventBridgeRule
-          Properties:
-            EventBusName: !Ref EventBusName
-            Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
-              detail:
-                responsePayload:
-                  type:
-                    - doi.publication
-                  item:
-                    doiRequest:
-                      status:
-                        - APPROVED
-                    doi:
-                      - exists: false
-                    sameModifiedDateForDoiRequest:
-                      - true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
