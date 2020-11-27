@@ -6,8 +6,7 @@ import nva.commons.utils.JacocoGenerated;
 @JacocoGenerated
 public final class AppEnv {
 
-    public static final String DATACITE_CONFIG = "DATACITE_CONFIG";
-    public static final String DATACITE_HOST = "DATACITE_HOST";
+    public static final String DATACITE_MDS_HOST = "DATACITE_MDS_HOST";
     public static final String DATACITE_PORT = "DATACITE_PORT";
     public static final String CUSTOMER_SECRETS_SECRET_NAME = "CUSTOMER_SECRETS_SECRET_NAME";
     public static final String CUSTOMER_SECRETS_SECRET_KEY = "CUSTOMER_SECRETS_SECRET_KEY";
@@ -17,14 +16,11 @@ public final class AppEnv {
     private AppEnv() {
     }
 
-    @JacocoGenerated
-    public static String getDataCiteConfig() {
-        return getEnvValue(DATACITE_CONFIG);
-    }
+
 
     @JacocoGenerated
     public static String getDataCiteHost() {
-        return getEnvValue(DATACITE_HOST);
+        return getEnvValue(DATACITE_MDS_HOST);
     }
 
     @JacocoGenerated
