@@ -21,6 +21,7 @@ import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.doi.dto.DoiRequestStatus;
 import no.unit.nva.publication.doi.dto.Publication;
 import no.unit.nva.publication.doi.dto.PublicationHolder;
+import no.unit.nva.publication.doi.dto.PublicationStatus;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto.Builder;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
@@ -49,6 +50,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
 
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
+    public static final String CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR =
+        "Error: Attempting to make findable a non published publication";
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -67,7 +70,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
                                                   Context context) {
 
         Publication publication = getPublication(input);
-        verifyPublicationIsCurratorApproved(publication);
+        verifyPublicationCanBecomeFindable(publication);
+
         URI customerId = getCustomerId(publication);
         Doi doi = getDoi(publication);
         URI publicationId = getPublicationId(publication);
@@ -87,6 +91,17 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         }
     }
 
+    private void verifyPublicationCanBecomeFindable(Publication publication) {
+        verifyPublicationIsPublished(publication);
+        verifyPublicationIsCuratorApproved(publication);
+    }
+
+    private void verifyPublicationIsPublished(Publication publication) {
+        if (!PublicationStatus.PUBLISHED.equals(publication.getStatus())) {
+            throw new IllegalStateException(CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR);
+        }
+    }
+
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
 
@@ -102,7 +117,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
-    private void verifyPublicationIsCurratorApproved(Publication publication) {
+    private void verifyPublicationIsCuratorApproved(Publication publication) {
         Optional.ofNullable(publication.getDoiRequest())
             .flatMap(e -> Optional.ofNullable(e.getStatus()))
             .filter(status -> status

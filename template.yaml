@@ -179,6 +179,8 @@ Resources:
                   type:
                     - doi.publication
                   item:
+                    status:
+                      - PUBLISHED
                     doiRequest:
                       status:
                         - APPROVED

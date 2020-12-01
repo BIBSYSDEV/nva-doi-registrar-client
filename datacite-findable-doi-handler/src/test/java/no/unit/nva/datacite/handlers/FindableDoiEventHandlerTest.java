@@ -38,6 +38,8 @@ public class FindableDoiEventHandlerTest {
     public static final Path PUBLICATION_EVENT_INVALID_PUBLICATION_ID = Path.of(
         "doi_publication_event_invalid_publication_id.json");
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
+    public static final Path NOT_PUBLISHED_PUBLICATION = Path.of(
+        "doi_publication_event_publication_not_published.json");
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
     private ByteArrayOutputStream outputStream;
@@ -147,6 +149,16 @@ public class FindableDoiEventHandlerTest {
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
         assertThat(actualException.getMessage(),
             is(equalTo(LandingPageUtil.ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED)));
+    }
+
+    @Test
+    void handleRequestThrowsExceptionWhenInputPublicationIsNotPublished() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(NOT_PUBLISHED_PUBLICATION);
+
+        IllegalStateException actualException = assertThrows(IllegalStateException.class,
+            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
+        assertThat(actualException.getMessage(),
+            is(equalTo(FindableDoiEventHandler.CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR)));
     }
 
     private String verifyPartsOfMetadata() {
