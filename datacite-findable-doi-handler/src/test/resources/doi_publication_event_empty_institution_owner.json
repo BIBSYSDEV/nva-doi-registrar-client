@@ -31,6 +31,7 @@
       "type": "doi.publication",
       "item": {
         "id": "https://example.net/unittest/namespace/publication/654321",
+        "status": "PUBLISHED",
         "doiRequest": {
           "status": "APPROVED",
           "modifiedDate": "2020-08-14T10:30:10.019991Z"

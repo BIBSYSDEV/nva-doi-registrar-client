@@ -31,6 +31,7 @@
       "type": "doi.publication",
       "item": {
         "id": "https://example.net/unittest/namespace/publication/654321",
+        "status": "PUBLISHED",
         "institutionOwner": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934",
         "doiRequest": {
           "status": "APPROVED",
