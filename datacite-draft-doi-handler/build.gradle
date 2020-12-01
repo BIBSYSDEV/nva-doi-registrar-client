@@ -1,0 +1,25 @@
+dependencies {
+    implementation project(":assign-doi-datacite")
+
+    implementation (project(":event-handler-template")){
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation (project(":datacite-doi-commons")){
+        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+
+    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
+
+    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: '0.1.13'
+
+    compileOnly( group: 'com.amazonaws', name: 'aws-java-sdk-api-gateway', version: awsSdkVersion) {
+        because "PMD complains for the com/amazonaws/regions/Regions class"
+    }
+
+    compileOnly (group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: awsSdkVersion){
+        because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
+    }
+
+
+}

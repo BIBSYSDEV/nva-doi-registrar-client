@@ -1,0 +1,18 @@
+dependencies {
+    api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+
+    implementation (project(":assign-doi-datacite")) {
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation (project(":event-handler-template")){
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation (project(":datacite-doi-commons")){
+        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
+    }
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
+
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: project.ext.awsSdkVersion
+
+}

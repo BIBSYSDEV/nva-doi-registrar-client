@@ -1,0 +1,111 @@
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'pmd'
+    id 'jacoco'
+}
+
+group 'no.unit.nva'
+version '1.0-SNAPSHOT'
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url 'https://jitpack.io' }
+    }
+
+    def nvaPublicationApi = '0.1.16'
+    project.ext {
+        awsSdkVersion = '1.11.875'
+        nvaCommonsVersion = '0.7.2'
+        nvaTestUtilsVersion = "0.1.15"
+        jacksonVersion = '2.10.2'
+        nvaDoiTypeAndCommons = nvaPublicationApi
+        nvaPublicationTesting = nvaPublicationApi
+    }
+}
+
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'jacoco'
+    apply plugin: 'checkstyle'
+    apply plugin: 'pmd'
+    if (name.equalsIgnoreCase('assign-doi-datacite-example')) {
+        apply plugin: 'application'
+    }
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    // source-code version and must be <= targetCompatibility
+    targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
+
+    def junit5Version = '5.6.0'
+
+    dependencies {
+        testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: '0.1.15'
+        testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+        testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
+        testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
+    }
+
+    test {
+        useJUnitPlatform{
+            excludeTags('online')
+        }
+        failFast = true
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+        }
+    }
+
+    pmd {
+        ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
+        ruleSets = []
+        ignoreFailures = false
+    }
+
+    checkstyle {
+        configFile = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml').asFile()
+        showViolations = true
+    }
+
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.enabled false
+            html.enabled true
+            html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
+        }
+    }
+
+    check.dependsOn jacocoTestCoverageVerification
+    jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
+
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                limit {
+                    counter = 'METHOD'
+                    value = 'COVEREDRATIO'
+                    minimum = 1.000
+                }
+            }
+
+            rule {
+                limit {
+                    counter = 'CLASS'
+                    value = 'COVEREDRATIO'
+                    minimum = 1.000
+                }
+            }
+        }
+    }
+}
