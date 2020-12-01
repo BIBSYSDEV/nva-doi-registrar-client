@@ -1,6 +1,5 @@
 package no.unit.nva.datacite.handlers;
 
-import static java.util.function.Predicate.not;
 import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
 import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;

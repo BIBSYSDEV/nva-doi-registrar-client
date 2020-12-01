@@ -38,7 +38,7 @@ public class DataCiteConnectionFactory {
     private final DataCiteConfigurationFactory configurationFactory;
 
     /**
-     * Creates a dataciteConnectionFactory
+     * Creates a dataciteConnectionFactory.
      *
      * @param configurationFactory DataCiteConfiguration Factory
      * @param hostName             the API hostname
