@@ -9,8 +9,7 @@ import static nva.commons.utils.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -119,7 +118,7 @@ public class DraftDoiHandlerTest {
     }
 
     @Test
-    public void handleRequestThrowsIllegalStateExceptionWhenPublicationHasNotBeenApproved() {
+    public void handleRequestThrowsIllegalStateExceptionWhenDoiRequestStatusIsNotRequested() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             Path.of("doi_publication_event_publication_not_approved.json"));
         IllegalStateException exception = assertThrows(IllegalStateException.class,
