@@ -92,7 +92,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     }
 
     private boolean doiIsRequested(Publication publication) {
-        return publication.getDoiRequest().getStatus().equals(DoiRequestStatus.REQUESTED);
+        return DoiRequestStatus.REQUESTED.equals(publication.getDoiRequest().getStatus());
     }
 
     private <T> RuntimeException handleCreatingNewDoiError(Failure<T> fail) {
