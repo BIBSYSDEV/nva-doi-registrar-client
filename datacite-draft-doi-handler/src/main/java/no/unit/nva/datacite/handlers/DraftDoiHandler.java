@@ -67,7 +67,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
                                                   AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
                                                   Context context) {
         Publication publication = getPublication(input);
-        if (doiRequestIsApproved(publication)) {
+        if (doiIsRequested(publication)) {
             URI customerId = getCustomerId(publication);
             logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
 
@@ -91,8 +91,8 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
         return DoiClientFactory.getClient(configFactory, connectionFactory);
     }
 
-    private boolean doiRequestIsApproved(Publication publication) {
-        return publication.getDoiRequest().getStatus().equals(DoiRequestStatus.APPROVED);
+    private boolean doiIsRequested(Publication publication) {
+        return DoiRequestStatus.REQUESTED.equals(publication.getDoiRequest().getStatus());
     }
 
     private <T> RuntimeException handleCreatingNewDoiError(Failure<T> fail) {

@@ -136,7 +136,7 @@ Resources:
                   item:
                     doiRequest:
                       status:
-                        - APPROVED
+                        - REQUESTED
                     doi:
                       - exists: false
                     sameModifiedDateForDoiRequest:
