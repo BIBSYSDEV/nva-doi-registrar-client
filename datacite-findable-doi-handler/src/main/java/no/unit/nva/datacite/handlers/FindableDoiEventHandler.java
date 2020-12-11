@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
+import static java.util.Objects.isNull;
 import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
 import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -34,12 +35,24 @@ import org.slf4j.LoggerFactory;
 
 public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateHolder> {
 
+    public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
+
+    public static final String PUBLICATION_ID_FIELD_INFO = "Publication.id";
+    public static final String PUBLICATION_INSTITUTION_OWNER_FIELD_INFO = "Publication.institutionOwner";
+    public static final String PUBLICATION_MODIFIED_DATE_FIELD_INFO = "Publication.modifiedDate";
+    public static final String PUBLICATION_TYPE_FIELD_INFO = "Publication.type";
+    public static final String PUBLICATION_MAIN_TITLE_FIELD_INFO = "Publication.mainTitle";
+    public static final String PUBLICATION_STATUS_FIELD_INFO = "Pblication.status";
+    public static final String PUBLICATION_PUBLICATION_DATE_FIELD_INFO = "Publication.publicationDate";
+
+    public static final String DOI_REQUEST_STATUS_FIELD_INFO = "DoiRequest.status";
+    public static final String DOI_REQUEST_MODIFIED_DATE_FIELD_INFO = "DoiRequest.modifiedDate";
+
+    public static final String PUBLICATION_DATE_YEAR_FIELD_INFO = "PublicationDate.year";
 
     // Data validation exceptions
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
-    public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
     public static final String DOI_IS_MISSING_OR_INVALID_ERROR = "Doi is missing or invalid";
-    public static final String PUBLICATION_ID_MISSING_ERROR = "Publication id is missing";
     public static final String DOI_REQUEST_STATUS_WRONG_ERROR = "DoiRequestStatus is not APPROVED";
     public static final String TRANSFORMING_PUBLICATION_ERROR = "Failed transforming publication into XML matching "
         + "DataCite XMLSchema";
@@ -72,9 +85,9 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         Publication publication = getPublication(input);
         verifyPublicationCanBecomeFindable(publication);
 
-        URI customerId = getCustomerId(publication);
+        URI customerId = publication.getInstitutionOwner();
         Doi doi = getDoi(publication);
-        URI publicationId = getPublicationId(publication);
+        URI publicationId = publication.getId();
         URI landingPage = getLandingPage(publicationId);
 
         logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
@@ -92,8 +105,41 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     }
 
     private void verifyPublicationCanBecomeFindable(Publication publication) {
+        checkPublicationIsValid(publication);
         verifyPublicationIsPublished(publication);
         verifyPublicationIsCuratorApproved(publication);
+    }
+
+    private void checkPublicationIsValid(Publication publication) {
+        mandatoryFieldsAreNotNull(publication);
+        publicationDateHasYear(publication);
+        doiRequestMandatoryFieldsAreNotNull(publication);
+    }
+
+    private void doiRequestMandatoryFieldsAreNotNull(Publication publication) {
+        requireFieldIsNotNull(publication.getDoiRequest().getStatus(), DOI_REQUEST_STATUS_FIELD_INFO);
+        requireFieldIsNotNull(publication.getDoiRequest().getModifiedDate(), DOI_REQUEST_MODIFIED_DATE_FIELD_INFO);
+    }
+
+    private void publicationDateHasYear(Publication publication) {
+        requireFieldIsNotNull(publication.getPublicationDate().getYear(), PUBLICATION_DATE_YEAR_FIELD_INFO);
+    }
+
+    private void mandatoryFieldsAreNotNull(Publication publication) {
+        requireFieldIsNotNull(publication.getId(), PUBLICATION_ID_FIELD_INFO);
+        requireFieldIsNotNull(publication.getInstitutionOwner(), PUBLICATION_INSTITUTION_OWNER_FIELD_INFO);
+        requireFieldIsNotNull(publication.getModifiedDate(), PUBLICATION_MODIFIED_DATE_FIELD_INFO);
+        requireFieldIsNotNull(publication.getType(), PUBLICATION_TYPE_FIELD_INFO);
+        requireFieldIsNotNull(publication.getMainTitle(), PUBLICATION_MAIN_TITLE_FIELD_INFO);
+        requireFieldIsNotNull(publication.getStatus(), PUBLICATION_STATUS_FIELD_INFO);
+        requireFieldIsNotNull(publication.getPublicationDate(), PUBLICATION_PUBLICATION_DATE_FIELD_INFO);
+    }
+
+    protected <T> void requireFieldIsNotNull(T value, String fieldName) {
+        if (isNull(value)) {
+            String errorMessage = MANDATORY_FIELD_ERROR_PREFIX + fieldName;
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     private void verifyPublicationIsPublished(Publication publication) {
@@ -139,16 +185,9 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
             .orElseThrow((e) -> new IllegalArgumentException(DOI_IS_MISSING_OR_INVALID_ERROR, e.getException()));
     }
 
-    private URI getPublicationId(Publication input) {
-        return Optional.ofNullable(input.getId())
-            .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_ID_MISSING_ERROR));
-    }
 
-    private URI getCustomerId(Publication publication) {
-        return Optional
-            .ofNullable(publication.getInstitutionOwner())
-            .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
-    }
+
+
 
     private Publication getPublication(PublicationHolder input) {
         return Optional

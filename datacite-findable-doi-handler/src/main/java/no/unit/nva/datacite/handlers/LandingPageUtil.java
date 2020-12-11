@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import nva.commons.utils.StringUtils;
 
 /**
  * Utility class to generate landing page URI for NVA publications.
@@ -55,6 +56,6 @@ public final class LandingPageUtil {
     }
 
     private static Predicate<URI> checkUriHasPath() {
-        return uri -> uri.getPath() != null;
+        return uri -> StringUtils.isNotEmpty(uri.getPath());
     }
 }

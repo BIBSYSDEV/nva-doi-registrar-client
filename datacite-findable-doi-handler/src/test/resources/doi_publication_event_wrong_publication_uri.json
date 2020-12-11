@@ -30,10 +30,10 @@
     "responsePayload": {
       "type": "doi.publication",
       "item": {
-        "id": "https://example.net/unittest/namespace/publication/654321",
+        "id": "https://example.net",
         "doi": "https://doi.org/10.1103/physrevd.100.085005",
         "doiRequest": {
-          "status": "REQUESTED",
+          "status": "APPROVED",
           "modifiedDate": "2020-08-14T10:30:10.019991Z"
         },
         "modifiedDate": "2020-08-14T10:30:10.019991Z",
