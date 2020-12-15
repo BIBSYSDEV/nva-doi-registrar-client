@@ -1,5 +1,10 @@
 package no.unit.nva.datacite.handlers;
 
+import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
+import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_ID_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_INSTITUTION_OWNER_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_IS_MISSING_ERROR;
+import static no.unit.nva.datacite.handlers.LandingPageUtil.ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED;
 import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
 import static nva.commons.utils.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +45,9 @@ public class FindableDoiEventHandlerTest {
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
     public static final Path NOT_PUBLISHED_PUBLICATION = Path.of(
         "doi_publication_event_publication_not_published.json");
+
+    public static final Path PUBLICATION_WITH_WRONG_PUBLCATION_URI = Path.of(
+        "doi_publication_event_wrong_publication_uri.json");
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
     private ByteArrayOutputStream outputStream;
@@ -94,7 +102,8 @@ public class FindableDoiEventHandlerTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
-        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.CUSTOMER_ID_IS_MISSING_ERROR)));
+        assertThat(exception.getMessage(), containsString(MANDATORY_FIELD_ERROR_PREFIX));
+        assertThat(exception.getMessage(), containsString(PUBLICATION_INSTITUTION_OWNER_FIELD_INFO));
     }
 
     @Test
@@ -104,7 +113,7 @@ public class FindableDoiEventHandlerTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
-        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.PUBLICATION_IS_MISSING_ERROR)));
+        assertThat(exception.getMessage(), is(equalTo(PUBLICATION_IS_MISSING_ERROR)));
     }
 
     @Test
@@ -114,7 +123,8 @@ public class FindableDoiEventHandlerTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
-        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.PUBLICATION_ID_MISSING_ERROR)));
+        assertThat(exception.getMessage(), containsString(MANDATORY_FIELD_ERROR_PREFIX));
+        assertThat(exception.getMessage(), containsString(PUBLICATION_ID_FIELD_INFO));
     }
 
     @Test
@@ -148,7 +158,7 @@ public class FindableDoiEventHandlerTest {
         var actualException = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
         assertThat(actualException.getMessage(),
-            is(equalTo(LandingPageUtil.ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED)));
+            containsString(MANDATORY_FIELD_ERROR_PREFIX));
     }
 
     @Test
@@ -159,6 +169,15 @@ public class FindableDoiEventHandlerTest {
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
         assertThat(actualException.getMessage(),
             is(equalTo(FindableDoiEventHandler.CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR)));
+    }
+
+    @Test
+    void handleRequestThrowsExceptionWhenPublicationIdIsUriWithoutPath() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_WITH_WRONG_PUBLCATION_URI);
+        var actualException = assertThrows(IllegalArgumentException.class,
+            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
+        assertThat(actualException.getMessage(),
+            containsString(ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED));
     }
 
     private String verifyPartsOfMetadata() {
