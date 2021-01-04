@@ -19,6 +19,7 @@ public class DataCiteRestConnection {
     public static final String DOIS_PATH = "dois";
     public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
     public static final String CONTENT_TYPE = "Content-Type";
+    public static final String ACCEPT = "Accept";
     public static final String ERROR_CONFIG_WITHOUT_SECRETS =
         "Creating a doi requires a client configuration with secrets (%s)";
     public static final String COLON = ":";
@@ -64,6 +65,18 @@ public class DataCiteRestConnection {
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
+    public HttpResponse<String> getDoi(String id)
+            throws IOException, InterruptedException {
+
+        HttpRequest postRequest = HttpRequest.newBuilder()
+                .uri(requestTargetUriToDoi(id))
+                .GET()
+                .header(ACCEPT, JSON_API_CONTENT_TYPE)
+                .headers(AUTHORIZATION_HEADER, authorizationString())
+                .build();
+        return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
 
     private String requestBodyContainingTheDoiPrefix() {
         DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(configWithSecretes.getCustomerDoiPrefix());
@@ -81,16 +94,30 @@ public class DataCiteRestConnection {
         return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
+
     private URI requestTargetUri() {
         return attempt(this::buildUri).orElseThrow();
     }
 
     private URI buildUri() throws URISyntaxException {
         return new URIBuilder()
-            .setScheme(HTTPS)
-            .setHost(host)
-            .setPort(port)
-            .setPath(DOIS_PATH)
-            .build();
+                .setScheme(HTTPS)
+                .setHost(host)
+                .setPort(port)
+                .setPath(DOIS_PATH)
+                .build();
+    }
+
+    private URI requestTargetUriToDoi(String id) {
+        return attempt(() -> buildUriToDoi(id)).orElseThrow();
+    }
+
+    private URI buildUriToDoi(String id) throws URISyntaxException {
+        return new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(host)
+                .setPort(port)
+                .setPath(DOIS_PATH + "/" + id)
+                .build();
     }
 }

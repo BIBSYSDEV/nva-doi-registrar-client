@@ -1,0 +1,10 @@
+{
+  "data":{
+    "id": "10.23/456789",
+    "type": "dois",
+    "attributes": {
+      "doi": "10.23/456789",
+      "state": "draft"
+    }
+  }
+}

@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -14,6 +15,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.APPLICATION_XML_CHARSET_UTF_8;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.LANDING_PAGE_BODY_FORMAT;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8;
+import static no.unit.nva.doi.datacite.restclient.DataCiteRestConnection.CONTENT_TYPE;
 import static no.unit.nva.doi.datacite.restclient.DataCiteRestConnection.JSON_API_CONTENT_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -51,8 +53,10 @@ import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactor
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
+import no.unit.nva.doi.models.ImmutableDoi;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.log.LogUtils;
 import nva.commons.utils.log.TestAppender;
@@ -66,6 +70,7 @@ import org.junit.jupiter.api.function.Executable;
 
 class DataCiteClientSystemTest extends DataciteClientTestBase {
 
+    public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HTTPS_SCHEME = "https://";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
@@ -83,6 +88,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final char COLON = ':';
     private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
+    public static final String DRAFT = "draft";
+    public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
+    public static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
     private String mdsHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
@@ -130,6 +138,31 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             mdsHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
+    }
+
+    @Test
+    void getDoiReturnsDoiStateOnSuccess() throws ClientException {
+        String getDoiResponseJson = IoUtils.stringFromResources(Path.of(GET_DOI_RESPONSE_JSON));
+        var requestedDoi = ImmutableDoi.builder().withIdentifier(EXAMPLE_DOI_FROM_FILE).build();
+
+        stubGetDoiResponse(getDoiResponseJson, requestedDoi);
+
+        DoiStateDto actual = doiClient.getDoi(EXAMPLE_CUSTOMER_ID, requestedDoi);
+
+        assertThat(actual, is(instanceOf(DoiStateDto.class)));
+        assertThat(actual.getDoi(), is(equalTo(requestedDoi.toIdentifier())));
+        assertThat(actual.getState(), is(equalTo(DRAFT)));
+
+
+    }
+
+    private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {
+        stubFor(get(urlEqualTo(createDoisIdentifierPath(requestedDoi)))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, APPLICATION_VND_API_JSON)
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(getDoiResponseJson)));
     }
 
     @Test
@@ -259,6 +292,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .withRequestBody(WireMock.equalTo(
                 String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
             .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
+    }
+
+    private String createDoisIdentifierPath(Doi requestedDoi) {
+        return DOIS_PATH_PREFIX + FORWARD_SLASH + requestedDoi.toIdentifier();
     }
 
     private String createDoiIdentifierPath(Doi requestedDoi) {

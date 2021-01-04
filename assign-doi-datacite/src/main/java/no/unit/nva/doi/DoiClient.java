@@ -1,8 +1,10 @@
 package no.unit.nva.doi;
 
 import java.net.URI;
+
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
 
 /**
@@ -91,4 +93,6 @@ public interface DoiClient {
      * @throws ClientException Error while communicating with Registry Agency
      */
     void deleteDraftDoi(URI customerId, Doi doi) throws ClientException;
+
+    DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException;
 }
