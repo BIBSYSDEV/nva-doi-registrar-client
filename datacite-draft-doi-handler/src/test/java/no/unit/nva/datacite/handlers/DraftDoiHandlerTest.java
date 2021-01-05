@@ -1,4 +1,4 @@
-package no.unit.nva.doi;
+package no.unit.nva.datacite.handlers;
 
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import no.unit.nva.datacite.handlers.DraftDoiHandler;
+import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.models.Doi;
