@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
+
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteMetadataException;
+import no.unit.nva.doi.datacite.clients.exception.GetDoiException;
 import no.unit.nva.doi.datacite.clients.exception.SetLandingPageException;
 import no.unit.nva.doi.datacite.clients.exception.UpdateMetadataException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
@@ -16,6 +18,7 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
 import org.slf4j.Logger;
@@ -37,6 +40,7 @@ public class DataCiteClient implements DoiClient {
     public static final String ERROR_DELETING_DOI_METADATA = "Error deleting DOI metadata";
     public static final String ERROR_DELETING_DOI = "Error deleting DOI";
     public static final String ERROR_COMMUNICATION_TEMPLATE = "Error during API communication: ({})";
+    public static final String ERROR_GETTING_DOI = "Error getting DOI";
     public static final String COLON_SPACE = ": ";
     public static final String PREFIX_TEMPLATE_ENTRY = "{}";
 
@@ -54,6 +58,9 @@ public class DataCiteClient implements DoiClient {
             + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
     public static final String ERROR_SETTING_DOI_URL_TEMPLATE =
         ERROR_SETTING_DOI_URL
+            + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
+    public static final String ERROR_GETTING_DOI_TEMPLATE =
+            ERROR_GETTING_DOI
             + DOI_AND_HTTP_STATUS_TEMPLATE_ENTRIES;
 
     private static final String HTTP_FAILED_RESPONSE_MESSAGE = "{}";
@@ -165,6 +172,21 @@ public class DataCiteClient implements DoiClient {
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw logAndCreateClientException("deleteDraftDoi", e);
+        }
+    }
+
+    @Override
+    public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
+        try {
+            var response = prepareAuthenticatedDataCiteRestConnection(customerId)
+                .getDoi(doi.toIdentifier());
+            if (isUnsuccessfulResponse(response)) {
+                logger.error(ERROR_GETTING_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
+                throw new GetDoiException(doi, response.statusCode());
+            }
+            return DoiStateDto.fromJson(response.body());
+        } catch (IOException | InterruptedException e) {
+            throw logAndCreateClientException("getDoi", e);
         }
     }
 
