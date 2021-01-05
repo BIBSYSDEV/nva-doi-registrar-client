@@ -11,7 +11,6 @@ import java.net.http.HttpResponse;
 import java.util.Base64;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import org.apache.http.client.utils.URIBuilder;
 
 public class DataCiteRestConnection {
 
@@ -24,6 +23,7 @@ public class DataCiteRestConnection {
         "Creating a doi requires a client configuration with secrets (%s)";
     public static final String COLON = ":";
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String SEPARATOR = "/";
     private final HttpClient httpClient;
     private final String host;
     private final int port;
@@ -100,12 +100,14 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUri() throws URISyntaxException {
-        return new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPort(port)
-                .setPath(DOIS_PATH)
-                .build();
+        return new URI(HTTPS,
+                null,
+                host,
+                port,
+                SEPARATOR + DOIS_PATH,
+                null,
+                null
+        );
     }
 
     private URI requestTargetUriToDoi(String id) {
@@ -113,11 +115,13 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUriToDoi(String id) throws URISyntaxException {
-        return new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(host)
-                .setPort(port)
-                .setPath(DOIS_PATH + "/" + id)
-                .build();
+        return new URI(HTTPS,
+                null,
+                host,
+                port,
+                SEPARATOR + DOIS_PATH + SEPARATOR + id,
+                null,
+                null
+        );
     }
 }
