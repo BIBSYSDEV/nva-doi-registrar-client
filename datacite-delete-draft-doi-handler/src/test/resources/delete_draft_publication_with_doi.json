@@ -31,7 +31,7 @@
       "type": "delete.publication",
       "identifier": "3f1958e5-1570-459a-9d4c-c8d6cf916327",
       "doi": "http://doi.org/10.23/456789",
-      "status": "DRAFT",
+      "status": "DRAFT_FOR_DELETION",
       "hasDoi": true
     }
   }
