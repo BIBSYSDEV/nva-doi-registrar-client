@@ -19,7 +19,7 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 
-    def nvaPublicationApi = '3c5a4db'
+    def nvaPublicationApi = '0.1.21'
     project.ext {
         awsSdkVersion = '1.11.875'
         nvaCommonsVersion = '0.7.2'
