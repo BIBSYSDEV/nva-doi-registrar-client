@@ -13,6 +13,8 @@ dependencies {
     }
     implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
 
+    implementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-events', version: project.ext.nvaPublication
+
     runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
 
     testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: project.ext.nvaPublicationTesting
