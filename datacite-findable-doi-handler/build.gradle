@@ -1,3 +1,7 @@
+repositories {
+    maven { url "https://s3.eu-central-1.amazonaws.com/dynamodb-local-frankfurt/release" }
+}
+
 dependencies {
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
 
