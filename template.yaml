@@ -211,7 +211,6 @@ Resources:
             AWC_ACCOUNT_ID: !Ref AWS::AccountId
             CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
             CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-            DATACITE_MDS_HOST: !Ref DataCiteMdsHost
             DATACITE_PORT: !Ref DataCitePort
         Events:
           EventBridgeEvent:

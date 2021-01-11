@@ -5,9 +5,7 @@ import nva.commons.utils.JacocoGenerated;
 
 @JacocoGenerated
 public final class DeleteDraftDoiAppEnv {
-
-    public static final String DATACITE_CONFIG = "DATACITE_CONFIG";
-    public static final String DATACITE_MDS_HOST = "DATACITE_MDS_HOST";
+    
     public static final String DATACITE_PORT = "DATACITE_PORT";
     public static final String DATACITE_REST_HOST = "DATACITE_REST_HOST";
     public static final String CUSTOMER_SECRETS_SECRET_NAME = "CUSTOMER_SECRETS_SECRET_NAME";
@@ -16,16 +14,6 @@ public final class DeleteDraftDoiAppEnv {
 
     @JacocoGenerated
     private DeleteDraftDoiAppEnv() {
-    }
-
-    @JacocoGenerated
-    public static String getDataCiteConfig() {
-        return getEnvValue(DATACITE_CONFIG);
-    }
-
-    @JacocoGenerated
-    public static String getDataCiteMdsApiHost() {
-        return getEnvValue(DATACITE_MDS_HOST);
     }
 
     @JacocoGenerated

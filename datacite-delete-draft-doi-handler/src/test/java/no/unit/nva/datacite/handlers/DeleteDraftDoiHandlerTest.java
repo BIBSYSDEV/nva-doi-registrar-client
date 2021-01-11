@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +72,27 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
+    public void handleRequestThrowsExceptionWhenRemoteServiceFails() throws ClientException {
+        doiClient = doiClientReturningError();
+        handler = new DeleteDraftDoiHandler(doiClient);
+
+        InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> handler.handleRequest(inputStream, outputStream, context));
+        assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI)));
+    }
+
+    private DoiClient doiClientReturningError() throws ClientException {
+        DoiClient doiClient = mock(DoiClient.class);
+        when(doiClient.getDoi(any(),any()))
+                .thenAnswer(invocation -> doiState(DOI_IDENTIFIER, DeleteDraftDoiHandler.DRAFT));
+        doThrow(new RuntimeException(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI))
+                .when(doiClient).deleteDraftDoi(any(),any());
+        return doiClient;
+    }
+
+    @Test
     public void handleRequestThrowsExceptionWhenDoiIsNotInDraftState() throws ClientException {
         doiClient = doiClientReturningDoi(NOT_DRAFT);
         handler = new DeleteDraftDoiHandler(doiClient);
@@ -84,9 +106,6 @@ public class DeleteDraftDoiHandlerTest {
 
     private DoiClient doiClientReturningDoi(String state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
-        when(doiClient.createDoi(any()))
-                .thenAnswer(invocation -> saveInputAndReturnSampleDoi(doi, invocation));
         when(doiClient.getDoi(any(),any()))
                 .thenAnswer(invocation -> doiState(DOI_IDENTIFIER, state));
         return doiClient;
