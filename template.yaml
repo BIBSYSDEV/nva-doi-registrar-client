@@ -122,6 +122,7 @@ Resources:
           CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:
@@ -166,6 +167,7 @@ Resources:
           AWC_ACCOUNT_ID: !Ref AWS::AccountId
           CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DATACITE_PORT: !Ref DataCitePort
       Events:
@@ -211,6 +213,7 @@ Resources:
           CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:

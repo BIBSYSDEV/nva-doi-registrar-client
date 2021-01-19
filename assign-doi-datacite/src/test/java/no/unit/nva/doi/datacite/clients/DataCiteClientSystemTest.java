@@ -136,6 +136,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
             configurationFactory,
             mdsHost,
+            mdsHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }

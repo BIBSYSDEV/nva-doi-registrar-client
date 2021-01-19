@@ -32,6 +32,7 @@ public class OnlineTests {
 
         var connectionFactory = new DataCiteConnectionFactory(configFactory,
             DATACITE_DRAFT_DOI_REST_API.getHost(),
+            DATACITE_DRAFT_DOI_REST_API.getHost(),
             DEFAULT_HTTPS_PORT);
         var doiClient = new DataCiteClient(configFactory, connectionFactory);
         Doi doi = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);

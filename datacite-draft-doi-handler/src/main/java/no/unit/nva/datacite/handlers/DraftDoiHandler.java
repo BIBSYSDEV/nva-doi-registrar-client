@@ -88,6 +88,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
             configFactory,
+            DraftDoiAppEnv.getDataCiteMdsApiHost(),
             DraftDoiAppEnv.getDataCiteRestApiHost(),
             DraftDoiAppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);

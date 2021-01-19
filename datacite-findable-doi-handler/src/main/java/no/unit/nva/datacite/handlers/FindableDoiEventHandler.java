@@ -158,7 +158,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
 
         DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
             dataCiteConfigurationFactory,
-            FindableDoiAppEnv.getDataCiteHost(),
+            FindableDoiAppEnv.getDataCiteMdsApiHost(),
+            FindableDoiAppEnv.getDataCiteRestApiHost(),
             FindableDoiAppEnv.getDataCitePort()
         );
 

@@ -51,6 +51,7 @@ class DataCiteConnectionFactoryTest {
 
         sut = new DataCiteConnectionFactory(configurationFactory,
             EXAMPLE_MDS_API_ENDPOINT.getHost(),
+            EXAMPLE_MDS_API_ENDPOINT.getHost(),
             EXAMPLE_MDS_API_ENDPOINT.getPort());
     }
 
