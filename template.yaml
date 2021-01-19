@@ -195,42 +195,42 @@ Resources:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
 
-    DeleteDraftDoiHandler:
-      Type: AWS::Serverless::Function
-      Properties:
-        Layers:
-          - !Ref NvaPublicationCommonsLayer
-        CodeUri: datacite-delete-draft-doi-handler
-        Handler: no.unit.nva.datacite.handlers.DeleteDraftDoiHandler::handleRequest
-        Runtime: java11
-        MemorySize: 512
-        Role: !GetAtt LambdaRole.Arn
-        Environment:
-          Variables:
-            EVENT_BUS: !Ref EventBusName
-            AWC_ACCOUNT_ID: !Ref AWS::AccountId
-            CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-            CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-            DATACITE_PORT: !Ref DataCitePort
-        Events:
-          EventBridgeEvent:
-            Type: EventBridgeRule
-            Properties:
-              EventBusName: !Ref EventBusName
-            Pattern:
-              responsePayload:
-                type:
-                  - delete.publication
-                hasDoi:
-                  - true
-        EventInvokeConfig:
-          DestinationConfig:
-            OnSuccess:
-              Type: EventBridge
-              Destination: !Ref EventBusArn
-            OnFailure:
-              Type: SQS
-              Destination: !GetAtt DeleteDraftDoiHandlerDLQ.Arn
+  DeleteDraftDoiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Layers:
+        - !Ref NvaPublicationCommonsLayer
+      CodeUri: datacite-delete-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.DeleteDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_PORT: !Ref DataCitePort
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+          Pattern:
+            responsePayload:
+              type:
+                - delete.publication
+              hasDoi:
+                - true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DeleteDraftDoiHandlerDLQ.Arn
 
   DataCiteFindableDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
