@@ -18,7 +18,6 @@ import java.util.UUID;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
-import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,11 +33,13 @@ class DataCiteConnectionFactoryTest {
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
     private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/api/mds/endpoint");
+    private static final URI EXAMPLE_REST_API_ENDPOINT = URI.create("https://example.net/api/rest/endpoint");
 
     private static final DataCiteMdsClientConfig MOCK_DATACITE_CONFIG = new DataCiteMdsClientSecretConfig(
         EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT, EXAMPLE_MDS_USERNAME,
         EXAMPLE_MDS_PASSWORD);
     private static final URI UNKNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/41515-unknown-customer");
+    private static final String NOT_IN_USE = null;
 
     private DataCiteConfigurationFactory configurationFactory;
     private DataCiteConnectionFactory sut;
@@ -51,7 +52,7 @@ class DataCiteConnectionFactoryTest {
 
         sut = new DataCiteConnectionFactory(configurationFactory,
             EXAMPLE_MDS_API_ENDPOINT.getHost(),
-            EXAMPLE_MDS_API_ENDPOINT.getHost(),
+            EXAMPLE_REST_API_ENDPOINT.getHost(),
             EXAMPLE_MDS_API_ENDPOINT.getPort());
     }
 
