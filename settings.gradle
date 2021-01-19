@@ -3,6 +3,7 @@ include 'assign-doi-datacite'
 include 'datacite-doi-commons'
 include 'datacite-draft-doi-handler'
 include 'datacite-findable-doi-handler'
+include 'datacite-delete-draft-doi-handler'
 include 'event-handler-template'
 include 'event-handler-template-examples'
 

@@ -1,6 +1,8 @@
 package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.isNull;
+import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
+import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
 import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -152,12 +154,13 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     private static DoiClient defaultDoiClient() {
 
         DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
+            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
             dataCiteConfigurationFactory,
-            AppEnv.getDataCiteHost(),
-            AppEnv.getDataCitePort()
+            FindableDoiAppEnv.getDataCiteMdsApiHost(),
+            FindableDoiAppEnv.getDataCiteRestApiHost(),
+            FindableDoiAppEnv.getDataCitePort()
         );
 
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);

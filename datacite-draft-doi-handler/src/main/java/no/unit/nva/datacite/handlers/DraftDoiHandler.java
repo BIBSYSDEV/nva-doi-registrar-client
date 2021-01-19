@@ -1,5 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
+import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretKey;
+import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.utils.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
@@ -82,12 +84,13 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     private static DoiClient defaultDoiClient() {
 
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), AppEnv.getCustomerSecretsSecretName(), AppEnv.getCustomerSecretsSecretKey());
+            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
             configFactory,
-            AppEnv.getDataCiteRestApiHost(),
-            AppEnv.getDataCitePort());
+            DraftDoiAppEnv.getDataCiteMdsApiHost(),
+            DraftDoiAppEnv.getDataCiteRestApiHost(),
+            DraftDoiAppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);
     }
 
