@@ -198,8 +198,6 @@ Resources:
   DeleteDraftDoiHandler:
     Type: AWS::Serverless::Function
     Properties:
-      Layers:
-        - !Ref NvaPublicationCommonsLayer
       CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.DeleteDraftDoiHandler::handleRequest
       Runtime: java11
