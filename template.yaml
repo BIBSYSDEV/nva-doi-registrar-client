@@ -217,11 +217,12 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
-              responsePayload:
-                type:
-                  - delete.publication
-                hasDoi:
-                  - true
+              detail:
+                responsePayload:
+                  type:
+                    - delete.publication
+                  hasDoi:
+                    - true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
