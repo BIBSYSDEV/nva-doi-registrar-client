@@ -121,6 +121,7 @@ public class DeleteDraftDoiHandler
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
                 configFactory,
+                DeleteDraftDoiAppEnv.getDataCiteMdsApiHost(),
                 DeleteDraftDoiAppEnv.getDataCiteRestApiHost(),
                 DeleteDraftDoiAppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);

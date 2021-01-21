@@ -92,6 +92,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
     public static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
     private String mdsHost;
+    private String restHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
     private DataCiteClient doiClient;
@@ -103,6 +104,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
+        restHost = "localhost";
         var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             INSTITUTION_PREFIX,
@@ -136,6 +138,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
             configurationFactory,
             mdsHost,
+            restHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
