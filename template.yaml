@@ -19,14 +19,14 @@ Globals:
     Timeout: 20
 Parameters:
   DataCiteMdsHost:
-    Type: String
-    Default: mds.test.datacite.org
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: dataCiteMdsHost
   DataCiteRestHost:
-    Type: String
-    Default: api.test.datacite.org
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: dataCiteRestHost
   DataCitePort:
-    Type: String
-    Default: 443
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: dataCitePort
   EventBusName:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: nvaEventBusName
