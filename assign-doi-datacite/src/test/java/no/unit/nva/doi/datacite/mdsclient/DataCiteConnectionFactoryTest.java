@@ -36,10 +36,9 @@ class DataCiteConnectionFactoryTest {
     private static final URI EXAMPLE_REST_API_ENDPOINT = URI.create("https://example.net/api/rest/endpoint");
 
     private static final DataCiteMdsClientConfig MOCK_DATACITE_CONFIG = new DataCiteMdsClientSecretConfig(
-        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT, EXAMPLE_MDS_USERNAME,
+        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_USERNAME,
         EXAMPLE_MDS_PASSWORD);
     private static final URI UNKNOWN_CUSTOMER_ID = URI.create("https://example.net/customer/id/41515-unknown-customer");
-    private static final String NOT_IN_USE = null;
 
     private DataCiteConfigurationFactory configurationFactory;
     private DataCiteConnectionFactory sut;

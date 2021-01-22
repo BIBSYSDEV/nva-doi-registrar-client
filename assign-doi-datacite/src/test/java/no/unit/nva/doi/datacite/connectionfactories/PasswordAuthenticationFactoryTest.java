@@ -27,7 +27,7 @@ class PasswordAuthenticationFactoryTest {
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
     private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/datacite/mds/api");
     private static final DataCiteMdsClientSecretConfig MOCK_DATACITE_CONFIG = new DataCiteMdsClientSecretConfig(
-        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT, EXAMPLE_MDS_USERNAME,
+        EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_USERNAME,
         EXAMPLE_MDS_PASSWORD);
     private PasswordAuthenticationFactory sut;
 

@@ -50,7 +50,6 @@ public class OnlineTests {
         String nvaTestDataciteAccount = "TESTTO.NVA";
         var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             unitDoiPrefix,
-            DATACITE_DRAFT_DOI_REST_API,
             nvaTestDataciteAccount,
             password);
 
