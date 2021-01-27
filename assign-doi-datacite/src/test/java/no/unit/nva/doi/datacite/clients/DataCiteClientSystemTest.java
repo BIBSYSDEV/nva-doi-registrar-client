@@ -72,7 +72,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HTTPS_SCHEME = "https://";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
@@ -105,10 +104,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
         restHost = "localhost";
-        var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             INSTITUTION_PREFIX,
-            dataCiteMdsClientUrl,
             EXAMPLE_MDS_USERNAME,
             EXAMPLE_MDS_PASSWORD);
     }

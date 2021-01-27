@@ -45,12 +45,12 @@ public class OnlineTests {
     }
 
     private DataCiteConfigurationFactory mockConfigFactory() {
-        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
+        Environment environment = new Environment();
+        String password = environment.readEnv("DATA_CITE_TEST_PASSWORD");
         String unitDoiPrefix = "10.16903";
-        String nvaTestDataciteAccount = "TESTTO.NVA";
+        String nvaTestDataciteAccount = environment.readEnv("DATA_CITE_TEST_USER");
         var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             unitDoiPrefix,
-            DATACITE_DRAFT_DOI_REST_API,
             nvaTestDataciteAccount,
             password);
 
