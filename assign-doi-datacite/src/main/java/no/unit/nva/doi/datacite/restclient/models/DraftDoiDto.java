@@ -1,14 +1,15 @@
 package no.unit.nva.doi.datacite.restclient.models;
 
 import static java.util.Objects.nonNull;
-import static nva.commons.utils.JsonUtils.objectMapper;
-import static nva.commons.utils.attempt.Try.attempt;
+import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.attempt.Try.attempt;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.doi.models.ImmutableDoi.Builder;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 /**
  * Class for exchanging data with DataCite when requesting a draft DOI. The data-structure defined here is used by both

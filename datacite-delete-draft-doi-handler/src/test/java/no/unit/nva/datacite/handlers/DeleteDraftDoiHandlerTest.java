@@ -1,23 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
-import no.unit.nva.doi.models.Doi;
-import no.unit.nva.publication.events.DeletePublicationEvent;
-import nva.commons.utils.IoUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static nva.commons.utils.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -26,6 +9,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.amazonaws.services.lambda.runtime.Context;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
+import no.unit.nva.doi.DoiClient;
+import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
+import no.unit.nva.doi.models.Doi;
+import no.unit.nva.publication.events.DeletePublicationEvent;
+import nva.commons.core.ioutils.IoUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
 
 public class DeleteDraftDoiHandlerTest {
 
@@ -52,7 +50,7 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    public void handleRequestReturnsOutputWithoutDoiOnInputWithDoi() throws JsonProcessingException {
+    public void handleRequestReturnsOutputWithoutDoiOnInputWithDoi() throws IOException {
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         handler.handleRequest(inputStream, outputStream, context);

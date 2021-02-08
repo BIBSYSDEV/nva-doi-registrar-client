@@ -14,7 +14,7 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
-import nva.commons.utils.Environment;
+import nva.commons.core.Environment;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

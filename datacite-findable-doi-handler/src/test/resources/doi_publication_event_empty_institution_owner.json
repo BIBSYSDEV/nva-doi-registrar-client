@@ -1,55 +1,348 @@
 {
   "version": "0",
-  "id": "c2c057c1-67fe-1208-fc21-0401596631ba",
+  "id": "cb2415a4-34b7-4c14-ecc8-b6f3504fdc7f",
   "detail-type": "Lambda Function Invocation Result - Success",
   "source": "lambda",
   "account": "884807050265",
-  "time": "2020-10-09T09:34:33Z",
+  "time": "2021-02-08T13:27:41Z",
   "region": "eu-west-1",
   "resources": [
-    "arn:aws:events:eu-west-1:884807050265:event-bus/orestis-event-bus",
-    "arn:aws:lambda:eu-west-1:884807050265:function:orestis-stack-nva-datacite-mds-EventProducer-8IAE7WYCNTPX:$LATEST"
+    "arn:aws:events:eu-west-1:884807050265:event-bus/default",
+    "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST"
   ],
   "detail": {
     "version": "1.0",
-    "timestamp": "2020-10-09T09:34:33.727Z",
+    "timestamp": "2021-02-08T13:27:41.916Z",
     "requestContext": {
-      "requestId": "e3f0079c-da29-4e50-92ef-0b699d415e95",
-      "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-stack-nva-datacite-mds-EventProducer-8IAE7WYCNTPX:$LATEST",
+      "requestId": "cbaa5587-0d44-4578-9063-a1abe91038ea",
+      "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST",
       "condition": "Success",
       "approximateInvokeCount": 1
     },
     "requestPayload": {
-      "myRequest": "ListenToMe",
-      "type": "ArbitraryPayload"
+      "version": "0",
+      "id": "339238b4-1e85-843d-cfb3-5046806fd99a",
+      "detail-type": "Lambda Function Invocation Result - Success",
+      "source": "lambda",
+      "account": "884807050265",
+      "time": "2021-02-08T13:27:38Z",
+      "region": "eu-west-1",
+      "resources": [
+        "arn:aws:events:eu-west-1:884807050265:event-bus/default",
+        "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST"
+      ],
+      "detail": {
+        "version": "1.0",
+        "timestamp": "2021-02-08T13:27:38.397Z",
+        "requestContext": {
+          "requestId": "9a08735e-0bc3-4c27-b6a6-81c896df1540",
+          "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST",
+          "condition": "Success",
+          "approximateInvokeCount": 1
+        },
+        "requestPayload": {
+          "version": "0",
+          "id": "0a922a22-3295-3097-d596-6eee4f32ea8c",
+          "detail-type": "dynamodb-stream-event",
+          "source": "aws-dynamodb-stream-eventbridge-fanout",
+          "account": "884807050265",
+          "time": "2021-02-08T13:27:37Z",
+          "region": "eu-west-1",
+          "resources": [
+            "arn:aws:dynamodb:eu-west-1:884807050265:table/OrestisResources/stream/2021-02-01T12:02:08.358"
+          ],
+          "detail": {
+            "eventID": "1711b7caf5c9af1658f2ffa70f077ea9",
+            "eventName": "INSERT",
+            "eventVersion": "1.1",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "eu-west-1",
+            "dynamodb": {
+              "approximateCreationDateTime": 1612790857000,
+              "keys": {
+                "PK0": {
+                  "s": "DoiRequest:f54c8aa9-073a-46a1-8f7c-dde66c853934:og@unit.no"
+                },
+                "SK0": {
+                  "s": "DoiRequest:017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+                }
+              },
+              "newImage": {
+                "PK0": {
+                  "s": "DoiRequest:f54c8aa9-073a-46a1-8f7c-dde66c853934:og@unit.no"
+                },
+                "data": {
+                  "m": {
+                    "owner": {
+                      "s": "og@unit.no"
+                    },
+                    "identifier": {
+                      "s": "017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+                    },
+                    "resourcePublicationInstance": {
+                      "m": {
+                        "pages": {
+                          "m": {
+                            "type": {
+                              "s": "Range"
+                            }
+                          }
+                        },
+                        "peerReviewed": {
+                          "bool": true
+                        },
+                        "type": {
+                          "s": "JournalArticle"
+                        }
+                      }
+                    },
+                    "resourceTitle": {
+                      "s": "The resource title"
+                    },
+                    "resourcePublicationYear": {
+                      "s": "2021"
+                    },
+                    "resourcePublicationDate": {
+                      "m": {
+                        "month": {
+                          "s": "2"
+                        },
+                        "year": {
+                          "s": "2021"
+                        },
+                        "type": {
+                          "s": "PublicationDate"
+                        },
+                        "day": {
+                          "s": "2"
+                        }
+                      }
+                    },
+                    "type": {
+                      "s": "DoiRequest"
+                    },
+                    "resourceModifiedDate": {
+                      "s": "2021-02-08T13:27:27.663594Z"
+                    },
+                    "resourceStatus": {
+                      "s": "DRAFT"
+                    },
+                    "createdDate": {
+                      "s": "2021-02-08T13:27:37.115526Z"
+                    },
+                    "resourceIdentifier": {
+                      "s": "017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b"
+                    },
+                    "modifiedDate": {
+                      "s": "2021-02-08T13:27:37.115526Z"
+                    },
+                    "customerId": {
+                      "s": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
+                    },
+                    "contributors": {
+                      "l": [
+                        {
+                          "m": {
+                            "sequence": {
+                              "n": "1"
+                            },
+                            "identity": {
+                              "m": {
+                                "name": {
+                                  "s": "Gkorgkas,Orestis Stylianos"
+                                },
+                                "orcId": {
+                                  "s": "0000-0001-8310-5489"
+                                },
+                                "id": {
+                                  "s": "https://api.dev.nva.aws.unit.no/person/1582627888604"
+                                },
+                                "type": {
+                                  "s": "Identity"
+                                }
+                              }
+                            },
+                            "correspondingAuthor": {
+                              "bool": false
+                            },
+                            "affiliations": {
+                              "l": [
+                                {
+                                  "m": {
+                                    "id": {
+                                      "s": "https://api.cristin.no/v2/institutions/20202"
+                                    },
+                                    "type": {
+                                      "s": "Organization"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "type": {
+                              "s": "Contributor"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "status": {
+                      "s": "REQUESTED"
+                    }
+                  }
+                },
+                "PK2": {
+                  "s": "Customer:f54c8aa9-073a-46a1-8f7c-dde66c853934:Resource:017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b"
+                },
+                "PK1": {
+                  "s": "DoiRequest:Customer:f54c8aa9-073a-46a1-8f7c-dde66c853934:Status:REQUESTED"
+                },
+                "SK1": {
+                  "s": "DoiRequest:017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+                },
+                "SK0": {
+                  "s": "DoiRequest:017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+                },
+                "SK2": {
+                  "s": "a:DoiRequest:017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+                },
+                "type": {
+                  "s": "DoiRequest"
+                }
+              },
+              "sequenceNumber": "107001200000000004171465954",
+              "sizeBytes": 1488,
+              "streamViewType": "NEW_AND_OLD_IMAGES"
+            },
+            "eventSourceARN": "arn:aws:dynamodb:eu-west-1:884807050265:table/OrestisResources/stream/2021-02-01T12:02:08.358"
+          }
+        },
+        "responseContext": {
+          "statusCode": 200,
+          "executedVersion": "$LATEST"
+        },
+        "responsePayload": {
+          "type": "publication.update",
+          "updateType": "INSERT",
+          "newPublication": {
+            "type": "Publication",
+            "identifier": "017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b",
+            "status": "DRAFT",
+            "owner": "og@unit.no",
+            "publisher": {
+              "type": "Organization",
+              "id": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
+            },
+            "modifiedDate": "2021-02-08T13:27:27.663594Z",
+            "doiRequest": {
+              "type": "DoiRequest",
+              "status": "REQUESTED",
+              "modifiedDate": "2021-02-08T13:27:37.115526Z",
+              "createdDate": "2021-02-08T13:27:37.115526Z"
+            },
+            "entityDescription": {
+              "type": "EntityDescription",
+              "mainTitle": "The resource title",
+              "date": {
+                "type": "PublicationDate",
+                "year": "2021",
+                "month": "2",
+                "day": "2"
+              },
+              "contributors": [
+                {
+                  "type": "Contributor",
+                  "identity": {
+                    "type": "Identity",
+                    "id": "https://api.dev.nva.aws.unit.no/person/1582627888604",
+                    "name": "Gkorgkas,Orestis Stylianos",
+                    "orcId": "0000-0001-8310-5489"
+                  },
+                  "affiliations": [
+                    {
+                      "type": "Organization",
+                      "id": "https://api.cristin.no/v2/institutions/20202"
+                    }
+                  ],
+                  "sequence": 1,
+                  "correspondingAuthor": false
+                }
+              ],
+              "reference": {
+                "type": "Reference",
+                "publicationInstance": {
+                  "type": "JournalArticle",
+                  "peerReviewed": true,
+                  "pages": {
+                    "type": "Range"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "responseContext": {
       "statusCode": 200,
       "executedVersion": "$LATEST"
     },
     "responsePayload": {
-      "type": "doi.publication",
+      "type": "publication.doiupdate.request",
       "item": {
-        "id": "https://example.net/unittest/namespace/publication/654321",
-        "doi": "https://doi.org/10.1103/physrevd.100.085005",
-        "doiRequest": {
-          "status": "APPROVED",
-          "modifiedDate": "2020-08-14T10:30:10.019991Z"
-        },
-        "modifiedDate": "2020-08-14T10:30:10.019991Z",
-        "type": "JOURNAL_ARTICLE",
-        "mainTitle": "Conformality loss and quantum criticality in topological Higgs electrodynamics in 2+2 dimensions",
+        "type": "Publication",
+        "identifier": "017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b",
         "status": "PUBLISHED",
-        "contributor": [],
-        "publicationDate": {
-          "year": "2020"
+        "owner": "og@unit.no",
+        "publisher": null,
+        "modifiedDate": "2021-02-08T13:27:27.663594Z",
+        "doiRequest": {
+          "type": "DoiRequest",
+          "status": "APPROVED",
+          "modifiedDate": "2021-02-08T13:27:37.115526Z",
+          "createdDate": "2021-02-08T13:27:37.115526Z"
         },
-        "sameModifiedDateForDoiRequest": true
+        "doi": "https://doi.org/10.1000/182",
+        "entityDescription": {
+          "type": "EntityDescription",
+          "mainTitle": "The resource title",
+          "date": {
+            "type": "PublicationDate",
+            "year": "2021",
+            "month": "2",
+            "day": "2"
+          },
+          "contributors": [
+            {
+              "type": "Contributor",
+              "identity": {
+                "type": "Identity",
+                "id": "https://api.dev.nva.aws.unit.no/person/1582627888604",
+                "name": "Gkorgkas,Orestis Stylianos",
+                "orcId": "0000-0001-8310-5489"
+              },
+              "affiliations": [
+                {
+                  "type": "Organization",
+                  "id": "https://api.cristin.no/v2/institutions/20202"
+                }
+              ],
+              "sequence": 1,
+              "correspondingAuthor": false
+            }
+          ],
+          "reference": {
+            "type": "Reference",
+            "publicationInstance": {
+              "type": "JournalArticle",
+              "peerReviewed": true,
+              "pages": {
+                "type": "Range"
+              }
+            }
+          }
+        }
       }
     }
   }
 }
-
-
-
-

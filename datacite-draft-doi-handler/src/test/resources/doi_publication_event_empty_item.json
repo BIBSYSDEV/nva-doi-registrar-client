@@ -28,7 +28,7 @@
       "executedVersion": "$LATEST"
     },
     "responsePayload": {
-      "type": "doi.publication",
+      "type": "publication.doiupdate.request",
       "item": null
     }
   }

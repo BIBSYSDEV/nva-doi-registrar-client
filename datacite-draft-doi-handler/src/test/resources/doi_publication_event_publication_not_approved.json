@@ -1,49 +1,48 @@
 {
   "version": "0",
-  "id": "c2c057c1-67fe-1208-fc21-0401596631ba",
+  "id": "0d383ee1-2c38-5d71-4ec2-7fc43de6ccaa",
   "detail-type": "Lambda Function Invocation Result - Success",
   "source": "lambda",
   "account": "884807050265",
-  "time": "2020-10-09T09:34:33Z",
+  "time": "2021-02-05T16:14:34Z",
   "region": "eu-west-1",
   "resources": [
-    "arn:aws:events:eu-west-1:884807050265:event-bus/orestis-event-bus",
-    "arn:aws:lambda:eu-west-1:884807050265:function:orestis-stack-nva-datacite-mds-EventProducer-8IAE7WYCNTPX:$LATEST"
+    "arn:aws:events:eu-west-1:884807050265:event-bus/default",
+    "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1FGS1YJXUE6K1:$LATEST"
   ],
   "detail": {
     "version": "1.0",
-    "timestamp": "2020-10-09T09:34:33.727Z",
+    "timestamp": "2021-02-05T16:14:34.343Z",
     "requestContext": {
-      "requestId": "e3f0079c-da29-4e50-92ef-0b699d415e95",
-      "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-stack-nva-datacite-mds-EventProducer-8IAE7WYCNTPX:$LATEST",
+      "requestId": "743be66b-1d89-4938-ae35-26b264691530",
+      "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1FGS1YJXUE6K1:$LATEST",
       "condition": "Success",
       "approximateInvokeCount": 1
-    },
-    "requestPayload": {
-      "myRequest": "ListenToMe",
-      "type": "ArbitraryPayload"
     },
     "responseContext": {
       "statusCode": 200,
       "executedVersion": "$LATEST"
     },
     "responsePayload": {
-      "type": "doi.publication",
+      "type": "publication.doiupdate.request",
       "item": {
-        "id": "https://example.net/unittest/namespace/publication/654321",
-        "doi": "https://doi.org/10.1103/physrevd.100.085005",
-        "doiRequest": {
-          "status": "APPROVED",
-          "modifiedDate": "2020-08-14T10:30:10.019991Z"
-        },
-        "modifiedDate": "2020-08-14T10:30:10.019991Z",
-        "type": "JOURNAL_ARTICLE",
-        "mainTitle": "Conformality loss and quantum criticality in topological Higgs electrodynamics in 2+2 dimensions",
+        "type": "Publication",
+        "identifier": "017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d",
         "status": "DRAFT",
-        "institutionOwner": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934",
-        "contributor": [],
-        "publicationDate": {},
-        "sameModifiedDateForDoiRequest": true
+        "owner": "og@unit.no",
+        "publisher": {
+          "type": "Organization",
+          "id": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
+        },
+        "doiRequest": {
+          "type": "DoiRequest",
+          "status": "APPROVED",
+          "modifiedDate": "2021-02-05T16:14:32.516044Z",
+          "createdDate": "2021-02-05T16:14:32.516044Z"
+        },
+        "entityDescription": {
+          "type": "EntityDescription"
+        }
       }
     }
   }

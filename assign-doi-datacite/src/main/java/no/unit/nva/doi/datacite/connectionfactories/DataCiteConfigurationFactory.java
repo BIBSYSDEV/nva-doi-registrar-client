@@ -1,8 +1,8 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
 import static java.util.Objects.isNull;
-import static nva.commons.utils.JsonUtils.objectMapper;
-import static nva.commons.utils.attempt.Try.attempt;
+import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import nva.commons.utils.aws.SecretsReader;
+import nva.commons.secrets.SecretsReader;
 
 /**
  * DataCite configuration factory to obtain DataCite related configuration.

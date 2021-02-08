@@ -4,7 +4,7 @@ import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfiguration
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_HAS_INVALID_CONFIGURATION;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_NOT_PRESENT_IN_CONFIG;
-import static nva.commons.utils.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,9 +22,9 @@ import java.util.UUID;
 import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeException;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
-import nva.commons.exceptions.ForbiddenException;
-import nva.commons.utils.IoUtils;
-import nva.commons.utils.aws.SecretsReader;
+import nva.commons.core.ioutils.IoUtils;
+import nva.commons.secrets.ErrorReadingSecretException;
+import nva.commons.secrets.SecretsReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +51,7 @@ class DataCiteConfigurationFactoryTest {
     private DataCiteConfigurationFactory dataCiteConfigurationFactory;
 
     @BeforeEach
-    void setUp() throws ForbiddenException {
+    void setUp() throws  ErrorReadingSecretException {
         configureWithNoCredentials();
         prepareCredentials();
         setupSystemUnderTest();
@@ -127,7 +127,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void getConfigWithMissingCustomerThrowsConfigValidationException() throws ForbiddenException {
+    void getConfigWithMissingCustomerThrowsConfigValidationException() throws ErrorReadingSecretException {
         configureWithNoCredentials();
         var actualException = assertThrows(DataCiteMdsConfigValidationFailedException.class,
             () -> dataCiteConfigurationFactory.getConfig(UNKNOWN_CUSTOMER_ID));
@@ -142,7 +142,8 @@ class DataCiteConfigurationFactoryTest {
     }
 
     @Test
-    void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException() throws ForbiddenException {
+    void getCredentialsWithMissingCustomerThrowsNoCredentialsForCustomerRuntimeException()
+        throws ErrorReadingSecretException {
         configureWithNoCredentials();
         assertThrows(NoCredentialsForCustomerRuntimeException.class,
             () -> dataCiteConfigurationFactory.getCredentials(KNOWN_CUSTOMER_ID));
@@ -172,9 +173,7 @@ class DataCiteConfigurationFactoryTest {
     }
 
     private String getJsonConfigAsInputStream() {
-        String result = IoUtils.stringFromResources(
-            Path.of("example-mds-config.json"));
-        return result;
+        return IoUtils.stringFromResources(Path.of("example-mds-config.json"));
     }
 
     private void setupSystemUnderTest() {
@@ -182,7 +181,7 @@ class DataCiteConfigurationFactoryTest {
             CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR);
     }
 
-    private void configureWithNoCredentials() throws ForbiddenException {
+    private void configureWithNoCredentials() throws ErrorReadingSecretException {
         secretsReader = mock(SecretsReader.class);
         when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
             .thenReturn(EMPTY_CREDENTIALS_CONFIGURED);
@@ -193,7 +192,7 @@ class DataCiteConfigurationFactoryTest {
         try {
             when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
                 .thenReturn(objectMapper.writeValueAsString(FAKE_CLIENT_CONFIGS));
-        } catch (JsonProcessingException | ForbiddenException e) {
+        } catch (JsonProcessingException | ErrorReadingSecretException e) {
             fail("Test configuration failed");
         }
     }
@@ -202,7 +201,7 @@ class DataCiteConfigurationFactoryTest {
         try {
             when(secretsReader.fetchSecret(CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR, CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR))
                 .thenReturn(objectMapper.writeValueAsString(INVALID_JSON));
-        } catch (JsonProcessingException | ForbiddenException e) {
+        } catch (JsonProcessingException | ErrorReadingSecretException e) {
             fail("Test configuration failed");
         }
     }

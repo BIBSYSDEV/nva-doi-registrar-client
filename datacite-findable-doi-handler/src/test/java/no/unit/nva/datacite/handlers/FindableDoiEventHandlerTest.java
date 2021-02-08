@@ -4,9 +4,10 @@ import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.MANDATORY_FI
 import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_ID_FIELD_INFO;
 import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_INSTITUTION_OWNER_FIELD_INFO;
 import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_IS_MISSING_ERROR;
-import static no.unit.nva.datacite.handlers.LandingPageUtil.ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED;
-import static no.unit.nva.datacite.handlers.LandingPageUtil.getLandingPage;
-import static nva.commons.utils.attempt.Try.attempt;
+import static no.unit.nva.doi.LandingPageUtil.ABSOLUTE_RESOURCES_PATH;
+import static no.unit.nva.doi.LandingPageUtil.LANDING_PAGE_UTIL;
+import static no.unit.nva.doi.LandingPageUtil.URI_SCHEME;
+import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -24,30 +25,33 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Path;
+import java.net.URISyntaxException;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.doi.models.ImmutableDoi;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
-import nva.commons.utils.IoUtils;
-import nva.commons.utils.JsonUtils;
-import nva.commons.utils.log.LogUtils;
-import nva.commons.utils.log.TestAppender;
+import nva.commons.core.JsonUtils;
+import nva.commons.core.ioutils.IoUtils;
+import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.TestAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FindableDoiEventHandlerTest {
 
-    public static final Path PUBLICATION_EVENT = Path.of("doi_publication_event.json");
-    public static final Path PUBLICATION_EVENT_INVALID_PUBLICATION_ID = Path.of(
-        "doi_publication_event_invalid_publication_id.json");
+    public static final String PUBLICATION_EVENT = "doi_publication_event.json";
+    public static final String PUBLICATION_EVENT_INVALID_PUBLICATION_ID =
+        "doi_publication_event_invalid_publication_id.json";
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
-    public static final Path NOT_PUBLISHED_PUBLICATION = Path.of(
-        "doi_publication_event_publication_not_published.json");
+    public static final String NOT_PUBLISHED_PUBLICATION = "doi_publication_event_publication_not_published.json";
 
-    public static final Path PUBLICATION_WITH_WRONG_PUBLCATION_URI = Path.of(
-        "doi_publication_event_wrong_publication_uri.json");
+    public static final String PUBLICATION_WITH_WRONG_PUBLICATION_URI =
+        "doi_publication_event_wrong_publication_uri.json";
+    public static final String INVALID_SORTABLE_IDENTIFIER_ERROR_MESSAGE = "Invalid sortable identifier";
+
+    private static final String EMPTY_FRAGMENT = null;
+    private static final String RESOURCES_IDENTIFIER = "017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b";
     private final DoiClient doiClient = mock(DoiClient.class);
     private final FindableDoiEventHandler findableDoiHandler = new FindableDoiEventHandler(doiClient);
     private ByteArrayOutputStream outputStream;
@@ -61,18 +65,25 @@ public class FindableDoiEventHandlerTest {
 
     @Test
     public void handleRequestReturnsDoiUpdateHolderOnSuccessWhenInputIsValid()
-        throws ClientException {
+        throws ClientException, URISyntaxException {
         InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_EVENT);
         findableDoiHandler.handleRequest(inputStream, outputStream, context);
         DoiUpdateHolder response = parseResponse();
-        assertThat(response.getItem().getPublicationId(), is(not(nullValue())));
+        assertThat(response.getItem().getPublicationIdentifier(), is(not(nullValue())));
         assertThat(response.getItem().getModifiedDate(), is(notNullValue()));
 
         URI expectedCustomerId = URI.create(
             "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934");
-        verify(doiClient).updateMetadata(eq(expectedCustomerId), eq(createExpectedDoi()), verifyPartsOfMetadata());
-        verify(doiClient).setLandingPage(expectedCustomerId, createExpectedDoi(),
-            getLandingPage(response.getItem().getPublicationId()));
+        verify(doiClient).updateMetadata(
+            eq(expectedCustomerId),
+            eq(createExpectedDoi()),
+            verifyPartsOfMetadata()
+        );
+        verify(doiClient).setLandingPage(
+            expectedCustomerId,
+            createExpectedDoi(),
+            constructResourceUri(response)
+        );
     }
 
     @Test
@@ -86,19 +97,9 @@ public class FindableDoiEventHandlerTest {
     }
 
     @Test
-    void handleRequestThrowsIllegalArgumentExceptionOnNonApprovedDoiRequestStatus() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_wrong_doirequeststatus.json"));
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
-
-        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.DOI_REQUEST_STATUS_WRONG_ERROR)));
-    }
-
-    @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_institution_owner.json"));
+            "doi_publication_event_empty_institution_owner.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
@@ -109,7 +110,7 @@ public class FindableDoiEventHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingItemInHolder() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_item.json"));
+            "doi_publication_event_empty_item.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
@@ -119,7 +120,7 @@ public class FindableDoiEventHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingPublicationId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_publication_id.json"));
+            "doi_publication_event_empty_publication_id.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
@@ -130,7 +131,7 @@ public class FindableDoiEventHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnInvalidDoi() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_invalid_doi.json"));
+            "doi_publication_event_invalid_doi.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
@@ -142,23 +143,32 @@ public class FindableDoiEventHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnEmptyDoi() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_doi.json"));
+            "doi_publication_event_empty_doi.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
 
-        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.DOI_IS_MISSING_OR_INVALID_ERROR)));
-        assertThat(exception.getCause().getMessage(),
-            is(equalTo(FindableDoiEventHandler.DOI_IS_MISSING_OR_INVALID_ERROR)));
+        assertThat(exception.getMessage(), is(containsString(FindableDoiEventHandler.DOI_IS_MISSING_OR_INVALID_ERROR)));
+    }
+
+    @Test
+    void handleRequestThrowsIllegalArgumentExceptionOnNonApprovedDoiRequestStatus() {
+        InputStream inputStream = IoUtils.inputStreamFromResources(
+            "doi_publication_event_wrong_doirequeststatus.json");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
+
+        assertThat(exception.getMessage(), is(equalTo(FindableDoiEventHandler.DOI_REQUEST_STATUS_WRONG_ERROR)));
     }
 
     @Test
     void handleRequestThrowsExceptionWhenInputPublicationIdIsInvalid() {
         InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_EVENT_INVALID_PUBLICATION_ID);
 
-        var actualException = assertThrows(IllegalArgumentException.class,
+        var actualException = assertThrows(RuntimeException.class,
             () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
         assertThat(actualException.getMessage(),
-            containsString(MANDATORY_FIELD_ERROR_PREFIX));
+            containsString(INVALID_SORTABLE_IDENTIFIER_ERROR_MESSAGE));
     }
 
     @Test
@@ -171,28 +181,30 @@ public class FindableDoiEventHandlerTest {
             is(equalTo(FindableDoiEventHandler.CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR)));
     }
 
-    @Test
-    void handleRequestThrowsExceptionWhenPublicationIdIsUriWithoutPath() {
-        InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_WITH_WRONG_PUBLCATION_URI);
-        var actualException = assertThrows(IllegalArgumentException.class,
-            () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
-        assertThat(actualException.getMessage(),
-            containsString(ERROR_PUBLICATION_LANDING_PAGE_COULD_NOT_BE_CONSTRUCTED));
+    private URI constructResourceUri(DoiUpdateHolder response) {
+        return LANDING_PAGE_UTIL.constructResourceUri(response.getItem().getPublicationIdentifier().toString());
     }
 
-    private String verifyPartsOfMetadata() {
+    private String verifyPartsOfMetadata() throws URISyntaxException {
+        String expectedLandingPageUri = constructExpectedLandingPageUri();
         return and(
-            contains("JOURNAL_ARTICLE"),
+            contains("JournalArticle"),
             and(
-                contains("<title>Conformality loss"),
+                contains("<title>The resource title"),
                 contains(
-                    "identifierType=\"URL\">https://example.net/unittest/namespace/publication/654321</identifier>")));
+                    "identifierType=\"URL\">" + expectedLandingPageUri + "</identifier>")));
+    }
+
+    private String constructExpectedLandingPageUri() throws URISyntaxException {
+        String expectedLandingPageUriPath = ABSOLUTE_RESOURCES_PATH + RESOURCES_IDENTIFIER;
+        return new URI(URI_SCHEME, LANDING_PAGE_UTIL.getResourcesHost(), expectedLandingPageUriPath, EMPTY_FRAGMENT)
+            .toString();
     }
 
     private Doi createExpectedDoi() {
         return Doi.builder()
-            .withPrefix("10.1103")
-            .withSuffix("physrevd.100.085005")
+            .withPrefix("10.1000")
+            .withSuffix("182")
             .build();
     }
 
