@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 public class OnlineTests {
 
     public static final URI DATACITE_DRAFT_DOI_REST_API = URI.create("https://api.test.datacite.org/dois");
+    public static final URI DATACITE_DRAFT_DOI_MDS_API = URI.create("https://mds.test.datacite.org/doi");
     public static final int DEFAULT_HTTPS_PORT = 443;
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     public static final String DRAFT = "draft";
@@ -31,6 +32,7 @@ public class OnlineTests {
         DataCiteConfigurationFactory configFactory = mockConfigFactory();
 
         var connectionFactory = new DataCiteConnectionFactory(configFactory,
+            DATACITE_DRAFT_DOI_MDS_API.getHost(),
             DATACITE_DRAFT_DOI_REST_API.getHost(),
             DEFAULT_HTTPS_PORT);
         var doiClient = new DataCiteClient(configFactory, connectionFactory);
@@ -43,12 +45,12 @@ public class OnlineTests {
     }
 
     private DataCiteConfigurationFactory mockConfigFactory() {
-        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
+        Environment environment = new Environment();
+        String password = environment.readEnv("DATA_CITE_TEST_PASSWORD");
         String unitDoiPrefix = "10.16903";
-        String nvaTestDataciteAccount = "TESTTO.NVA";
+        String nvaTestDataciteAccount = environment.readEnv("DATA_CITE_TEST_USER");
         var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             unitDoiPrefix,
-            DATACITE_DRAFT_DOI_REST_API,
             nvaTestDataciteAccount,
             password);
 

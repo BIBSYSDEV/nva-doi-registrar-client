@@ -13,7 +13,6 @@ class DataCiteMdsClientConfigTest {
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/123");
     private static final String DEMO_PREFIX = "10.5072";
     private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
-    private static final URI EXAMPLE_MDS_CLIENT_URL = URI.create("https://example.net/datacite/mds/api");
 
     @Test
     void constructorPopulatesAllFields() {
@@ -62,6 +61,6 @@ class DataCiteMdsClientConfigTest {
 
     private DataCiteMdsClientConfig createFullyConfigWithoutSecretConfig() {
         return new DataCiteMdsClientConfig(EXAMPLE_CUSTOMER_ID,
-            EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_CLIENT_URL);
+            EXAMPLE_CUSTOMER_DOI_PREFIX);
     }
 }

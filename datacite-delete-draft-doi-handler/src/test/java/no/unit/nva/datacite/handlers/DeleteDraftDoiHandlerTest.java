@@ -77,7 +77,7 @@ public class DeleteDraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> handler.handleRequest(inputStream, outputStream, context));
+            () -> handler.handleRequest(inputStream, outputStream, context));
         assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI)));
     }
 

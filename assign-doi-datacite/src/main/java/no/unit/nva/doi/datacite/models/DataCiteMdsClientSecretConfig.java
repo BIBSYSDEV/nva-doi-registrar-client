@@ -25,23 +25,14 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
      *
      * @param customerId                NVA customerId
      * @param customerDoiPrefix         NVA customer assigned DOI prefix
-     * @param dataCiteMdsClientUrl      DataCite MDS API URL
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */
-    public DataCiteMdsClientSecretConfig(URI customerId, String customerDoiPrefix, URI dataCiteMdsClientUrl,
+    public DataCiteMdsClientSecretConfig(URI customerId, String customerDoiPrefix,
                                          String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
-        super(customerId, customerDoiPrefix, dataCiteMdsClientUrl);
+        super(customerId, customerDoiPrefix);
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;
-    }
-
-    public URI getDataCiteMdsClientUrl() {
-        return dataCiteMdsClientUrl;
-    }
-
-    public void setDataCiteMdsClientUrl(URI dataCiteMdsClientUrl) {
-        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
     }
 
     public String getDataCiteMdsClientUsername() {

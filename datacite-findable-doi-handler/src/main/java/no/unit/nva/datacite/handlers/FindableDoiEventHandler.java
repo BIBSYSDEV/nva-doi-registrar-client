@@ -123,7 +123,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
 
         DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
             dataCiteConfigurationFactory,
-            FindableDoiAppEnv.getDataCiteHost(),
+            FindableDoiAppEnv.getDataCiteMdsApiHost(),
+            FindableDoiAppEnv.getDataCiteRestApiHost(),
             FindableDoiAppEnv.getDataCitePort()
         );
 
@@ -198,6 +199,7 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
             throw new IllegalStateException(CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR);
         }
     }
+
 
     private void verifyPublicationIsCuratorApproved(Publication publication) {
         Optional.ofNullable(publication.getDoiRequest())

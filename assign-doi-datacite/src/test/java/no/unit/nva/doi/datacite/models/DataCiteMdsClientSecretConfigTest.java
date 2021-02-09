@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 public class DataCiteMdsClientSecretConfigTest {
 
     public static final URI CUSTOMER_ID = URI.create("https://example.net/customer/id");
-    public static final URI DATA_CITE_MDS_CLIENT_URL = URI.create("https://example.net/mds/client/url");
     public static final String DATACITE_MDS_CLIENT_USERNAME = "dataCiteMdsClientUsername";
     public static final String DATACITE_MDS_CLIENT_PASSWORD = "dataCiteMdsClientPassword";
     private static final String DEMO_PREFIX = "10.5072";
@@ -23,7 +22,6 @@ public class DataCiteMdsClientSecretConfigTest {
         var secretConfig = createSecretConfigFullyPopulated();
         assertThat(secretConfig.getCustomerId(), is(equalTo(CUSTOMER_ID)));
         assertThat(secretConfig.getCustomerDoiPrefix(), is(equalTo(CUSTOMER_DOI_PREFIX)));
-        assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
         assertThat(secretConfig, doesNotHaveNullOrEmptyFields());
@@ -34,12 +32,10 @@ public class DataCiteMdsClientSecretConfigTest {
         DataCiteMdsClientSecretConfig secretConfig = new DataCiteMdsClientSecretConfig();
         secretConfig.setCustomerId(CUSTOMER_ID);
         secretConfig.setCustomerDoiPrefix(CUSTOMER_DOI_PREFIX);
-        secretConfig.setDataCiteMdsClientUrl(DATA_CITE_MDS_CLIENT_URL);
         secretConfig.setDataCiteMdsClientUsername(DATACITE_MDS_CLIENT_USERNAME);
         secretConfig.setDataCiteMdsClientPassword(DATACITE_MDS_CLIENT_PASSWORD);
         assertThat(secretConfig.getCustomerId(), is(equalTo(CUSTOMER_ID)));
         assertThat(secretConfig.getCustomerDoiPrefix(), is(equalTo(CUSTOMER_DOI_PREFIX)));
-        assertThat(secretConfig.getDataCiteMdsClientUrl(), is(equalTo(DATA_CITE_MDS_CLIENT_URL)));
         assertThat(secretConfig.getDataCiteMdsClientUsername(), is(equalTo(DATACITE_MDS_CLIENT_USERNAME)));
         assertThat(secretConfig.getDataCiteMdsClientPassword(), is(equalTo(DATACITE_MDS_CLIENT_PASSWORD)));
         assertThat(secretConfig, doesNotHaveNullOrEmptyFields());
@@ -71,7 +67,7 @@ public class DataCiteMdsClientSecretConfigTest {
 
     private DataCiteMdsClientSecretConfig createSecretConfigFullyPopulated() {
         return new DataCiteMdsClientSecretConfig(CUSTOMER_ID,
-            CUSTOMER_DOI_PREFIX, DATA_CITE_MDS_CLIENT_URL,
+            CUSTOMER_DOI_PREFIX,
             DATACITE_MDS_CLIENT_USERNAME, DATACITE_MDS_CLIENT_PASSWORD);
     }
 }

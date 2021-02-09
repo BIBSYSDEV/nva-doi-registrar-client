@@ -42,9 +42,8 @@ class DataCiteConfigurationFactoryTest {
     private static final URI EXAMPLE_CUSTOMER_ID = KNOWN_CUSTOMER_ID;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserNameForRepository";
     private static final String EXAMPLE_MDS_PASSWORD = UUID.randomUUID().toString();
-    private static final URI EXAMPLE_MDS_API_ENDPOINT = URI.create("https://example.net/datacite/mds/api");
     private static final List<DataCiteMdsClientConfig> FAKE_CLIENT_CONFIGS = List.of(
-        new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_API_ENDPOINT,
+        new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID, EXAMPLE_CUSTOMER_DOI_PREFIX,
             EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD));
     private static final String KNOWN_CUSTOMER2_PASSWORD = "randompasswd2";
     private SecretsReader secretsReader;

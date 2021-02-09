@@ -71,7 +71,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HTTPS_SCHEME = "https://";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
@@ -91,6 +90,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
     public static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
     private String mdsHost;
+    private String restHost;
     private DataCiteMdsClientSecretConfig validSecretConfig;
     private int mdsPort;
     private DataCiteClient doiClient;
@@ -102,10 +102,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
-        var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
+        restHost = "localhost";
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             INSTITUTION_PREFIX,
-            dataCiteMdsClientUrl,
             EXAMPLE_MDS_USERNAME,
             EXAMPLE_MDS_PASSWORD);
     }
@@ -135,6 +134,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
             configurationFactory,
             mdsHost,
+            restHost,
             mdsPort);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
