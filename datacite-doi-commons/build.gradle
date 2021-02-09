@@ -16,13 +16,4 @@ dependencies {
     implementation group: 'no.unit.nva', name: 'core', version: project.ext.nvaCommonsVersion
     implementation group: 'no.unit.nva', name: 'identifiers', version: project.ext.nvaCommonsVersion
 
-    testImplementation 'com.github.stefanbirkner:system-lambda:1.2.0'
-
-//    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: project.ext.jacksonVersion
-//    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: project.ext.jacksonVersion
-//    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: project.ext.jacksonVersion
-//    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: project.ext.jacksonVersion
-//    compileOnly group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: project.ext.jacksonVersion
-//    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.ext.jacksonVersion
-
 }
