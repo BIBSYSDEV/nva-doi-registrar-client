@@ -134,7 +134,7 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - doi.publication
+                    - publication.doiupdate.request
                   item:
                     doiRequest:
                       status:
