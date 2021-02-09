@@ -134,15 +134,14 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - publication.doiupdate.request
+                    - publication.doiupdate.newdraftdoirequest
+                    - publication.doiupdate.updateexistingdoi
                   item:
                     doiRequest:
                       status:
                         - REQUESTED
                     doi:
                       - exists: false
-                    sameModifiedDateForDoiRequest:
-                      - true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
