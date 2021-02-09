@@ -3,19 +3,19 @@
   "id": "cb2415a4-34b7-4c14-ecc8-b6f3504fdc7f",
   "detail-type": "Lambda Function Invocation Result - Success",
   "source": "lambda",
-  "account": "884807050265",
+  "account": "111111111111",
   "time": "2021-02-08T13:27:41Z",
   "region": "eu-west-1",
   "resources": [
-    "arn:aws:events:eu-west-1:884807050265:event-bus/default",
-    "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST"
+    "arn:aws:events:eu-west-1:111111111111:event-bus/default",
+    "arn:aws:lambda:eu-west-1:111111111111:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST"
   ],
   "detail": {
     "version": "1.0",
     "timestamp": "2021-02-08T13:27:41.916Z",
     "requestContext": {
       "requestId": "cbaa5587-0d44-4578-9063-a1abe91038ea",
-      "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST",
+      "functionArn": "arn:aws:lambda:eu-west-1:111111111111:function:orestis-resources-nva-pub-DynamoDbFanoutPublicatio-1S0O20WE70212:$LATEST",
       "condition": "Success",
       "approximateInvokeCount": 1
     },
@@ -24,19 +24,19 @@
       "id": "339238b4-1e85-843d-cfb3-5046806fd99a",
       "detail-type": "Lambda Function Invocation Result - Success",
       "source": "lambda",
-      "account": "884807050265",
+      "account": "111111111111",
       "time": "2021-02-08T13:27:38Z",
       "region": "eu-west-1",
       "resources": [
-        "arn:aws:events:eu-west-1:884807050265:event-bus/default",
-        "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST"
+        "arn:aws:events:eu-west-1:111111111111:event-bus/default",
+        "arn:aws:lambda:eu-west-1:111111111111:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST"
       ],
       "detail": {
         "version": "1.0",
         "timestamp": "2021-02-08T13:27:38.397Z",
         "requestContext": {
           "requestId": "9a08735e-0bc3-4c27-b6a6-81c896df1540",
-          "functionArn": "arn:aws:lambda:eu-west-1:884807050265:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST",
+          "functionArn": "arn:aws:lambda:eu-west-1:111111111111:function:orestis-resources-nva-pub-PublicationFanoutHandler-OHPDHZ0UG5J0:$LATEST",
           "condition": "Success",
           "approximateInvokeCount": 1
         },
@@ -45,11 +45,11 @@
           "id": "0a922a22-3295-3097-d596-6eee4f32ea8c",
           "detail-type": "dynamodb-stream-event",
           "source": "aws-dynamodb-stream-eventbridge-fanout",
-          "account": "884807050265",
+          "account": "111111111111",
           "time": "2021-02-08T13:27:37Z",
           "region": "eu-west-1",
           "resources": [
-            "arn:aws:dynamodb:eu-west-1:884807050265:table/OrestisResources/stream/2021-02-01T12:02:08.358"
+            "arn:aws:dynamodb:eu-west-1:111111111111:table/OrestisResources/stream/2021-02-01T12:02:08.358"
           ],
           "detail": {
             "eventID": "1711b7caf5c9af1658f2ffa70f077ea9",
@@ -214,7 +214,7 @@
               "sizeBytes": 1488,
               "streamViewType": "NEW_AND_OLD_IMAGES"
             },
-            "eventSourceARN": "arn:aws:dynamodb:eu-west-1:884807050265:table/OrestisResources/stream/2021-02-01T12:02:08.358"
+            "eventSourceARN": "arn:aws:dynamodb:eu-west-1:111111111111:table/OrestisResources/stream/2021-02-01T12:02:08.358"
           }
         },
         "responseContext": {
