@@ -180,7 +180,7 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - doi.publication
+                    - publication.doiupdate.request
                   item:
                     status:
                       - PUBLISHED
