@@ -179,7 +179,7 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - publication.doiupdate.request
+                    - publication.doiupdate.updateexistingdoi
                   item:
                     status:
                       - PUBLISHED
