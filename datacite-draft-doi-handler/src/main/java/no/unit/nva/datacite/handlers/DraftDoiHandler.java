@@ -2,9 +2,8 @@ package no.unit.nva.datacite.handlers;
 
 import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretName;
-import static nva.commons.utils.attempt.Try.attempt;
+import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
@@ -14,17 +13,20 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
+
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
-import no.unit.nva.publication.doi.dto.DoiRequestStatus;
-import no.unit.nva.publication.doi.dto.Publication;
-import no.unit.nva.publication.doi.dto.PublicationHolder;
+import no.unit.nva.model.DoiRequestStatus;
+import no.unit.nva.model.Organization;
+import no.unit.nva.model.Publication;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
-import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.attempt.Failure;
-import nva.commons.utils.aws.SecretsReader;
+import no.unit.nva.publication.doi.update.dto.PublicationHolder;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.attempt.Failure;
+
+import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +48,6 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
 
     /**
      * Default constructor for DraftDoiHandler.
-     *
-     * @throws IOException IOException
      */
     @JacocoGenerated
     public DraftDoiHandler() {
@@ -77,7 +77,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
                 .map(doiUpdateDto -> new DoiUpdateHolder(DoiUpdateHolder.DEFAULT_TYPE, doiUpdateDto))
                 .orElseThrow(this::handleCreatingNewDoiError);
         }
-        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getId().toString());
+        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getIdentifier().toString());
     }
 
     @JacocoGenerated
@@ -111,14 +111,15 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<Publica
     private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
         return new DoiUpdateDto.Builder()
             .withDoi(doi.toUri())
-            .withPublicationId(input.getId())
+            .withPublicationId(input.getIdentifier())
             .withModifiedDate(Instant.now())
             .build();
     }
 
     private URI getCustomerId(Publication publication) {
         return Optional
-            .ofNullable(publication.getInstitutionOwner())
+            .ofNullable(publication.getPublisher())
+            .map(Organization::getId)
             .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
     }
 

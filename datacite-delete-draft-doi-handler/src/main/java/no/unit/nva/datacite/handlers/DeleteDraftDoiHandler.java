@@ -8,21 +8,22 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.ImmutableDoi;
+
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.publication.events.DeletePublicationEvent;
-import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.aws.SecretsReader;
+import nva.commons.core.JacocoGenerated;
 
 import java.io.IOException;
 import java.net.URI;
+import nva.commons.secrets.SecretsReader;
 
 import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 
 public class DeleteDraftDoiHandler
-        extends DestinationsEventBridgeEventHandler<DeletePublicationEvent, DeletePublicationEvent> {
+    extends DestinationsEventBridgeEventHandler<DeletePublicationEvent, DeletePublicationEvent> {
 
     public static final String DRAFT = "draft";
     public static final URI NO_DOI = null;

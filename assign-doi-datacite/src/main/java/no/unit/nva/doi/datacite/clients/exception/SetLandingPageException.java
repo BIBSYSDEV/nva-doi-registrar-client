@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.clients.exception;
 
 import no.unit.nva.doi.models.Doi;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 @JacocoGenerated
 public class SetLandingPageException extends UpstreamApiException {

@@ -5,17 +5,22 @@ repositories {
 dependencies {
     implementation project(":assign-doi-datacite")
 
-    implementation (project(":event-handler-template")){
-        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
-    }
     implementation (project(":datacite-doi-commons")){
         exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
     }
-    implementation group: 'com.github.BIBSYSDEV', name: 'nva-commons', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-commons', version: project.ext.nvaPublicationApi
+
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
+
+
+    implementation group: 'no.unit.nva', name: 'secrets', version: project.ext.nvaCommonsVersion
+    implementation group: 'no.unit.nva', name: 'eventhandlers', version: project.ext.nvaCommonsVersion
+    implementation group: 'no.unit.nva', name: 'identifiers', version: project.ext.nvaCommonsVersion
+
 
     runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
 
-    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: project.ext.nvaPublicationTesting
+    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: project.ext.nvaPublicationApi
 
     compileOnly( group: 'com.amazonaws', name: 'aws-java-sdk-api-gateway', version: awsSdkVersion) {
         because "PMD complains for the com/amazonaws/regions/Regions class"

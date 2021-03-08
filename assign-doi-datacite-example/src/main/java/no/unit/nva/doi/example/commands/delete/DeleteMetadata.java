@@ -6,7 +6,7 @@ import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
 import no.unit.nva.doi.datacite.clients.models.Doi;
 import no.unit.nva.doi.example.commands.BaseClientSetup;
 import no.unit.nva.doi.example.converter.DoiFromIdentifierConverter;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 

@@ -4,7 +4,7 @@ import no.unit.nva.doi.example.commands.delete.Delete;
 import no.unit.nva.doi.example.commands.create.Create;
 import no.unit.nva.doi.example.commands.update.LandingPage;
 import no.unit.nva.doi.example.commands.update.UpdateMetadata;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

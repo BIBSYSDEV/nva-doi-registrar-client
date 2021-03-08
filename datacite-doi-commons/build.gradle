@@ -4,18 +4,16 @@ repositories {
 
 dependencies {
 
-    api project(":event-handler-template")
-
-    implementation project (":assign-doi-datacite")
+    implementation project(":assign-doi-datacite")
 
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
     api group: 'com.github.BIBSYSDEV.nva-doi-partner-data', name: 'datacite-transform', version: '0.4.0'
 
-    api(group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-type', version: project.ext.nvaDoiTypeAndCommons) {
-        because 'It has DOI datatype and should be separate from publication-doi-commons'
-    }
-    api group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-commons', version: project.ext.nvaDoiTypeAndCommons
+    api group: 'no.unit.nva', name: 'doi', version: project.ext.nvaCommonsVersion
 
-    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: project.ext.nvaPublicationTesting
+    implementation group: 'com.github.BIBSYSDEV', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
+
+    implementation group: 'no.unit.nva', name: 'core', version: project.ext.nvaCommonsVersion
+    implementation group: 'no.unit.nva', name: 'identifiers', version: project.ext.nvaCommonsVersion
 
 }

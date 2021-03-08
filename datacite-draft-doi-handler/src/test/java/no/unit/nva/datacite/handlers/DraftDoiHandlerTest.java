@@ -3,9 +3,10 @@ package no.unit.nva.datacite.handlers;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR;
-import static nva.commons.utils.IoUtils.stringToStream;
-import static nva.commons.utils.JsonUtils.objectMapper;
-import static nva.commons.utils.attempt.Try.attempt;
+
+import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.attempt.Try.attempt;
+import static nva.commons.core.ioutils.IoUtils.stringToStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -19,17 +20,23 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.models.Doi;
-import no.unit.nva.publication.doi.dto.PublicationHolder;
+
+import no.unit.nva.identifiers.SortableIdentifier;
+import no.unit.nva.model.Organization;
+import no.unit.nva.model.Publication;
 import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
-import nva.commons.utils.IoUtils;
+import no.unit.nva.publication.doi.update.dto.PublicationHolder;
+import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -43,8 +50,8 @@ public class DraftDoiHandlerTest {
     public static final String EXPECTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
     public static final String SAMPLE_DOI_PREFIX = "10.1234";
     public static final int SAMPLE_STATUS_CODE = 500;
-    public static final URI PUBLICATION_ID_IN_RESOURCE_FILES = URI.create(
-        "https://example.net/unittest/namespace/publication/654321");
+    public static final String PUBLICATION_IDENTIFIER_IN_RESOURCE_FILES =
+        "017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d";
 
     private DoiClient doiClient;
     private DraftDoiHandler handler;
@@ -69,12 +76,12 @@ public class DraftDoiHandlerTest {
         handler.handleRequest(inputStream, outputStream, context);
 
         DoiUpdateHolder response = parseResponse();
-        URI actualPublicationId = response.getItem().getPublicationId();
-        assertThat(actualPublicationId, is(PUBLICATION_ID_IN_RESOURCE_FILES));
+        SortableIdentifier actualPublicationIdentifier = response.getItem().getPublicationIdentifier();
+        assertThat(actualPublicationIdentifier.toString(), is(PUBLICATION_IDENTIFIER_IN_RESOURCE_FILES));
     }
 
     @Test
-    public void handleRequestCallsDoiClientCreateDoiWhenInputHasInstitutionOwner() throws JsonProcessingException {
+    public void handleRequestCallsDoiClientCreateDoiWhenInputHasInstitutionOwner() throws IOException {
         String inputString = IoUtils.stringFromResources(
             Path.of("doi_publication_event_valid.json"));
 
@@ -100,7 +107,7 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingEventItem() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_item.json"));
+            "doi_publication_event_empty_item.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
@@ -110,7 +117,7 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_empty_institution_owner.json"));
+            "doi_publication_event_empty_institution_owner.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
@@ -120,21 +127,28 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsIllegalStateExceptionWhenDoiRequestStatusIsNotRequested() {
         InputStream inputStream = IoUtils.inputStreamFromResources(
-            Path.of("doi_publication_event_publication_not_approved.json"));
+            "doi_publication_event_publication_not_approved.json");
         IllegalStateException exception = assertThrows(IllegalStateException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
 
         assertThat(exception.getMessage(), containsString(NOT_APPROVED_DOI_REQUEST_ERROR));
     }
 
-    @SuppressWarnings("unchecked")
-    private URI extractExpectedPublisherIdFromEventBridgeEvent(String inputString) throws JsonProcessingException {
+    private URI extractExpectedPublisherIdFromEventBridgeEvent(String inputString) throws IOException {
 
         JsonNode eventObject = objectMapper.readTree(inputString);
         JsonNode responsePayload = eventObject.path(EVENT_DETAIL_FIELD).path(DETAIL_RESPONSE_PAYLOAD_FIELD);
         PublicationHolder publicationHolder = objectMapper.convertValue(responsePayload, PublicationHolder.class);
 
-        return publicationHolder.getItem().getInstitutionOwner();
+        return getPublisher(publicationHolder);
+    }
+
+    private URI getPublisher(PublicationHolder publicationHolder) {
+        return Optional.of(publicationHolder)
+            .map(PublicationHolder::getItem)
+            .map(Publication::getPublisher)
+            .map(Organization::getId)
+            .orElse(null);
     }
 
     private DoiUpdateHolder parseResponse() {

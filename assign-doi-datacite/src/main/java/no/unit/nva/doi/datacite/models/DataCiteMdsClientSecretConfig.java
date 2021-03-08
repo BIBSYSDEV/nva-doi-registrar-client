@@ -3,7 +3,7 @@ package no.unit.nva.doi.datacite.models;
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 import java.net.URI;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 /**
  * DAO for DataCite MDS Configuration also including DataCite MDS secrets for a associated NVA customer.
