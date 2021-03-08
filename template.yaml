@@ -190,9 +190,6 @@ Resources:
                       - exists: true
       EventInvokeConfig:
         DestinationConfig:
-          OnSuccess:
-            Type: EventBridge
-            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
