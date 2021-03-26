@@ -18,7 +18,7 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.models.Doi;
-import nva.commons.utils.log.LogUtils;
+import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,11 +31,9 @@ class DataCiteClientTest extends DataciteClientTestBase {
     private static final String EXAMPLE_CUSTOMER_DOI_PREFIX = DEMO_PREFIX;
     private static final String EXAMPLE_MDS_USERNAME = "exampleUserName";
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
-    private final URI mdsHost = URI.create("https://example.net");
+
     private DataCiteMdsClientSecretConfig validSecretConfig;
-
     private DataCiteConfigurationFactory configurationFactory;
-
     private DataCiteClient sut;
     private DataCiteConnectionFactory mdsConnectionFactory;
 
@@ -74,7 +72,7 @@ class DataCiteClientTest extends DataciteClientTestBase {
 
     private DataCiteConfigurationFactoryForSystemTests createDataConfigurationFactoryForTest() {
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
-            EXAMPLE_CUSTOMER_DOI_PREFIX, mdsHost, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+            EXAMPLE_CUSTOMER_DOI_PREFIX, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
         return new DataCiteConfigurationFactoryForSystemTests(
             Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
     }

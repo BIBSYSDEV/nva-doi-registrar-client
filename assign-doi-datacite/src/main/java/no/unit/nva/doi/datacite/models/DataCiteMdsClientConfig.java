@@ -3,7 +3,7 @@ package no.unit.nva.doi.datacite.models;
 import static java.util.Objects.nonNull;
 import java.net.URI;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 /**
  * DAO for DataCite MDS Configuration for a associated NVA customer.
@@ -15,7 +15,6 @@ public class DataCiteMdsClientConfig {
 
     protected URI customerId;
     protected String customerDoiPrefix;
-    protected URI dataCiteMdsClientUrl;
 
     @JacocoGenerated
     public DataCiteMdsClientConfig() {
@@ -26,12 +25,10 @@ public class DataCiteMdsClientConfig {
      *
      * @param customerId          customerId
      * @param customerDoiPrefix    customer's prefix for the NVA repository in the Registry Agency
-     * @param dataCiteMdsClientUrl Hostname to MDS API environment
      */
-    public DataCiteMdsClientConfig(URI customerId, String customerDoiPrefix, URI dataCiteMdsClientUrl) {
+    public DataCiteMdsClientConfig(URI customerId, String customerDoiPrefix) {
         this.customerId = customerId;
         this.customerDoiPrefix = customerDoiPrefix;
-        this.dataCiteMdsClientUrl = dataCiteMdsClientUrl;
     }
 
     public URI getCustomerId() {
@@ -56,6 +53,6 @@ public class DataCiteMdsClientConfig {
      * @return <code>true</code> if config is fully configured.
      */
     public boolean isFullyConfigured() {
-        return nonNull(customerId) && nonNull(customerDoiPrefix) && nonNull(dataCiteMdsClientUrl);
+        return nonNull(customerId) && nonNull(customerDoiPrefix);
     }
 }

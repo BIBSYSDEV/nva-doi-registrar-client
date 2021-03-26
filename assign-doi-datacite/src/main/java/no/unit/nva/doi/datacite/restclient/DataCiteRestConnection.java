@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.restclient;
 
-import static nva.commons.utils.attempt.Try.attempt;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,8 +19,6 @@ public class DataCiteRestConnection {
     public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String ACCEPT = "Accept";
-    public static final String ERROR_CONFIG_WITHOUT_SECRETS =
-        "Creating a doi requires a client configuration with secrets (%s)";
     public static final String COLON = ":";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String SEPARATOR = "/";

@@ -134,15 +134,14 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - doi.publication
+                    - publication.doiupdate.newdraftdoirequest
+                    - publication.doiupdate.updateexistingdoi
                   item:
                     doiRequest:
                       status:
                         - REQUESTED
                     doi:
                       - exists: false
-                    sameModifiedDateForDoiRequest:
-                      - true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
@@ -180,7 +179,7 @@ Resources:
               detail:
                 responsePayload:
                   type:
-                    - doi.publication
+                    - publication.doiupdate.updateexistingdoi
                   item:
                     status:
                       - PUBLISHED
@@ -191,9 +190,6 @@ Resources:
                       - exists: true
       EventInvokeConfig:
         DestinationConfig:
-          OnSuccess:
-            Type: EventBridge
-            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn

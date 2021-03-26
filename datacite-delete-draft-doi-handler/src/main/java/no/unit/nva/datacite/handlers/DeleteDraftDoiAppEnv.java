@@ -1,7 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 
 @JacocoGenerated
 public final class DeleteDraftDoiAppEnv {

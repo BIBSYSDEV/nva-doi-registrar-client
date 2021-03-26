@@ -1,6 +1,6 @@
 package no.unit.nva.doi.example.commands.delete;
 
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 import picocli.CommandLine.Command;
 
 @Command(

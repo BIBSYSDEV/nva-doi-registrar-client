@@ -14,7 +14,7 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
-import nva.commons.utils.Environment;
+import nva.commons.core.Environment;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -45,12 +45,12 @@ public class OnlineTests {
     }
 
     private DataCiteConfigurationFactory mockConfigFactory() {
-        String password = new Environment().readEnv("TESTTO_NVA_PASSWORD");
+        Environment environment = new Environment();
+        String password = environment.readEnv("DATA_CITE_TEST_PASSWORD");
         String unitDoiPrefix = "10.16903";
-        String nvaTestDataciteAccount = "TESTTO.NVA";
+        String nvaTestDataciteAccount = environment.readEnv("DATA_CITE_TEST_USER");
         var config = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             unitDoiPrefix,
-            DATACITE_DRAFT_DOI_REST_API,
             nvaTestDataciteAccount,
             password);
 

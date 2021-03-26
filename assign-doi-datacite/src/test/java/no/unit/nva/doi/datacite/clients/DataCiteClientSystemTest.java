@@ -48,18 +48,17 @@ import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactoryForSystemTests;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
-import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.doi.models.ImmutableDoi;
-import nva.commons.utils.IoUtils;
-import nva.commons.utils.log.LogUtils;
-import nva.commons.utils.log.TestAppender;
+import nva.commons.core.ioutils.IoUtils;
+import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.TestAppender;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
@@ -72,7 +71,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HTTPS_SCHEME = "https://";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
@@ -105,10 +103,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         mdsPort = wireMockServer.httpsPort();
         mdsHost = "localhost";
         restHost = "localhost";
-        var dataCiteMdsClientUrl = URI.create(HTTPS_SCHEME + mdsHost + COLON + mdsPort);
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
             INSTITUTION_PREFIX,
-            dataCiteMdsClientUrl,
             EXAMPLE_MDS_USERNAME,
             EXAMPLE_MDS_PASSWORD);
     }

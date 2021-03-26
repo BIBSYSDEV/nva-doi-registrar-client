@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.clients.exception;
 
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 /**
  * Exception thrown where upstream API response is non successful.

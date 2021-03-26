@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.clients.exception;
 
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 
 @JacocoGenerated
 public class CreateDoiException extends UpstreamApiException {

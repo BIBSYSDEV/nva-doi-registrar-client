@@ -13,7 +13,7 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteMdsConfigValidationFailedException;
 import no.unit.nva.doi.datacite.connectionfactories.PasswordAuthenticationFactory;
 import no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnectionFactory;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.core.JacocoGenerated;
 import picocli.CommandLine.Option;
 
 @JacocoGenerated
