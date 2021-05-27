@@ -2,10 +2,10 @@ def zalandoVersion = '0.23.0'
 
 dependencies {
 
-    implementation group: 'no.unit.nva', name: 'core', version: project.ext.nvaCommonsVersion
-    implementation group: 'no.unit.nva', name: 'doi', version: project.ext.nvaCommonsVersion
-    implementation group: 'no.unit.nva', name: 'secrets', version: project.ext.nvaCommonsVersion
-    implementation group: 'no.unit.nva', name: 'logutils', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'core', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'doi', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'secrets', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'logutils', version: project.ext.nvaCommonsVersion
 
 
 
