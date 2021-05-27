@@ -9,11 +9,11 @@ dependencies {
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
     api group: 'com.github.BIBSYSDEV.nva-doi-partner-data', name: 'datacite-transform', version: '0.4.0'
 
-    api group: 'no.unit.nva', name: 'doi', version: project.ext.nvaCommonsVersion
+    api group: 'com.github.bibsysdev', name: 'doi', version: project.ext.nvaCommonsVersion
 
-    implementation group: 'com.github.BIBSYSDEV', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
+    implementation group: 'com.github.bibsysdev', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
 
-    implementation group: 'no.unit.nva', name: 'core', version: project.ext.nvaCommonsVersion
-    implementation group: 'no.unit.nva', name: 'identifiers', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'core', version: project.ext.nvaCommonsVersion
+    implementation group: 'com.github.bibsysdev', name: 'identifiers', version: project.ext.nvaCommonsVersion
 
 }

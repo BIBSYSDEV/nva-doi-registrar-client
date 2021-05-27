@@ -15,19 +15,17 @@ allprojects {
     apply plugin: 'jacoco'
 
     repositories {
-        jcenter()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven{url  "https://dl.bintray.com/unit-nva/nva-commons"}
-
     }
 
     project.ext {
         awsSdkVersion = '1.11.875'
-        nvaCommonsVersion = '1.0.1'
-        nvaTestUtilsVersion = "0.1.15"
-        jacksonVersion = '2.10.2'
-        nvaPublicationApi = '57fd7383a27683909b4eac8e734eedcfc91e24a4'
-        nvaDatamodelVersion = '0f61ecd89d777990c581b5600b34bd4ea42bac11'
+        nvaCommonsVersion = '1.5.17'
+        nvaTestUtilsVersion = "0.1.21"
+        jacksonVersion = '2.12.3'
+        nvaPublicationApi = '0.3.0'
+        nvaDatamodelVersion = '0.11.14'
     }
 }
 
@@ -47,7 +45,7 @@ subprojects {
     def junit5Version = '5.6.0'
 
     dependencies {
-        implementation group:'no.unit.nva', name:'core', version: project.ext.nvaCommonsVersion
+        implementation group:'com.github.bibsysdev', name:'core', version: project.ext.nvaCommonsVersion
 
         implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: project.ext.jacksonVersion
         implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: project.ext.jacksonVersion
@@ -56,9 +54,7 @@ subprojects {
         implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.ext.jacksonVersion
 
 
-
-
-        testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: '0.1.18'
+        testImplementation group: 'com.github.bibsysdev', name: 'nva-testutils', version: '0.1.18'
         testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
