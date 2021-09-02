@@ -22,10 +22,10 @@ allprojects {
     project.ext {
         awsSdkVersion = '1.11.875'
         nvaCommonsVersion = '1.5.17'
-        nvaTestUtilsVersion = "0.1.21"
+        nvaTestUtilsVersion = "0.1.24"
         jacksonVersion = '2.12.3'
         nvaPublicationApi = '0.3.0'
-        nvaDatamodelVersion = '0.11.14'
+        nvaDatamodelVersion = '0.12.5'
     }
 }
 
