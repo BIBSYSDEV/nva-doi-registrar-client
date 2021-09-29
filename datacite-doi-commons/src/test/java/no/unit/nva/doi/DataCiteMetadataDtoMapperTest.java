@@ -54,27 +54,24 @@ public class DataCiteMetadataDtoMapperTest {
     }
 
     private Publication samplePublication() {
-        JournalReview publicationInstance = new JournalReview.Builder()
-            .withIssue(SOME_ISSUE)
-            .withArticleNumber(SOME_ARTICLE_NUMBER)
-            .withVolume(SOME_VOLUME)
+        return new Publication.Builder()
+            .withIdentifier(SortableIdentifier.next())
+            .withPublisher(SOME_PUBLISHER)
+            .withEntityDescription(createEntityDescriptionWithExpectedAndUnexpectedContributors())
             .build();
-        Reference reference = new Reference.Builder()
-            .withPublicationInstance(publicationInstance).build();
+    }
 
-        PublicationDate publicationDate = new PublicationDate.Builder()
-            .withYear(SOME_YEAR)
-            .withMonth(SOME_MONTH)
-            .withDay(SOME_DAY)
+    private EntityDescription createEntityDescriptionWithExpectedAndUnexpectedContributors() {
+        return new EntityDescription.Builder()
+            .withReference(createReference())
+            .withMainTitle(MAIN_TITLE)
+            .withDate(createPublicationDate())
+            .withContributors(List.of(createUnexpectedContributor(), createExpectedContributor()))
             .build();
+    }
 
-        Contributor unexpectedContributor = new Contributor.Builder()
-            .withSequence(NOT_THE_CREATOR)
-            .withAffiliations(List.of(SOME_PUBLISHER))
-            .withIdentity(new Identity.Builder().withArpId(SOME_ARP_ID).withName(NOT_THE_CREATOR_NAME).build())
-            .build();
-
-        Contributor expectedContributor = new Contributor.Builder()
+    private Contributor createExpectedContributor() {
+        return new Contributor.Builder()
             .withSequence(THE_CREATOR)
             .withAffiliations(List.of(SOME_PUBLISHER))
             .withIdentity(new Identity.Builder()
@@ -82,20 +79,37 @@ public class DataCiteMetadataDtoMapperTest {
                 .withName(THE_CREATOR_NAME)
                 .build())
             .build();
+    }
 
-        List<Contributor> contributors = List.of(unexpectedContributor, expectedContributor);
-
-        EntityDescription entityDescription = new EntityDescription.Builder()
-            .withReference(reference)
-            .withMainTitle(MAIN_TITLE)
-            .withDate(publicationDate)
-            .withContributors(contributors)
+    private Contributor createUnexpectedContributor() {
+        return new Contributor.Builder()
+            .withSequence(NOT_THE_CREATOR)
+            .withAffiliations(List.of(SOME_PUBLISHER))
+            .withIdentity(new Identity.Builder()
+                .withArpId(SOME_ARP_ID)
+                .withName(NOT_THE_CREATOR_NAME)
+                .build())
             .build();
+    }
 
-        return new Publication.Builder()
-            .withIdentifier(SortableIdentifier.next())
-            .withPublisher(SOME_PUBLISHER)
-            .withEntityDescription(entityDescription)
+    private PublicationDate createPublicationDate() {
+        return new PublicationDate.Builder()
+            .withYear(SOME_YEAR)
+            .withMonth(SOME_MONTH)
+            .withDay(SOME_DAY)
+            .build();
+    }
+
+    private Reference createReference() {
+        return new Reference.Builder()
+            .withPublicationInstance(createJournalReview()).build();
+    }
+
+    private JournalReview createJournalReview() {
+        return new JournalReview.Builder()
+            .withIssue(SOME_ISSUE)
+            .withArticleNumber(SOME_ARTICLE_NUMBER)
+            .withVolume(SOME_VOLUME)
             .build();
     }
 }
