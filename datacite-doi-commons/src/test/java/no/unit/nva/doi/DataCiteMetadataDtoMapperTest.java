@@ -4,7 +4,6 @@ import static no.unit.nva.hamcrest.DoesNotHaveEmptyValues.doesNotHaveEmptyValues
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.model.Contributor;
@@ -15,7 +14,6 @@ import no.unit.nva.model.Organization.Builder;
 import no.unit.nva.model.Publication;
 import no.unit.nva.model.PublicationDate;
 import no.unit.nva.model.Reference;
-import no.unit.nva.model.exceptions.MalformedContributorException;
 import no.unit.nva.model.instancetypes.journal.JournalReview;
 import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import org.junit.jupiter.api.Test;
@@ -39,7 +37,7 @@ public class DataCiteMetadataDtoMapperTest {
     public static final String NOT_THE_CREATOR_NAME = "notTheCreatorName";
 
     @Test
-    public void fromPublicationReturnsDataCiteMetadataDto() throws MalformedContributorException {
+    public void fromPublicationReturnsDataCiteMetadataDto() {
         Publication publication = samplePublication();
 
         DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
@@ -55,7 +53,7 @@ public class DataCiteMetadataDtoMapperTest {
         assertThat(dataCiteMetadataDto, notNullValue());
     }
 
-    private Publication samplePublication() throws MalformedContributorException {
+    private Publication samplePublication() {
         JournalReview publicationInstance = new JournalReview.Builder()
             .withIssue(SOME_ISSUE)
             .withArticleNumber(SOME_ARTICLE_NUMBER)
@@ -75,7 +73,6 @@ public class DataCiteMetadataDtoMapperTest {
             .withAffiliations(List.of(SOME_PUBLISHER))
             .withIdentity(new Identity.Builder().withArpId(SOME_ARP_ID).withName(NOT_THE_CREATOR_NAME).build())
             .build();
-
 
         Contributor expectedContributor = new Contributor.Builder()
             .withSequence(THE_CREATOR)
