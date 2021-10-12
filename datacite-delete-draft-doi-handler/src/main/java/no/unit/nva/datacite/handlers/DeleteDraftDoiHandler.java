@@ -87,7 +87,7 @@ public class DeleteDraftDoiHandler
             throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
         }
 
-        if (!doiState.getState().equalsIgnoreCase(DRAFT)) {
+        if (!DRAFT.equalsIgnoreCase(doiState.getState())) {
             throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
         }
     }
