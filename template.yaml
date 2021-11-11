@@ -29,10 +29,10 @@ Parameters:
     Default: dataCitePort
   EventBusName:
     Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: nvaEventBusName
+    Default: '/NVA/Events/EventsBusName'
   EventBusArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: nvaEventBusArn
+    Default: '/NVA/Events/EventsBusArn'
   CustomerSecretsSecretName:
     Type: String
     Default: dataCiteCustomerSecrets
