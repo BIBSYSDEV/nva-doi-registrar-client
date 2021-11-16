@@ -9,11 +9,21 @@ import nva.commons.core.JacocoGenerated;
 
 public class ResourceDraftedForDeletionEvent {
 
+    public static final String TOPIC = "topic";
+    public static final String IDENTIFIER = "identifier";
+    public static final String STATUS = "status";
+    public static final String DOI = "doi";
+    public static final String CUSTOMER_ID = "customerId";
 
-    private final String type;
+    @JsonProperty(TOPIC)
+    private final String topic;
+    @JsonProperty(IDENTIFIER)
     private final SortableIdentifier identifier;
+    @JsonProperty(STATUS)
     private final String status;
+    @JsonProperty(DOI)
     private final URI doi;
+    @JsonProperty(CUSTOMER_ID)
     private final URI customerId;
 
     /**
@@ -27,20 +37,20 @@ public class ResourceDraftedForDeletionEvent {
      */
     @JsonCreator
     public ResourceDraftedForDeletionEvent(
-        @JsonProperty("type") String type,
-        @JsonProperty("identifier") SortableIdentifier identifier,
-        @JsonProperty("status") String status,
-        @JsonProperty("doi") URI doi,
-        @JsonProperty("customerId") URI customerId) {
-        this.type = type;
+        @JsonProperty(TOPIC) String type,
+        @JsonProperty(IDENTIFIER) SortableIdentifier identifier,
+        @JsonProperty(STATUS) String status,
+        @JsonProperty(DOI) URI doi,
+        @JsonProperty(CUSTOMER_ID) URI customerId) {
+        this.topic = type;
         this.identifier = identifier;
         this.status = status;
         this.doi = doi;
         this.customerId = customerId;
     }
 
-    public String getType() {
-        return type;
+    public String getTopic() {
+        return topic;
     }
 
     public SortableIdentifier getIdentifier() {
@@ -67,7 +77,7 @@ public class ResourceDraftedForDeletionEvent {
     @Override
     @JacocoGenerated
     public int hashCode() {
-        return Objects.hash(type, identifier, status, doi, customerId);
+        return Objects.hash(topic, identifier, status, doi, customerId);
     }
 
     @Override
@@ -80,7 +90,7 @@ public class ResourceDraftedForDeletionEvent {
             return false;
         }
         ResourceDraftedForDeletionEvent that = (ResourceDraftedForDeletionEvent) o;
-        return type.equals(that.type)
+        return topic.equals(that.topic)
                && identifier.equals(that.identifier)
                && status.equals(that.status)
                && Objects.equals(doi, that.doi)
