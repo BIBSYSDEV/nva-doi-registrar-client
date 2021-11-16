@@ -133,9 +133,9 @@ Resources:
               detail-type: [ "Lambda Function Invocation Result - Success" ]
               detail:
                 responsePayload:
-                  type:
-                    - publication.doiupdate.newdraftdoirequest
-                    - publication.doiupdate.updateexistingdoi
+                  topic:
+                    - PublicationService.Doi.CreationRequest
+                    - PublicationService.Doi.UpdateRequest
                   item:
                     doiRequest:
                       status:
@@ -178,8 +178,8 @@ Resources:
               detail-type: [ "Lambda Function Invocation Result - Success" ]
               detail:
                 responsePayload:
-                  type:
-                    - publication.doiupdate.updateexistingdoi
+                  topic:
+                    - PublicationService.Doi.UpdateRequest
                   item:
                     status:
                       - PUBLISHED
@@ -219,8 +219,8 @@ Resources:
             Pattern:
               detail:
                 responsePayload:
-                  type:
-                    - delete.publication
+                  topic:
+                    - PublicationService.Resource.DraftForDeletion
                   hasDoi:
                     - true
       EventInvokeConfig:

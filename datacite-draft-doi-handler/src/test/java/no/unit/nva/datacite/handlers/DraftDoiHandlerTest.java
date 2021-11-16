@@ -3,21 +3,18 @@ package no.unit.nva.datacite.handlers;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR;
-
 import static nva.commons.core.JsonUtils.objectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.ioutils.IoUtils.stringToStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,16 +23,15 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import no.unit.nva.datacite.commons.DoiUpdateEvent;
+import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.models.Doi;
-
 import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.model.Organization;
 import no.unit.nva.model.Publication;
-import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
-import no.unit.nva.publication.doi.update.dto.PublicationHolder;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +71,7 @@ public class DraftDoiHandlerTest {
             Path.of("doi_publication_event_valid.json"));
         handler.handleRequest(inputStream, outputStream, context);
 
-        DoiUpdateHolder response = parseResponse();
+        DoiUpdateEvent response = parseResponse();
         SortableIdentifier actualPublicationIdentifier = response.getItem().getPublicationIdentifier();
         assertThat(actualPublicationIdentifier.toString(), is(PUBLICATION_IDENTIFIER_IN_RESOURCE_FILES));
     }
@@ -138,21 +134,22 @@ public class DraftDoiHandlerTest {
 
         JsonNode eventObject = objectMapper.readTree(inputString);
         JsonNode responsePayload = eventObject.path(EVENT_DETAIL_FIELD).path(DETAIL_RESPONSE_PAYLOAD_FIELD);
-        PublicationHolder publicationHolder = objectMapper.convertValue(responsePayload, PublicationHolder.class);
+        DoiUpdateRequestEvent doiUpdateRequestEvent =
+            objectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
 
-        return getPublisher(publicationHolder);
+        return getPublisher(doiUpdateRequestEvent);
     }
 
-    private URI getPublisher(PublicationHolder publicationHolder) {
-        return Optional.of(publicationHolder)
-            .map(PublicationHolder::getItem)
+    private URI getPublisher(DoiUpdateRequestEvent doiUpdateRequestEvent) {
+        return Optional.of(doiUpdateRequestEvent)
+            .map(DoiUpdateRequestEvent::getItem)
             .map(Publication::getPublisher)
             .map(Organization::getId)
             .orElse(null);
     }
 
-    private DoiUpdateHolder parseResponse() {
-        return attempt(() -> objectMapper.readValue(outputStream.toString(), DoiUpdateHolder.class))
+    private DoiUpdateEvent parseResponse() {
+        return attempt(() -> objectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
             .orElseThrow();
     }
 

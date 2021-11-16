@@ -26,11 +26,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.doi.models.ImmutableDoi;
-import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
 import nva.commons.core.JsonUtils;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.logutils.LogUtils;
@@ -68,7 +68,7 @@ public class FindableDoiEventHandlerTest {
         throws ClientException, URISyntaxException {
         InputStream inputStream = IoUtils.inputStreamFromResources(PUBLICATION_EVENT);
         findableDoiHandler.handleRequest(inputStream, outputStream, context);
-        DoiUpdateHolder response = parseResponse();
+        DoiUpdateEvent response = parseResponse();
         assertThat(response.getItem().getPublicationIdentifier(), is(not(nullValue())));
         assertThat(response.getItem().getModifiedDate(), is(notNullValue()));
 
@@ -181,7 +181,7 @@ public class FindableDoiEventHandlerTest {
             is(equalTo(FindableDoiEventHandler.CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR)));
     }
 
-    private URI constructResourceUri(DoiUpdateHolder response) {
+    private URI constructResourceUri(DoiUpdateEvent response) {
         return LANDING_PAGE_UTIL.constructResourceUri(response.getItem().getPublicationIdentifier().toString());
     }
 
@@ -208,8 +208,8 @@ public class FindableDoiEventHandlerTest {
             .build();
     }
 
-    private DoiUpdateHolder parseResponse() {
-        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateHolder.class))
+    private DoiUpdateEvent parseResponse() {
+        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
             .orElseThrow();
     }
 }

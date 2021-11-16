@@ -24,7 +24,6 @@ allprojects {
         nvaCommonsVersion = '1.5.17'
         nvaTestUtilsVersion = "0.1.24"
         jacksonVersion = '2.12.3'
-        nvaPublicationApi = '0.3.0'
         nvaDatamodelVersion = '0.14.11'
     }
 }
