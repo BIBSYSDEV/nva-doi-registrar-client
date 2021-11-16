@@ -134,7 +134,8 @@ public class DraftDoiHandlerTest {
 
         JsonNode eventObject = objectMapper.readTree(inputString);
         JsonNode responsePayload = eventObject.path(EVENT_DETAIL_FIELD).path(DETAIL_RESPONSE_PAYLOAD_FIELD);
-        DoiUpdateRequestEvent doiUpdateRequestEvent = objectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
+        DoiUpdateRequestEvent doiUpdateRequestEvent =
+            objectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
 
         return getPublisher(doiUpdateRequestEvent);
     }

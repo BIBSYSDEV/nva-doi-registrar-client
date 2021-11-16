@@ -39,7 +39,8 @@ import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
+public class FindableDoiEventHandler
+    extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
 
     public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
 
@@ -199,7 +200,6 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
             throw new IllegalStateException(CREATING_FINDABLE_DOI_FOR_DRAFT_PUBLICATION_ERROR);
         }
     }
-
 
     private void verifyPublicationIsCuratorApproved(Publication publication) {
         Optional.ofNullable(publication.getDoiRequest())
