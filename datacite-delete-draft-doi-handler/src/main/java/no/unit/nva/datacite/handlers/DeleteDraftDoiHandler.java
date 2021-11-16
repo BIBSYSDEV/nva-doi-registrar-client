@@ -1,6 +1,10 @@
 package no.unit.nva.datacite.handlers;
 
+import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
+import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
+import java.io.IOException;
+import java.net.URI;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.DoiClientFactory;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -8,22 +12,14 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.ImmutableDoi;
-
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
-import no.unit.nva.publication.events.DeletePublicationEvent;
 import nva.commons.core.JacocoGenerated;
-
-import java.io.IOException;
-import java.net.URI;
 import nva.commons.secrets.SecretsReader;
 
-import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
-
 public class DeleteDraftDoiHandler
-    extends DestinationsEventBridgeEventHandler<DeletePublicationEvent, DeletePublicationEvent> {
+    extends DestinationsEventBridgeEventHandler<ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
 
     public static final String DRAFT = "draft";
     public static final URI NO_DOI = null;
@@ -31,6 +27,7 @@ public class DeleteDraftDoiHandler
     public static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
     public static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";
     public static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
+    public static final String DELETED_DRAFT_DOI_EVENT_TOPIC = "DoiRegistrarService.Doi.DeletedDraft";
     private final DoiClient doiClient;
 
     /**
@@ -49,15 +46,15 @@ public class DeleteDraftDoiHandler
      * @param doiClient doiClient
      */
     public DeleteDraftDoiHandler(DoiClient doiClient) {
-        super(DeletePublicationEvent.class);
+        super(ResourceDraftedForDeletionEvent.class);
         this.doiClient = doiClient;
     }
 
     @Override
-    protected DeletePublicationEvent processInputPayload(
-            DeletePublicationEvent input,
-            AwsEventBridgeEvent<AwsEventBridgeDetail<DeletePublicationEvent>> event,
-            Context context) {
+    protected ResourceDraftedForDeletionEvent processInputPayload(
+        ResourceDraftedForDeletionEvent input,
+        AwsEventBridgeEvent<AwsEventBridgeDetail<ResourceDraftedForDeletionEvent>> event,
+        Context context) {
 
         verifyEventHasDoi(input);
 
@@ -67,16 +64,16 @@ public class DeleteDraftDoiHandler
         return deleteDraftPublication(input, customerId, doi);
     }
 
-    private void verifyEventHasDoi(DeletePublicationEvent event) {
+    private void verifyEventHasDoi(ResourceDraftedForDeletionEvent event) {
         if (!event.hasDoi()) {
             throw new RuntimeException(EXPECTED_EVENT_WITH_DOI);
         }
     }
 
-    private ImmutableDoi getDoi(DeletePublicationEvent input) {
+    private ImmutableDoi getDoi(ResourceDraftedForDeletionEvent input) {
         return ImmutableDoi.builder()
-                .withDoi(input.getDoi())
-                .build();
+            .withDoi(input.getDoi())
+            .build();
     }
 
     private void verifyDoiIsInDraftState(URI customerId, ImmutableDoi doi) {
@@ -92,10 +89,10 @@ public class DeleteDraftDoiHandler
         }
     }
 
-    private DeletePublicationEvent deleteDraftPublication(
-            DeletePublicationEvent event,
-            URI customerId,
-            ImmutableDoi doi) {
+    private ResourceDraftedForDeletionEvent deleteDraftPublication(
+        ResourceDraftedForDeletionEvent event,
+        URI customerId,
+        ImmutableDoi doi) {
         try {
             doiClient.deleteDraftDoi(customerId, doi);
         } catch (ClientException e) {
@@ -104,13 +101,13 @@ public class DeleteDraftDoiHandler
         return copyDeletePublicationWithoutDoi(event);
     }
 
-    private DeletePublicationEvent copyDeletePublicationWithoutDoi(DeletePublicationEvent event) {
-        return new DeletePublicationEvent(
-                event.getType(),
-                event.getIdentifier(),
-                event.getStatus(),
-                NO_DOI,
-                event.getCustomerId()
+    private ResourceDraftedForDeletionEvent copyDeletePublicationWithoutDoi(ResourceDraftedForDeletionEvent event) {
+        return new ResourceDraftedForDeletionEvent(
+            DELETED_DRAFT_DOI_EVENT_TOPIC,
+            event.getIdentifier(),
+            event.getStatus(),
+            NO_DOI,
+            event.getCustomerId()
         );
     }
 
@@ -118,13 +115,13 @@ public class DeleteDraftDoiHandler
     private static DoiClient defaultDoiClient() {
 
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-                new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
+            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
-                configFactory,
-                DeleteDraftDoiAppEnv.getDataCiteMdsApiHost(),
-                DeleteDraftDoiAppEnv.getDataCiteRestApiHost(),
-                DeleteDraftDoiAppEnv.getDataCitePort());
+            configFactory,
+            DeleteDraftDoiAppEnv.getDataCiteMdsApiHost(),
+            DeleteDraftDoiAppEnv.getDataCiteRestApiHost(),
+            DeleteDraftDoiAppEnv.getDataCitePort());
         return DoiClientFactory.getClient(configFactory, connectionFactory);
     }
 }

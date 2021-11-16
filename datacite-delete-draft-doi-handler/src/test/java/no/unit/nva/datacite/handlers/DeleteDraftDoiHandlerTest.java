@@ -18,12 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
-import no.unit.nva.doi.models.Doi;
-import no.unit.nva.publication.events.DeletePublicationEvent;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
 
 public class DeleteDraftDoiHandlerTest {
 
@@ -55,7 +52,7 @@ public class DeleteDraftDoiHandlerTest {
 
         handler.handleRequest(inputStream, outputStream, context);
 
-        DeletePublicationEvent event = objectMapper.readValue(outputStream.toString(), DeletePublicationEvent.class);
+        ResourceDraftedForDeletionEvent event = objectMapper.readValue(outputStream.toString(), ResourceDraftedForDeletionEvent.class);
 
         assertThat(event.hasDoi(), is(equalTo(false)));
     }
@@ -84,7 +81,7 @@ public class DeleteDraftDoiHandlerTest {
     private DoiClient doiClientReturningError() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(),any()))
-                .thenAnswer(invocation -> doiState(DOI_IDENTIFIER, DeleteDraftDoiHandler.DRAFT));
+                .thenAnswer(invocation -> doiState(DeleteDraftDoiHandler.DRAFT));
         doThrow(new RuntimeException(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI))
                 .when(doiClient).deleteDraftDoi(any(),any());
         return doiClient;
@@ -105,18 +102,12 @@ public class DeleteDraftDoiHandlerTest {
     private DoiClient doiClientReturningDoi(String state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(),any()))
-                .thenAnswer(invocation -> doiState(DOI_IDENTIFIER, state));
+                .thenAnswer(invocation -> doiState(state));
         return doiClient;
     }
 
-    private DoiStateDto doiState(String doiIdentifier, String state) {
-        return new DoiStateDto(doiIdentifier, state);
-    }
-
-    private Doi saveInputAndReturnSampleDoi(Doi doi, InvocationOnMock invocation) {
-        URI customerId = invocation.getArgument(0);
-        inputBuffer.set(customerId);
-        return doi;
+    private DoiStateDto doiState(String state) {
+        return new DoiStateDto(DeleteDraftDoiHandlerTest.DOI_IDENTIFIER, state);
     }
 
 }

@@ -5,6 +5,7 @@ repositories {
 dependencies {
     api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
 
+    implementation project (":doi-commons")
     implementation (project(":assign-doi-datacite")) {
         exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
     }
@@ -13,7 +14,6 @@ dependencies {
         exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
     }
 
-    implementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-doi-commons', version: project.ext.nvaPublicationApi
     implementation group: 'com.github.bibsysdev', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
 
     implementation group: 'com.github.bibsysdev', name: 'core', version: project.ext.nvaCommonsVersion

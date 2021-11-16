@@ -11,6 +11,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import javax.xml.bind.JAXBException;
+import no.unit.nva.datacite.commons.DoiUpdateDto;
+import no.unit.nva.datacite.commons.DoiUpdateEvent;
+import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DataCiteMetadataDtoMapper;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.DoiClientFactory;
@@ -29,9 +32,6 @@ import no.unit.nva.model.Publication;
 import no.unit.nva.model.PublicationStatus;
 import no.unit.nva.model.Reference;
 import no.unit.nva.model.instancetypes.PublicationInstance;
-import no.unit.nva.publication.doi.update.dto.DoiUpdateDto;
-import no.unit.nva.publication.doi.update.dto.DoiUpdateHolder;
-import no.unit.nva.publication.doi.update.dto.PublicationHolder;
 import no.unit.nva.transformer.Transformer;
 import no.unit.nva.transformer.dto.DataCiteMetadataDto;
 import nva.commons.core.JacocoGenerated;
@@ -39,7 +39,7 @@ import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler<PublicationHolder, DoiUpdateHolder> {
+public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
 
     public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
 
@@ -77,14 +77,14 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
     }
 
     public FindableDoiEventHandler(DoiClient doiClient) {
-        super(PublicationHolder.class);
+        super(DoiUpdateRequestEvent.class);
         this.doiClient = doiClient;
     }
 
     @Override
-    protected DoiUpdateHolder processInputPayload(PublicationHolder input,
-                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<PublicationHolder>> event,
-                                                  Context context) {
+    protected DoiUpdateEvent processInputPayload(DoiUpdateRequestEvent input,
+                                                 AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+                                                 Context context) {
 
         Publication publication = input.getItem();
         verifyPublicationCanBecomeFindable(publication);
@@ -99,8 +99,8 @@ public class FindableDoiEventHandler extends DestinationsEventBridgeEventHandler
         try {
             doiClient.updateMetadata(customerId, doi, getDataCiteXmlMetadata(publication));
             doiClient.setLandingPage(customerId, doi, landingPage);
-            DoiUpdateHolder doiUpdateHolder = new DoiUpdateHolder(DoiUpdateHolder.DEFAULT_TYPE,
-                createDoiUpdateDto(doi, publicationIdentifier));
+            DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
+                                                                createDoiUpdateDto(doi, publicationIdentifier));
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.toUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {

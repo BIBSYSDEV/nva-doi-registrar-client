@@ -14,11 +14,7 @@ dependencies {
     implementation group: 'com.github.bibsysdev', name:'identifiers', version: project.ext.nvaCommonsVersion
     implementation group: 'com.github.bibsysdev', name:'secrets', version: project.ext.nvaCommonsVersion
 
-    implementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-events', version: project.ext.nvaPublicationApi
-
     runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
-
-    testImplementation group: 'com.github.BIBSYSDEV.nva-publication-api', name: 'publication-testing', version: project.ext.nvaPublicationApi
 
     compileOnly( group: 'com.amazonaws', name: 'aws-java-sdk-api-gateway', version: awsSdkVersion) {
         because "PMD complains for the com/amazonaws/regions/Regions class"
