@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.restclient.models;
 
 import static java.util.Objects.nonNull;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,7 +69,7 @@ public class DraftDoiDto {
      * @return a DraftDoiDto.
      */
     public static DraftDoiDto fromJson(String json) {
-        JsonNode tree = attempt(() -> objectMapper.readTree(json)).orElseThrow();
+        JsonNode tree = attempt(() -> dtoObjectMapper.readTree(json)).orElseThrow();
         DraftDoiDto draftDoiDto = new DraftDoiDto();
         JsonNode attributes = tree.path(DATA_FIELD).path(ATTRIBUTES_FIELD);
         draftDoiDto.prefix = attributes.get(PREFIX_FIELD).textValue();
@@ -80,7 +80,7 @@ public class DraftDoiDto {
 
     public String toJson() {
         ObjectNode rootNode = createJsonObjectWithNestedElements();
-        return attempt(() -> objectMapper.writeValueAsString(rootNode)).orElseThrow();
+        return attempt(() -> dtoObjectMapper.writeValueAsString(rootNode)).orElseThrow();
     }
 
     @JacocoGenerated
@@ -114,9 +114,9 @@ public class DraftDoiDto {
     }
 
     private ObjectNode createJsonObjectWithNestedElements() {
-        ObjectNode rootNode = objectMapper.createObjectNode();
-        ObjectNode data = objectMapper.createObjectNode();
-        ObjectNode attributes = objectMapper.createObjectNode();
+        ObjectNode rootNode = dtoObjectMapper.createObjectNode();
+        ObjectNode data = dtoObjectMapper.createObjectNode();
+        ObjectNode attributes = dtoObjectMapper.createObjectNode();
 
         rootNode.set(DATA_FIELD, data);
         rootNode.put(TYPE_FIELD, TYPE_FIELD_VALUE);

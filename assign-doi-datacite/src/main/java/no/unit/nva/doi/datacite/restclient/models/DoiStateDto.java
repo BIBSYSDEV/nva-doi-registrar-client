@@ -2,7 +2,8 @@ package no.unit.nva.doi.datacite.restclient.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nva.commons.core.JacocoGenerated;
-import static nva.commons.core.JsonUtils.objectMapper;
+
+import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 
 public class DoiStateDto {
@@ -37,7 +38,7 @@ public class DoiStateDto {
      * @return a DoiStateDto.
      */
     public static DoiStateDto fromJson(String json) {
-        JsonNode tree = attempt(() -> objectMapper.readTree(json)).orElseThrow();
+        JsonNode tree = attempt(() -> dtoObjectMapper.readTree(json)).orElseThrow();
         JsonNode attributes = tree.path(DATA_FIELD).path(ATTRIBUTES_FIELD);
 
         String doi = attributes.path(DOI).textValue();

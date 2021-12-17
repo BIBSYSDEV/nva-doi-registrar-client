@@ -1,6 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -53,7 +53,7 @@ public class DeleteDraftDoiHandlerTest {
         handler.handleRequest(inputStream, outputStream, context);
 
         ResourceDraftedForDeletionEvent event =
-            objectMapper.readValue(outputStream.toString(),ResourceDraftedForDeletionEvent.class);
+                dtoObjectMapper.readValue(outputStream.toString(),ResourceDraftedForDeletionEvent.class);
 
         assertThat(event.hasDoi(), is(equalTo(false)));
     }
@@ -63,7 +63,7 @@ public class DeleteDraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                                                  () -> handler.handleRequest(inputStream, outputStream, context));
+            () -> handler.handleRequest(inputStream, outputStream, context));
         assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.EXPECTED_EVENT_WITH_DOI)));
     }
 
@@ -75,7 +75,7 @@ public class DeleteDraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                                                  () -> handler.handleRequest(inputStream, outputStream, context));
+            () -> handler.handleRequest(inputStream, outputStream, context));
         assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI)));
     }
 
@@ -96,7 +96,7 @@ public class DeleteDraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                                                  () -> handler.handleRequest(inputStream, outputStream, context));
+            () -> handler.handleRequest(inputStream, outputStream, context));
         assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.NOT_DRAFT_DOI_ERROR)));
     }
 

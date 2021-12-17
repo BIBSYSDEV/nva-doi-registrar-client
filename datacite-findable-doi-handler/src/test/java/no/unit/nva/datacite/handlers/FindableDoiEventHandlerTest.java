@@ -209,7 +209,7 @@ public class FindableDoiEventHandlerTest {
     }
 
     private DoiUpdateEvent parseResponse() {
-        return attempt(() -> JsonUtils.objectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
+        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
             .orElseThrow();
     }
 }

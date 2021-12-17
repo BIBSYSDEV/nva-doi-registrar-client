@@ -3,7 +3,7 @@ package no.unit.nva.datacite.handlers;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.ioutils.IoUtils.stringToStream;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -132,10 +132,10 @@ public class DraftDoiHandlerTest {
 
     private URI extractExpectedPublisherIdFromEventBridgeEvent(String inputString) throws IOException {
 
-        JsonNode eventObject = objectMapper.readTree(inputString);
+        JsonNode eventObject = dtoObjectMapper.readTree(inputString);
         JsonNode responsePayload = eventObject.path(EVENT_DETAIL_FIELD).path(DETAIL_RESPONSE_PAYLOAD_FIELD);
         DoiUpdateRequestEvent doiUpdateRequestEvent =
-            objectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
+                dtoObjectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
 
         return getPublisher(doiUpdateRequestEvent);
     }
@@ -149,7 +149,7 @@ public class DraftDoiHandlerTest {
     }
 
     private DoiUpdateEvent parseResponse() {
-        return attempt(() -> objectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
+        return attempt(() -> dtoObjectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
             .orElseThrow();
     }
 

@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
 import static java.util.Objects.isNull;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;
@@ -104,7 +104,7 @@ public class DataCiteConfigurationFactory {
     private void parseConfig(String secretConfig) {
         try {
             var secretConfigurations =
-                Optional.ofNullable(objectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));
+                Optional.ofNullable(dtoObjectMapper.readValue(secretConfig, DataCiteMdsClientSecretConfig[].class));
             secretConfigurations.ifPresent(this::populateCustomerConfigurationMap);
         } catch (IOException e) {
             throw new IllegalStateException("Could not parse secret configuration");
