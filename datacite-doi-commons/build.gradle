@@ -8,7 +8,7 @@ dependencies {
     implementation libs.nva.datamodel
     implementation libs.nva.core
     implementation libs.nva.identifiers
-
+    implementation libs.bundles.logging
 
     testImplementation libs.bundles.testing
 }

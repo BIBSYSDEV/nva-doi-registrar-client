@@ -1,18 +1,21 @@
 [versions]
 hamcrest = { strictly = '2.2' }
-nvaCommons = { require = '1.16.30' }
-jackson = { require = '2.12.4' }
-mockito = { require = '3.2.4' }
-junit = { require = '5.6.0' }
-nvaDatamodel = { require = '0.14.12' }
-awsSdk = { require = '1.11.875' }
-jaxbApi = { require = '2.3.1' }
-jaxbRuntime = { require = '2.3.2' }
-commonsLang = { require = '3.9' }
-secretsCaching = { require = '1.0.1' }
-zalando = { require = '0.26.0' }
-wiremock = { require = '2.27.2' }
-nva-datacite= {require = '0.4.0'}
+nvaCommons = { strictly = '1.18.9' }
+jackson = { strictly = '2.13.0' }
+mockito = { strictly = '4.2.0' }
+junit = { strictly = '5.8.2' }
+nvaDatamodel = { strictly = '0.14.23' }
+awsSdk = { strictly = '1.12.105' }
+jaxbApi = { strictly = '2.3.1' }
+jaxbRuntime = { strictly = '2.3.2' }
+commonsLang = { strictly = '3.12.0' }
+secretsCaching = { strictly = '1.0.1' }
+zalando = { strictly = '0.26.0' }
+wiremock = { strictly = '2.27.2' }
+nva-datacite= {strictly = '0.4.0'}
+log4j = { strictly = '2.17.1' }
+slf4j = { strictly = '1.8.0-beta4' }
+
 
 
 [libraries]
@@ -50,7 +53,12 @@ junit-jupiter-engine = { group = 'org.junit.jupiter', name = 'junit-jupiter-engi
 nva-testutils = { group = 'com.github.bibsysdev', name = 'nvatestutils', version.ref = 'nvaCommons' }
 wiremock = { group = 'com.github.tomakehurst', name = 'wiremock-jre8', version.ref = 'wiremock' }
 
+slf4j = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
+log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
+log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
+
 
 [bundles]
 testing = ['junit-jupiter-engine', 'hamcrest', 'mockito-core', 'nva-testutils']
 jackson = ['jackson-core', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310', 'jackson-databind', 'jackson-annotations']
+logging = ['log4j-core', 'log4j-api', 'slf4j']

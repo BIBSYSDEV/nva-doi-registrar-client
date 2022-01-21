@@ -18,6 +18,8 @@ dependencies {
     implementation libs.nva.eventhandlers
     implementation libs.nva.identifiers
     implementation libs.nva.secrets
+    implementation libs.bundles.logging
+    implementation libs.bundles.jackson
 
     runtimeOnly libs.jaxb.runtime
     compileOnly libs.aws.sdk
