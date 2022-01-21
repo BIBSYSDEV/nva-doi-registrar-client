@@ -4,10 +4,10 @@ plugins{
 
 dependencies {
     implementation project(":assign-doi-datacite")
-
     implementation(project(":datacite-doi-commons"))
 
     implementation libs.nva.core
+    implementation libs.nva.doi
     implementation libs.nva.identifiers
     implementation libs.nva.eventhandlers
     implementation libs.nva.secrets

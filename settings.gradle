@@ -1,9 +1,10 @@
 enableFeaturePreview('VERSION_CATALOGS')
 rootProject.name = 'nva-doi-registrar-client'
 include 'assign-doi-datacite'
+include 'doi-commons'
 include 'datacite-doi-commons'
 include 'datacite-draft-doi-handler'
 include 'datacite-findable-doi-handler'
 include 'datacite-delete-draft-doi-handler'
-include 'doi-commons'
+
 

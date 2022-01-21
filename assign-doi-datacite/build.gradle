@@ -8,12 +8,7 @@ dependencies {
     implementation libs.nva.doi
     implementation libs.nva.secrets
 
-    implementation libs.bundles.jackson
-
-    implementation libs.commons.lang3
     implementation libs.aws.secretsmanager.caching
-    implementation libs.problem
-    implementation libs.jackson.problem
 
     testImplementation libs.wiremock
     testImplementation libs.nva.logutils
