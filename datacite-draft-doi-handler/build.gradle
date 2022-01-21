@@ -1,31 +1,24 @@
-repositories {
-    maven { url "https://s3.eu-central-1.amazonaws.com/dynamodb-local-frankfurt/release" }
-}
 
 dependencies {
     implementation project(":assign-doi-datacite")
-    implementation project (":doi-commons")
-    implementation (project(":datacite-doi-commons")){
-        exclude group: 'com.github.BIBSYSDEV', module: 'nva-commons'
-    }
+    implementation project(":doi-commons")
+    implementation(project(":datacite-doi-commons"))
 
-    implementation group: 'com.github.bibsysdev', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
+    implementation libs.nva.datamodel
+    implementation libs.nva.core
+    implementation libs.nva.secrets
+    implementation libs.nva.eventhandlers
+    implementation libs.nva.identifiers
 
+    runtimeOnly libs.jaxb.runtime
 
-    implementation group: 'com.github.bibsysdev', name: 'secrets', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'eventhandlers', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'identifiers', version: project.ext.nvaCommonsVersion
+    testImplementation libs.bundles.testing
 
-
-    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
-
-    compileOnly( group: 'com.amazonaws', name: 'aws-java-sdk-api-gateway', version: awsSdkVersion) {
+    compileOnly(libs.aws.sdk.apigateway) {
         because "PMD complains for the com/amazonaws/regions/Regions class"
     }
 
-    compileOnly (group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager', version: awsSdkVersion){
+    compileOnly(libs.aws.sdk.secrets) {
         because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
     }
-
-
 }
