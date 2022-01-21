@@ -1,5 +1,10 @@
-dependencies {
-    implementation group: 'com.github.bibsysdev', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
-    implementation group: 'com.github.bibsysdev', name: 'identifiers', version: project.ext.nvaCommonsVersion
+plugins{
+    id 'nva.doiregistrar.service.java-common-conventions'
+}
 
+dependencies {
+
+    implementation libs.nva.datamodel
+    implementation libs.nva.core
+    implementation libs.nva.identifiers
 }

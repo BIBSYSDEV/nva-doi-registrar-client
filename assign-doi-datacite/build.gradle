@@ -1,3 +1,6 @@
+plugins {
+    id 'nva.doiregistrar.service.java-common-conventions'
+}
 
 dependencies {
 
@@ -15,7 +18,5 @@ dependencies {
     testImplementation libs.wiremock
     testImplementation libs.nva.logutils
     testImplementation libs.bundles.testing
-
-
 
 }
