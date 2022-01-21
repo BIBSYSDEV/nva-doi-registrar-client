@@ -1,25 +1,21 @@
-def zalandoVersion = '0.23.0'
 
 dependencies {
 
-    implementation group: 'com.github.bibsysdev', name: 'core', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'doi', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'secrets', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'logutils', version: project.ext.nvaCommonsVersion
+    implementation libs.nva.core
+    implementation libs.nva.doi
+    implementation libs.nva.secrets
+
+    implementation libs.bundles.jackson
+
+    implementation libs.commons.lang3
+    implementation libs.aws.secretsmanager.caching
+    implementation libs.problem
+    implementation libs.jackson.problem
+
+    testImplementation libs.wiremock
+    testImplementation libs.nva.logutils
+    testImplementation libs.bundles.testing
 
 
-
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
-    implementation group: 'com.amazonaws.secretsmanager', name: 'aws-secretsmanager-caching-java', version: '1.0.1'
-    implementation group: 'org.zalando', name: 'problem', version: zalandoVersion
-    implementation group: 'org.zalando', name: 'jackson-datatype-problem', version: zalandoVersion
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
-    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
-
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
-
-    testImplementation group: 'com.github.BIBSYSDEV', name: 'nva-testutils', version: nvaTestUtilsVersion
 
 }

@@ -3,40 +3,25 @@ repositories {
 }
 
 dependencies {
-    api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+    api libs.jaxb.api
 
     implementation project (":doi-commons")
-    implementation (project(":assign-doi-datacite")) {
-        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
-    }
+    implementation (project(":assign-doi-datacite"))
 
-    implementation (project(":datacite-doi-commons")){
-        exclude group: 'om.github.BIBSYSDEV', module: 'nva-commons'
-    }
+    implementation (project(":datacite-doi-commons"))
 
-    implementation group: 'com.github.bibsysdev', name: 'nva-datamodel-java', version: project.ext.nvaDatamodelVersion
+    implementation libs.nva.datamodel
+    implementation libs.nva.core
+    implementation libs.nva.eventhandlers
+    implementation libs.nva.identifiers
+    implementation libs.nva.secrets
+    implementation libs.nva.logutils
 
-    implementation group: 'com.github.bibsysdev', name: 'core', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'eventhandlers', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'identifiers', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'secrets', version: project.ext.nvaCommonsVersion
-    implementation group: 'com.github.bibsysdev', name: 'logutils', version: project.ext.nvaCommonsVersion
+    runtimeOnly libs.jaxb.runtime
+    compileOnly libs.aws.sdk
 
 
+    testImplementation libs.bundles.testing
 
-    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: project.ext.jacksonVersion
-    testImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: project.ext.jacksonVersion
-    testImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: project.ext.jacksonVersion
-    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: project.ext.jacksonVersion
-
-    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.ext.jacksonVersion
-    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.ext.jacksonVersion
-
-
-
-
-    runtimeOnly group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.2'
-
-    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk', version: project.ext.awsSdkVersion
 
 }
