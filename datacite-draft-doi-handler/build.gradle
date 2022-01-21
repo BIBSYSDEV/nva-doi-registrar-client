@@ -1,3 +1,6 @@
+plugins{
+    id 'nva.doiregistrar.service.java-common-conventions'
+}
 
 dependencies {
     implementation project(":assign-doi-datacite")
