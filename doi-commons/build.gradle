@@ -1,9 +1,8 @@
-plugins{
+plugins {
     id 'nva.doiregistrar.service.java-common-conventions'
 }
 
 dependencies {
-
     implementation libs.nva.datamodel
     implementation libs.nva.core
     implementation libs.nva.identifiers

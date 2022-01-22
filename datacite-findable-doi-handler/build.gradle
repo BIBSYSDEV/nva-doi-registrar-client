@@ -3,7 +3,8 @@ plugins{
 }
 
 dependencies {
-    api libs.jaxb.api
+
+    implementation libs.jaxb.api
 
     implementation project (":doi-commons")
     implementation (project(":assign-doi-datacite"))
@@ -11,17 +12,18 @@ dependencies {
     implementation (project(":datacite-doi-commons"))
 
     implementation libs.nva.datamodel
+    implementation libs.nva.doi.datacite
     implementation libs.nva.core
+    implementation libs.nva.doi
     implementation libs.nva.eventhandlers
     implementation libs.nva.identifiers
     implementation libs.nva.secrets
-    implementation libs.nva.logutils
 
     runtimeOnly libs.jaxb.runtime
     compileOnly libs.aws.sdk
 
-
     testImplementation libs.bundles.testing
+    testImplementation libs.nva.logutils
 
 
 }

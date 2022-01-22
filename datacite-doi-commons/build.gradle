@@ -4,12 +4,7 @@ plugins{
 
 dependencies {
 
-    implementation project(":assign-doi-datacite")
-
-    api libs.jaxb.api
-    api libs.nva.doi
-    api libs.nva.doi.datacite
-
+    implementation libs.nva.doi.datacite
     implementation libs.nva.datamodel
     implementation libs.nva.core
     implementation libs.nva.identifiers
