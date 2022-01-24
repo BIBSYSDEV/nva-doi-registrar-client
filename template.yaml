@@ -5,9 +5,6 @@ Description: >
 
   Sample SAM Template for AWS
 
-Globals:
-  Function:
-    Timeout: 20
 Parameters:
   DataCiteMdsHost:
     Type: 'AWS::SSM::Parameter::Value<String>'
@@ -24,12 +21,23 @@ Parameters:
   EventBusArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/NVA/Events/EventsBusArn'
+  ApplicationDomain:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/ApplicationDomain'
   CustomerSecretsSecretName:
     Type: String
     Default: dataCiteCustomerSecrets
   CustomerSecretsSecretKey:
     Type: String
     Default: dataCiteCustomerSecrets
+
+Globals:
+  Function:
+    Timeout: 60
+    Environment:
+      Variables:
+        APPLICATION_HOST: !Ref ApplicationDomain
+
 
 Resources:
   LambdaRole:
