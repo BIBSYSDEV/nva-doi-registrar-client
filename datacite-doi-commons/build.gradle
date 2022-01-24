@@ -4,7 +4,8 @@ plugins{
 
 dependencies {
 
-    implementation libs.nva.doi.datacite
+    implementation project(":datacite-transform")
+    implementation project(":datacite-jaxb")
     implementation libs.nva.datamodel
     implementation libs.nva.core
     implementation libs.nva.identifiers

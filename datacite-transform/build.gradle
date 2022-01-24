@@ -1,0 +1,14 @@
+plugins {
+    id 'nva.doiregistrar.service.java-library-conventions'
+}
+
+
+dependencies {
+    implementation project (':datacite-jaxb')
+    implementation libs.xsd2java.impl
+    implementation libs.xsd2java.api
+    testImplementation libs.bundles.testing
+}
+
+
+

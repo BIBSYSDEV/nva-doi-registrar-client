@@ -26,7 +26,6 @@ nva-secrets = { group = 'com.github.bibsysdev', name = 'secrets', version.ref = 
 nva-doi = { group = 'com.github.bibsysdev', name = 'doi', version.ref = 'nvaCommons' }
 nva-datamodel = { group = 'com.github.bibsysdev', name = 'nva-datamodel-java', version.ref = 'nvaDatamodel' }
 nva-logutils = { group = 'com.github.bibsysdev', name = 'logutils', version.ref = 'nvaCommons' }
-nva-doi-datacite= { group= 'com.github.BIBSYSDEV.nva-doi-partner-data', name= 'datacite-transform', version.ref = 'nva-datacite'}
 
 jackson-core = { group = 'com.fasterxml.jackson.core', name = 'jackson-core', version.ref = 'jackson' }
 jackson-datatype-jdk8 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jdk8', version.ref = 'jackson' }
@@ -35,9 +34,6 @@ jackson-databind = { group = 'com.fasterxml.jackson.core', name = 'jackson-datab
 jackson-annotations = { group = 'com.fasterxml.jackson.core', name = 'jackson-annotations', version.ref = 'jackson' }
 jackson-problem = { group = 'org.zalando', name = 'jackson-datatype-problem', version.ref = 'zalando' }
 
-
-jaxb-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'jaxbApi' }
-jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxbRuntime' }
 
 aws-sdk = { group = 'com.amazonaws', name = 'aws-java-sdk', version.ref = 'awsSdk' }
 aws-sdk-apigateway = { group = 'com.amazonaws', name = 'aws-java-sdk-api-gateway', version.ref = 'awsSdk' }
@@ -57,8 +53,19 @@ slf4j = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
 log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
 log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
 
+xsd2java-xjc = { group = 'com.sun.xml.bind', name = 'jaxb-xjc', version = '3.0.1' }
+xsd2java-impl = { group = 'com.sun.xml.bind', name = 'jaxb-impl', version = '3.0.1' }
+xsd2java-api = { group = 'javax.xml.bind', name = 'jaxb-api', version = '2.3.1'}
+xsd2java-jakarta = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version = '3.0.1' }
+xsd2java-activation = { group = 'javax.activation', name = 'javax.activation-api', version = '1.2.0' }
+
+
+jaxb-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'jaxbApi' }
+jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxbRuntime' }
 
 [bundles]
 testing = ['junit-jupiter-engine', 'hamcrest', 'mockito-core', 'nva-testutils']
 jackson = ['jackson-core', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310', 'jackson-databind', 'jackson-annotations']
 logging = ['log4j-core', 'log4j-api', 'slf4j']
+xsd2java = ["xsd2java-xjc", "xsd2java-impl", "xsd2java-api", "xsd2java-activation", "xsd2java-jakarta"]
+

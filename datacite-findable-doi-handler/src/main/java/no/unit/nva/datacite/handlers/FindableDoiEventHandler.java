@@ -20,7 +20,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
-import javax.xml.bind.JAXBException;
 import no.unit.nva.datacite.commons.DoiUpdateDto;
 import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
@@ -205,8 +204,7 @@ public class FindableDoiEventHandler
     private void verifyPublicationIsCuratorApproved(Publication publication) {
         Optional.ofNullable(publication.getDoiRequest())
             .flatMap(e -> Optional.ofNullable(e.getStatus()))
-            .filter(status -> status
-                .equals(DoiRequestStatus.APPROVED))
+            .filter(status -> status.equals(DoiRequestStatus.APPROVED))
             .orElseThrow(() -> new IllegalArgumentException(DOI_REQUEST_STATUS_WRONG_ERROR));
     }
 
@@ -225,10 +223,6 @@ public class FindableDoiEventHandler
 
     private String getDataCiteXmlMetadata(Publication publication) {
         DataCiteMetadataDto dataCiteMetadataDto = DataCiteMetadataDtoMapper.fromPublication(publication);
-        try {
-            return new Transformer(dataCiteMetadataDto).asXml();
-        } catch (JAXBException e) {
-            throw new RuntimeException(TRANSFORMING_PUBLICATION_ERROR, e);
-        }
+        return new Transformer(dataCiteMetadataDto).asXml();
     }
 }
