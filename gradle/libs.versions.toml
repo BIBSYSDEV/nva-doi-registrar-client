@@ -12,11 +12,13 @@ commonsLang = { strictly = '3.12.0' }
 secretsCaching = { strictly = '1.0.1' }
 zalando = { strictly = '0.26.0' }
 wiremock = { strictly = '2.27.2' }
-nva-datacite= {strictly = '0.4.0'}
+nva-datacite = { strictly = '0.4.0' }
 log4j = { strictly = '2.17.1' }
 slf4j = { strictly = '1.8.0-beta4' }
-
-
+sunJaxb = { strictly = '3.0.2' }
+javaXmlBind = { strictly = '2.3.1' }
+jakartaXmlBind = { strictly = '3.0.1' }
+javaxActivation = { stictly = '1.2.0' }
 
 [libraries]
 nva-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nvaCommons' }
@@ -53,11 +55,11 @@ slf4j = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
 log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
 log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
 
-xsd2java-xjc = { group = 'com.sun.xml.bind', name = 'jaxb-xjc', version = '3.0.1' }
-xsd2java-impl = { group = 'com.sun.xml.bind', name = 'jaxb-impl', version = '3.0.1' }
-xsd2java-api = { group = 'javax.xml.bind', name = 'jaxb-api', version = '2.3.1'}
-xsd2java-jakarta = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version = '3.0.1' }
-xsd2java-activation = { group = 'javax.activation', name = 'javax.activation-api', version = '1.2.0' }
+xsd2java-xjc = { group = 'com.sun.xml.bind', name = 'jaxb-xjc', version.ref = 'sunJaxb' }
+xsd2java-impl = { group = 'com.sun.xml.bind', name = 'jaxb-impl', version.ref = 'sunJaxb' }
+xsd2java-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'javaXmlBind' }
+xsd2java-jakarta = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version.ref = 'jakartaXmlBind' }
+xsd2java-activation = { group = 'javax.activation', name = 'javax.activation-api', version.ref = 'javaxActivation' }
 
 
 jaxb-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'jaxbApi' }
