@@ -26,6 +26,9 @@ dependencies {
 
     testImplementation libs.bundles.testing
     testImplementation libs.nva.logutils
+}
 
-
+test{
+    environment "APPLICATION_HOST", "frontend.localhost.nva.unit.no"
+    environment "API_HOST","api.localhost.nva.unit.no"
 }

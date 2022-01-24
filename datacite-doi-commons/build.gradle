@@ -12,3 +12,7 @@ dependencies {
 
     testImplementation libs.bundles.testing
 }
+
+test{
+    environment "APPLICATION_HOST", "frontend.localhost.nva.aws.unit.no"
+}

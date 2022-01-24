@@ -4,7 +4,17 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
-import static no.unit.nva.doi.LandingPageUtil.LANDING_PAGE_UTIL;
+import static no.unit.nva.datacite.handlers.PublicationPointers.DOI_REQUEST_MODIFIED_DATE_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.DOI_REQUEST_STATUS_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_DATE_YEAR_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_ID_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_INSTITUTION_OWNER_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_MAIN_TITLE_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_MODIFIED_DATE_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_PUBLICATION_DATE_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_STATUS_FIELD_INFO;
+import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_TYPE_FIELD_INFO;
+import static no.unit.nva.doi.LandingPageUtil.publicationFrontPage;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
@@ -34,6 +44,7 @@ import no.unit.nva.model.Reference;
 import no.unit.nva.model.instancetypes.PublicationInstance;
 import no.unit.nva.transformer.Transformer;
 import no.unit.nva.transformer.dto.DataCiteMetadataDto;
+import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
@@ -43,19 +54,6 @@ public class FindableDoiEventHandler
     extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
 
     public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
-
-    public static final String PUBLICATION_ID_FIELD_INFO = "Publication.id";
-    public static final String PUBLICATION_INSTITUTION_OWNER_FIELD_INFO = "Publication.institutionOwner";
-    public static final String PUBLICATION_MODIFIED_DATE_FIELD_INFO = "Publication.modifiedDate";
-    public static final String PUBLICATION_TYPE_FIELD_INFO = "Publication.Reference.publicationInstance";
-    public static final String PUBLICATION_MAIN_TITLE_FIELD_INFO = "Publication.mainTitle";
-    public static final String PUBLICATION_STATUS_FIELD_INFO = "Publication.status";
-    public static final String PUBLICATION_PUBLICATION_DATE_FIELD_INFO = "Publication.entitydescription.data";
-
-    public static final String DOI_REQUEST_STATUS_FIELD_INFO = "DoiRequest.status";
-    public static final String DOI_REQUEST_MODIFIED_DATE_FIELD_INFO = "DoiRequest.modifiedDate";
-
-    public static final String PUBLICATION_DATE_YEAR_FIELD_INFO = "PublicationDate.year";
 
     // Data validation exceptions
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
@@ -70,6 +68,8 @@ public class FindableDoiEventHandler
         "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
+    public static final String APPLICATION_HOST = new Environment().readEnv("APPLICATION_HOST");
+
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -93,7 +93,7 @@ public class FindableDoiEventHandler
         URI customerId = extractPublisher(publication);
         Doi doi = getDoi(publication);
         SortableIdentifier publicationIdentifier = publication.getIdentifier();
-        URI landingPage = LANDING_PAGE_UTIL.constructResourceUri(publicationIdentifier.toString());
+        URI landingPage = publicationFrontPage(publicationIdentifier);
 
         logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
 
@@ -131,6 +131,7 @@ public class FindableDoiEventHandler
 
         return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
+
 
     private URI extractPublisher(Publication publication) {
         return nonNull(publication.getPublisher()) ? publication.getPublisher().getId() : null;
