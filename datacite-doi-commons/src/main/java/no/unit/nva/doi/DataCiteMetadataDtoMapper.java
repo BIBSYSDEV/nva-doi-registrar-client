@@ -1,11 +1,9 @@
 package no.unit.nva.doi;
 
-import static no.unit.nva.doi.LandingPageUtil.LANDING_PAGE_UTIL;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.model.Contributor;
 import no.unit.nva.model.EntityDescription;
 import no.unit.nva.model.Organization;
@@ -103,8 +101,7 @@ public final class DataCiteMetadataDtoMapper {
     private static IdentifierDto toIdentifierDto(Publication publication) {
         return Optional.of(publication)
             .map(Publication::getIdentifier)
-            .map(SortableIdentifier::toString)
-            .map(LANDING_PAGE_UTIL::constructResourceUri)
+            .map(LandingPageUtil::publicationFrontPage)
             .map(URI::toString)
             .map(uriString -> new IdentifierDto.Builder().withValue(uriString).build())
             .orElse(null);

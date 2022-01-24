@@ -7,12 +7,13 @@ dependencies {
     implementation libs.jaxb.api
 
     implementation project (":doi-commons")
+    implementation project (":datacite-transform")
     implementation (project(":assign-doi-datacite"))
 
     implementation (project(":datacite-doi-commons"))
 
     implementation libs.nva.datamodel
-    implementation libs.nva.doi.datacite
+
     implementation libs.nva.core
     implementation libs.nva.doi
     implementation libs.nva.eventhandlers
@@ -26,6 +27,8 @@ dependencies {
 
     testImplementation libs.bundles.testing
     testImplementation libs.nva.logutils
+}
 
-
+test{
+    environment "APPLICATION_HOST", "frontend.localhost.nva.unit.no"
 }
