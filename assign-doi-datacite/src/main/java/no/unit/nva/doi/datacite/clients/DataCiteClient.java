@@ -115,6 +115,7 @@ public class DataCiteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
                 .postMetadata(doi.toIdentifier(), metadataDataCiteXml);
+            logger.info("Datacite response:" + response.body());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_UPDATING_METADATA_FOR_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new UpdateMetadataException(doi, response.statusCode());
