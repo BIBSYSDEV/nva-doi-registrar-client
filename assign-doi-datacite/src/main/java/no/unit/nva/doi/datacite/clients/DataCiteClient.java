@@ -133,6 +133,7 @@ public class DataCiteClient implements DoiClient {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
                 .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
+            logger.info("Landing page.Datacite response:" + response.body());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_URL_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new SetLandingPageException(doi, response.statusCode());
