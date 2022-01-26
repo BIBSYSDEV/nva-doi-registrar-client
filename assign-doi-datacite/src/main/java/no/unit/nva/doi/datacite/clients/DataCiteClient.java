@@ -99,6 +99,7 @@ public class DataCiteClient implements DoiClient {
             DataCiteRestConnection connection = prepareAuthenticatedDataCiteRestConnection(customerId);
             String doiPrefix = customerConfigInfo.getCustomerDoiPrefix();
             HttpResponse<String> response = sendDraftDoiRequest(connection, doiPrefix);
+            logger.info("Datacite response:"+response.body());
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
 
             return responseBody.toDoi(doiProxy);
