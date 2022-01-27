@@ -10,7 +10,6 @@ dependencies {
     implementation libs.nva.doi
     implementation libs.nva.core
     implementation libs.nva.json
-
     implementation libs.nva.secrets
     implementation libs.nva.eventhandlers
     implementation libs.nva.identifiers
