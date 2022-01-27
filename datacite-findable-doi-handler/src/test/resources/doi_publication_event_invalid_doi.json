@@ -305,7 +305,7 @@
           "modifiedDate": "2021-02-08T13:27:37.115526Z",
           "createdDate": "2021-02-08T13:27:37.115526Z"
         },
-        "doi": "SomeInvalidString",
+        "doi": "/hello/prefix/suffix",
         "entityDescription": {
           "type": "EntityDescription",
           "mainTitle": "The resource title",
