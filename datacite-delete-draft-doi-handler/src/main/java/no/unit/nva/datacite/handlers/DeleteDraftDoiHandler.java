@@ -6,12 +6,12 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
 import java.net.URI;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.DoiClientFactory;
+import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
-import no.unit.nva.doi.models.ImmutableDoi;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
@@ -70,13 +70,11 @@ public class DeleteDraftDoiHandler
         }
     }
 
-    private ImmutableDoi getDoi(ResourceDraftedForDeletionEvent input) {
-        return ImmutableDoi.builder()
-            .withDoi(input.getDoi())
-            .build();
+    private Doi getDoi(ResourceDraftedForDeletionEvent input) {
+        return Doi.fromUri(input.getDoi());
     }
 
-    private void verifyDoiIsInDraftState(URI customerId, ImmutableDoi doi) {
+    private void verifyDoiIsInDraftState(URI customerId, Doi doi) {
         DoiStateDto doiState;
         try {
             doiState = doiClient.getDoi(customerId, doi);
@@ -92,7 +90,7 @@ public class DeleteDraftDoiHandler
     private ResourceDraftedForDeletionEvent deleteDraftPublication(
         ResourceDraftedForDeletionEvent event,
         URI customerId,
-        ImmutableDoi doi) {
+        Doi doi) {
         try {
             doiClient.deleteDraftDoi(customerId, doi);
         } catch (ClientException e) {
@@ -122,6 +120,6 @@ public class DeleteDraftDoiHandler
             DeleteDraftDoiAppEnv.getDataCiteMdsApiHost(),
             DeleteDraftDoiAppEnv.getDataCiteRestApiHost(),
             DeleteDraftDoiAppEnv.getDataCitePort());
-        return DoiClientFactory.getClient(configFactory, connectionFactory);
+        return new DataCiteClient(configFactory, connectionFactory);
     }
 }

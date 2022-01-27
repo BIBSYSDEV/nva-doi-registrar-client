@@ -1,7 +1,6 @@
 package no.unit.nva.doi;
 
 import java.net.URI;
-
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
@@ -26,21 +25,11 @@ public interface DoiClient {
      * <p>The specified customer repository are configured by the NVA application administrators. Each customer has
      * their own repository with associated prefix that will be used for NVA.
      *
-     * @param customerId          NVAs customerId
+     * @param customerId NVAs customerId
      * @return {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()}) from provider
      * @throws ClientException Error while communicating with Registry Agency
      */
     Doi createDoi(URI customerId) throws ClientException;
-
-    /**
-     * Creates a draft DOI.
-     *
-     * @param customerId NVA customerId
-     * @param doiProxy   a {@link URI} for custom DOI proxies (default being https://doi.org/.
-     * @return a Doi.
-     * @throws ClientException when communication with Registry Agency fails.
-     */
-    Doi createDoi(URI customerId, URI doiProxy) throws ClientException;
 
     /**
      * Update metadata for a DOI.

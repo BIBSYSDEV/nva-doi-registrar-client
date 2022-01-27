@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
 import static java.util.Objects.isNull;
-import static nva.commons.core.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;

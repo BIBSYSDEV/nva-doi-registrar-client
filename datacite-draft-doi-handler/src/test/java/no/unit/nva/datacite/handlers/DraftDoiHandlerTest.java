@@ -1,9 +1,9 @@
 package no.unit.nva.datacite.handlers;
 
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.NOT_APPROVED_DOI_REQUEST_ERROR;
 import static no.unit.nva.datacite.handlers.DraftDoiHandler.PUBLICATION_IS_MISSING_ERROR;
-import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static nva.commons.core.attempt.Try.attempt;
 import static nva.commons.core.ioutils.IoUtils.stringToStream;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -94,7 +94,7 @@ public class DraftDoiHandlerTest {
 
         DraftDoiHandler handlerReceivingException = new DraftDoiHandler(doiClientThrowingException());
         Executable action = () -> handlerReceivingException.handleRequest(stringToStream(inputString), outputStream,
-            context);
+                                                                          context);
         RuntimeException exception = assertThrows(RuntimeException.class, action);
         Throwable actualCause = exception.getCause();
         assertThat(actualCause.getMessage(), containsString(EXPECTED_ERROR_MESSAGE));
@@ -105,7 +105,8 @@ public class DraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             "doi_publication_event_empty_item.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> handler.handleRequest(inputStream, outputStream, context));
+                                                          () -> handler.handleRequest(inputStream, outputStream,
+                                                                                      context));
 
         assertThat(exception.getMessage(), is(PUBLICATION_IS_MISSING_ERROR));
     }
@@ -115,7 +116,8 @@ public class DraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             "doi_publication_event_empty_institution_owner.json");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> handler.handleRequest(inputStream, outputStream, context));
+                                                          () -> handler.handleRequest(inputStream, outputStream,
+                                                                                      context));
 
         assertThat(exception.getMessage(), is(CUSTOMER_ID_IS_MISSING_ERROR));
     }
@@ -125,7 +127,7 @@ public class DraftDoiHandlerTest {
         InputStream inputStream = IoUtils.inputStreamFromResources(
             "doi_publication_event_publication_not_approved.json");
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-            () -> handler.handleRequest(inputStream, outputStream, context));
+                                                       () -> handler.handleRequest(inputStream, outputStream, context));
 
         assertThat(exception.getMessage(), containsString(NOT_APPROVED_DOI_REQUEST_ERROR));
     }
@@ -135,7 +137,7 @@ public class DraftDoiHandlerTest {
         JsonNode eventObject = dtoObjectMapper.readTree(inputString);
         JsonNode responsePayload = eventObject.path(EVENT_DETAIL_FIELD).path(DETAIL_RESPONSE_PAYLOAD_FIELD);
         DoiUpdateRequestEvent doiUpdateRequestEvent =
-                dtoObjectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
+            dtoObjectMapper.convertValue(responsePayload, DoiUpdateRequestEvent.class);
 
         return getPublisher(doiUpdateRequestEvent);
     }
@@ -155,7 +157,7 @@ public class DraftDoiHandlerTest {
 
     private DoiClient doiClientReturningDoi() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.builder().withIdentifier(DOI_IDENTIFIER).build();
+        Doi doi = Doi.fromDoiIdentifier(DOI_IDENTIFIER);
         when(doiClient.createDoi(any()))
             .thenAnswer(invocation -> saveInputAndReturnSampleDoi(doi, invocation));
         return doiClient;
