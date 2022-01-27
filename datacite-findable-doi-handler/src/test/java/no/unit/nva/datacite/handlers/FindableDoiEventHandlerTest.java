@@ -13,6 +13,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -197,13 +198,12 @@ public class FindableDoiEventHandlerTest {
 
     private String verifyPartsOfMetadata() {
         String expectedLandingPageUri = constructExpectedLandingPageUri(RESOURCES_IDENTIFIER).toString();
-        return contains("JournalArticle");
-        //        return and(
-        //            contains("JournalArticle"),
-        //            and(
-        //                contains("<title>The resource title"),
-        //                contains("identifierType=\"URL\">" + expectedLandingPageUri + "</identifier>")
-        //            ));
+        return and(
+            contains("JournalArticle"),
+            and(
+                contains("<title>The resource title"),
+                contains("identifierType=\"URL\">" + expectedLandingPageUri + "</identifier>")
+            ));
     }
 
     private URI constructExpectedLandingPageUri(String identifier) {
