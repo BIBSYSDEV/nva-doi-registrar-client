@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
 
-import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_HOST;
+import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_URI;
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.MISSING_DATACITE_XML_ARGUMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -144,7 +144,7 @@ public class DataCiteMdsConnectionTest {
     }
 
     private DataCiteMdsConnection createDataCiteMdsConnection() {
-        return new DataCiteMdsConnection(httpClient,DATACITE_MDS_HOST);
+        return new DataCiteMdsConnection(httpClient, DATACITE_MDS_URI);
     }
 
     private void stubHttpClientWithHttpResponse(String body) throws IOException, InterruptedException {

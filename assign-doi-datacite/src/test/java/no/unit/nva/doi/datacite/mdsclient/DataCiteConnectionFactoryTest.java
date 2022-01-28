@@ -1,6 +1,6 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
-import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_HOST;
+import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_URI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -79,11 +79,11 @@ class DataCiteConnectionFactoryTest {
     private PasswordAuthentication prompAuthenticatorForCredentials(Authenticator authenticator)
         throws UnknownHostException, MalformedURLException {
 
-        var uriInRequest = new UriWrapper(DATACITE_MDS_HOST).addChild("dummypath").getUri();
+        var uriInRequest = new UriWrapper(DATACITE_MDS_URI).addChild("dummypath").getUri();
 
         return authenticator
-            .requestPasswordAuthenticationInstance(DATACITE_MDS_HOST.getHost(), InetAddress.getLocalHost(),
-                                                   DATACITE_MDS_HOST.getPort(),
+            .requestPasswordAuthenticationInstance(DATACITE_MDS_URI.getHost(), InetAddress.getLocalHost(),
+                                                   DATACITE_MDS_URI.getPort(),
                                                    null,
                                                    "Please authenticate", "authenticationScheme",
                                                    uriInRequest.toURL(),

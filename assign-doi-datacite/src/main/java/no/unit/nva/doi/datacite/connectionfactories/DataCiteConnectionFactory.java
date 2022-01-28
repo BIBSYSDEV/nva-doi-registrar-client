@@ -1,7 +1,7 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
-import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_HOST;
-import static no.unit.nva.doi.DataciteConfig.DATACITE_REST_HOST;
+import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_URI;
+import static no.unit.nva.doi.DataciteConfig.DATACITE_REST_URI;
 import java.net.Authenticator;
 import java.net.InetAddress;
 import java.net.PasswordAuthentication;
@@ -45,7 +45,7 @@ public class DataCiteConnectionFactory {
      * @param configurationFactory DataCiteConfiguration Factory
      */
     public DataCiteConnectionFactory(DataCiteConfigurationFactory configurationFactory) {
-        this(HttpClient.newBuilder(), configurationFactory, DATACITE_MDS_HOST, DATACITE_REST_HOST);
+        this(HttpClient.newBuilder(), configurationFactory, DATACITE_MDS_URI, DATACITE_REST_URI);
     }
 
     /**

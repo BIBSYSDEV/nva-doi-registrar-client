@@ -11,8 +11,8 @@ public final class DataciteConfig {
 
     private static final Environment ENVIRONMENT = new Environment();
     private static final int DATACITE_PORT = readDatacitePort();
-    public static final URI DATACITE_REST_HOST = setupDataciteRestHost();
-    public static final URI DATACITE_MDS_HOST = setupDataciteMdsHost();
+    public static final URI DATACITE_REST_URI = setupDataciteRestUri();
+    public static final URI DATACITE_MDS_URI = setupDataciteMdsUri();
     private DataciteConfig() {
 
     }
@@ -23,13 +23,13 @@ public final class DataciteConfig {
             .orElse(443);
     }
 
-    private static URI setupDataciteMdsHost() {
+    private static URI setupDataciteMdsUri() {
         return attempt(() -> ENVIRONMENT.readEnv("DATACITE_MDS_HOST"))
             .map(DataciteConfig::newUri)
             .orElseThrow();
     }
 
-    private static URI setupDataciteRestHost() {
+    private static URI setupDataciteRestUri() {
         return attempt(() -> ENVIRONMENT.readEnv("DATACITE_REST_HOST"))
             .map(DataciteConfig::newUri)
             .orElseThrow();
