@@ -207,7 +207,7 @@ public class FindableDoiEventHandlerTest {
     }
 
     private URI constructExpectedLandingPageUri(String identifier) {
-        return UriWrapper.fromHost(FindableDoiEventHandler.APPLICATION_HOST)
+        return UriWrapper.fromHost(FindableDoiEventHandler.API_HOST)
             .addChild("registration")
             .addChild(identifier)
             .addChild("public")

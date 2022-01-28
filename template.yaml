@@ -21,9 +21,9 @@ Parameters:
   EventBusArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/NVA/Events/EventsBusArn'
-  ApplicationDomain:
+  ApiDomain:
     Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/NVA/ApplicationDomain'
+    Default: '/NVA/ApiDomain'
   CustomerSecretsSecretName:
     Type: String
     Default: dataCiteCustomerSecrets
@@ -36,7 +36,7 @@ Globals:
     Timeout: 60
     Environment:
       Variables:
-        APPLICATION_HOST: !Ref ApplicationDomain
+        API_HOST: !Ref ApiDomain
 
 
 Resources:

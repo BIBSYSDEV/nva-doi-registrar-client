@@ -12,14 +12,14 @@ public final class LandingPageUtil {
 
     public static final String PATH_TO_REGISTRATIONS = "registration";
     public static final String PATH_FOR_PUBLIC_PAGE_OF_REGISTRATION = "public";
-    public static final String APPLICATION_HOST = new Environment().readEnv("APPLICATION_HOST");
+    public static final String API_HOST = new Environment().readEnv("API_HOST");
 
     private LandingPageUtil() {
 
     }
 
     public static URI publicationFrontPage(SortableIdentifier publicationIdentifier) {
-        return UriWrapper.fromHost(APPLICATION_HOST)
+        return UriWrapper.fromHost(API_HOST)
             .addChild(PATH_TO_REGISTRATIONS)
             .addChild(publicationIdentifier.toString())
             .addChild(PATH_FOR_PUBLIC_PAGE_OF_REGISTRATION)

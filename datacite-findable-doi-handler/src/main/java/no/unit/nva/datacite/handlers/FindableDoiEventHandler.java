@@ -67,7 +67,7 @@ public class FindableDoiEventHandler
         "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
-    public static final String APPLICATION_HOST = new Environment().readEnv("APPLICATION_HOST");
+    public static final String API_HOST = new Environment().readEnv("API_HOST");
 
     private final DoiClient doiClient;
 
