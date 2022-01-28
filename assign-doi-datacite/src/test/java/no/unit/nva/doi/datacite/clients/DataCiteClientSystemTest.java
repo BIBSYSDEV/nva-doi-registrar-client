@@ -89,7 +89,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     private static final Integer MAX_WELL_KNOWN_PORT = 1024;
     private DataCiteMdsClientSecretConfig validSecretConfig;
-    private static final int MAX_PORT = 65000-MAX_WELL_KNOWN_PORT;
+    private static final int MAX_PORT = 65000 - MAX_WELL_KNOWN_PORT;
     private DataCiteClient doiClient;
     private WireMockServer wireMockServer;
     private URI mdsUri;
@@ -132,7 +132,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .sslContext(createInsecureSslContextTrustingEverything());
 
         DataCiteConnectionFactory mdsConnectionFactory =
-            new DataCiteConnectionFactory(httpClientBuilder, configurationFactory, mdsUri,restUri);
+            new DataCiteConnectionFactory(httpClientBuilder, configurationFactory, mdsUri, restUri);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
