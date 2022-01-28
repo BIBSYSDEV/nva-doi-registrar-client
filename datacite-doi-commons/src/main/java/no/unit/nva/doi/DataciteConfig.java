@@ -13,6 +13,7 @@ public final class DataciteConfig {
     private static final int DATACITE_PORT = readDatacitePort();
     public static final URI DATACITE_REST_URI = setupDataciteRestUri();
     public static final URI DATACITE_MDS_URI = setupDataciteMdsUri();
+
     private DataciteConfig() {
 
     }
