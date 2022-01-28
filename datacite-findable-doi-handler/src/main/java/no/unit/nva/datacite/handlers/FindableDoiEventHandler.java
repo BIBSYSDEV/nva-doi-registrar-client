@@ -25,7 +25,7 @@ import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DataCiteMetadataDtoMapper;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.DoiClientFactory;
+import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
@@ -94,14 +94,15 @@ public class FindableDoiEventHandler
         SortableIdentifier publicationIdentifier = publication.getIdentifier();
         URI landingPage = publicationFrontPage(publicationIdentifier);
 
-        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.toUri(), landingPage, customerId);
+        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), landingPage, customerId);
 
         try {
-            doiClient.updateMetadata(customerId, doi, getDataCiteXmlMetadata(publication));
+            String dataCiteXmlMetadata = getDataCiteXmlMetadata(publication);
+            doiClient.updateMetadata(customerId, doi, dataCiteXmlMetadata);
             doiClient.setLandingPage(customerId, doi, landingPage);
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
                                                                 createDoiUpdateDto(doi, publicationIdentifier));
-            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.toUri(), doiUpdateHolder.toJsonString());
+            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
@@ -128,7 +129,7 @@ public class FindableDoiEventHandler
             FindableDoiAppEnv.getDataCitePort()
         );
 
-        return DoiClientFactory.getClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+        return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
 
@@ -212,13 +213,13 @@ public class FindableDoiEventHandler
         return new DoiUpdateDto.Builder()
             .withPublicationId(publicationIdentifier)
             .withModifiedDate(Instant.now())
-            .withDoi(doi.toUri()).build();
+            .withDoi(doi.getUri()).build();
     }
 
     private Doi getDoi(Publication input) {
         return attempt(input::getDoi)
-            .map(doiUri -> Doi.builder().withDoi(doiUri).build())
-            .orElseThrow((e) -> new IllegalArgumentException(DOI_IS_MISSING_OR_INVALID_ERROR, e.getException()));
+            .map(Doi::fromUri)
+            .orElseThrow();
     }
 
     private String getDataCiteXmlMetadata(Publication publication) {

@@ -13,8 +13,8 @@ dependencies {
     implementation (project(":datacite-doi-commons"))
 
     implementation libs.nva.datamodel
-
     implementation libs.nva.core
+    implementation libs.nva.json
     implementation libs.nva.doi
     implementation libs.nva.eventhandlers
     implementation libs.nva.identifiers

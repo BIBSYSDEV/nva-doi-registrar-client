@@ -1,10 +1,10 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.CUSTOMER_SECRETS_SECRET_NAME_EVN_VAR;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_HAS_INVALID_CONFIGURATION;
 import static no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory.ERROR_NOT_PRESENT_IN_CONFIG;
-import static nva.commons.core.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;

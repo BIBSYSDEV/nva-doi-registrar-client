@@ -1,10 +1,9 @@
 package no.unit.nva.doi.datacite.restclient.models;
 
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static nva.commons.core.attempt.Try.attempt;
 import com.fasterxml.jackson.databind.JsonNode;
 import nva.commons.core.JacocoGenerated;
-
-import static nva.commons.core.JsonUtils.dtoObjectMapper;
-import static nva.commons.core.attempt.Try.attempt;
 
 public class DoiStateDto {
 

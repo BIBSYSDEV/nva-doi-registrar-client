@@ -1,6 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
-import static nva.commons.core.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -13,8 +13,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
@@ -35,7 +33,6 @@ public class DeleteDraftDoiHandlerTest {
     private ByteArrayOutputStream outputStream;
     private Context context;
 
-    private AtomicReference<URI> inputBuffer;
 
     @BeforeEach
     public void setUp() throws ClientException {
@@ -43,7 +40,6 @@ public class DeleteDraftDoiHandlerTest {
         handler = new DeleteDraftDoiHandler(doiClient);
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
-        inputBuffer = new AtomicReference<>();
     }
 
     @Test

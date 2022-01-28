@@ -5,6 +5,7 @@ plugins {
 dependencies {
 
     implementation libs.nva.core
+    implementation libs.nva.json
     implementation libs.nva.doi
     implementation libs.nva.secrets
 
@@ -15,4 +16,8 @@ dependencies {
     testImplementation libs.nva.logutils
     testImplementation libs.bundles.testing
 
+}
+
+test{
+    environment "DOI_HOST", "example.doi.host.org"
 }

@@ -11,22 +11,19 @@ import no.unit.nva.datacite.commons.DoiUpdateDto;
 import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.DoiClientFactory;
+import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
 import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
-
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.model.DoiRequestStatus;
 import no.unit.nva.model.Organization;
 import no.unit.nva.model.Publication;
-
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
-
 import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +89,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
             DraftDoiAppEnv.getDataCiteMdsApiHost(),
             DraftDoiAppEnv.getDataCiteRestApiHost(),
             DraftDoiAppEnv.getDataCitePort());
-        return DoiClientFactory.getClient(configFactory, connectionFactory);
+        return new DataCiteClient(configFactory, connectionFactory);
     }
 
     private boolean doiIsRequested(Publication publication) {
@@ -111,7 +108,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
 
     private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
         return new DoiUpdateDto.Builder()
-            .withDoi(doi.toUri())
+            .withDoi(doi.getUri())
             .withPublicationId(input.getIdentifier())
             .withModifiedDate(Instant.now())
             .build();

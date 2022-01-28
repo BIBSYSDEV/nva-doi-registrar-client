@@ -2,7 +2,7 @@ package no.unit.nva.datacite.commons;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nva.commons.core.JsonSerializable;
+import no.unit.nva.commons.json.JsonSerializable;
 
 public class DoiUpdateEvent implements JsonSerializable {
 
