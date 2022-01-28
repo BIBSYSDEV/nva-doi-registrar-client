@@ -115,11 +115,7 @@ public class DeleteDraftDoiHandler
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
             new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
-            configFactory,
-            DeleteDraftDoiAppEnv.getDataCiteMdsApiHost(),
-            DeleteDraftDoiAppEnv.getDataCiteRestApiHost(),
-            DeleteDraftDoiAppEnv.getDataCitePort());
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
         return new DataCiteClient(configFactory, connectionFactory);
     }
 }

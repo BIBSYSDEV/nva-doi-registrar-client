@@ -122,12 +122,8 @@ public class FindableDoiEventHandler
         DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
             new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
-        DataCiteConnectionFactory dataCiteMdsConnectionFactory = new DataCiteConnectionFactory(
-            dataCiteConfigurationFactory,
-            FindableDoiAppEnv.getDataCiteMdsApiHost(),
-            FindableDoiAppEnv.getDataCiteRestApiHost(),
-            FindableDoiAppEnv.getDataCitePort()
-        );
+        DataCiteConnectionFactory dataCiteMdsConnectionFactory =
+            new DataCiteConnectionFactory(dataCiteConfigurationFactory);
 
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }

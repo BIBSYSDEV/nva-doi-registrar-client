@@ -12,9 +12,6 @@ Parameters:
   DataCiteRestHost:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: dataCiteRestHost
-  DataCitePort:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: dataCitePort
   EventBusName:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/NVA/Events/EventsBusName'
@@ -122,7 +119,7 @@ Resources:
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-          DATACITE_PORT: !Ref DataCitePort
+
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
@@ -167,7 +164,6 @@ Resources:
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-          DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
@@ -209,7 +205,6 @@ Resources:
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-          DATACITE_PORT: !Ref DataCitePort
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule

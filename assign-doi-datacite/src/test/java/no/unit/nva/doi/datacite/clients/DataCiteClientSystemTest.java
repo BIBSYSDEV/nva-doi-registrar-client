@@ -17,6 +17,7 @@ import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.LANDING_P
 import static no.unit.nva.doi.datacite.mdsclient.DataCiteMdsConnection.TEXT_PLAIN_CHARSET_UTF_8;
 import static no.unit.nva.doi.datacite.restclient.DataCiteRestConnection.CONTENT_TYPE;
 import static no.unit.nva.doi.datacite.restclient.DataCiteRestConnection.JSON_API_CONTENT_TYPE;
+import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -74,6 +75,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         "Failed to configure the trust everything rule for the http client, which is required to connect to "
         + "wiremock server and local signed SSL certificate for now.";
     public static final String DOIS_PATH_PREFIX = "/dois";
+    public static final String DRAFT = "draft";
+    public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
+    public static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
     private static final URI EXAMPLE_CUSTOMER_ID = URI.create("https://example.net/customer/id/4512");
     private static final char FORWARD_SLASH = '/';
     private static final String metadataPathPrefix =
@@ -83,27 +87,29 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String EXAMPLE_MDS_PASSWORD = "examplePassword";
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
-    public static final String DRAFT = "draft";
-    public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
-    public static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
-    private String mdsHost;
-    private String restHost;
+    private static final Integer MAX_WELL_KNOWN_PORT = 1024;
     private DataCiteMdsClientSecretConfig validSecretConfig;
-    private int mdsPort;
+    private static final int MAX_PORT = 65000-MAX_WELL_KNOWN_PORT;
     private DataCiteClient doiClient;
     private WireMockServer wireMockServer;
+    private URI mdsUri;
+    private URI restUri;
 
     void startProxyToWireMock() {
-        wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicHttpsPort());
-        wireMockServer.start();
 
-        mdsPort = wireMockServer.httpsPort();
-        mdsHost = "localhost";
-        restHost = "localhost";
+        wireMockServer = new WireMockServer(WireMockConfiguration.options().httpsPort(randomPort()));
+        wireMockServer.start();
+        mdsUri = URI.create(wireMockServer.baseUrl());
+        restUri = URI.create(wireMockServer.baseUrl());
+
         validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
                                                               INSTITUTION_PREFIX,
                                                               EXAMPLE_MDS_USERNAME,
                                                               EXAMPLE_MDS_PASSWORD);
+    }
+
+    private Integer randomPort() {
+        return MAX_WELL_KNOWN_PORT + randomInteger(MAX_PORT);
     }
 
     @AfterEach
@@ -125,11 +131,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
             .connectTimeout(Duration.ofMinutes(1))
             .sslContext(createInsecureSslContextTrustingEverything());
 
-        DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder,
-                                                                                       configurationFactory,
-                                                                                       mdsHost,
-                                                                                       restHost,
-                                                                                       mdsPort);
+        DataCiteConnectionFactory mdsConnectionFactory =
+            new DataCiteConnectionFactory(httpClientBuilder, configurationFactory, mdsUri,restUri);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
@@ -144,15 +147,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actual, is(instanceOf(DoiStateDto.class)));
         assertThat(actual.getDoi(), is(equalTo(requestedDoi.toIdentifier())));
         assertThat(actual.getState(), is(equalTo(DRAFT)));
-    }
-
-    private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {
-        stubFor(get(urlEqualTo(createDoisIdentifierPath(requestedDoi)))
-                    .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
-                    .willReturn(aResponse()
-                                    .withHeader(CONTENT_TYPE, APPLICATION_VND_API_JSON)
-                                    .withStatus(HttpStatus.SC_OK)
-                                    .withBody(getDoiResponseJson)));
     }
 
     @Test
@@ -249,6 +243,15 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+    }
+
+    private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {
+        stubFor(get(urlEqualTo(createDoisIdentifierPath(requestedDoi)))
+                    .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                    .willReturn(aResponse()
+                                    .withHeader(CONTENT_TYPE, APPLICATION_VND_API_JSON)
+                                    .withStatus(HttpStatus.SC_OK)
+                                    .withBody(getDoiResponseJson)));
     }
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
@@ -352,7 +355,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void stubCreateFailedResponse(String expectedBody) {
-
         stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
                     .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
                     .willReturn(aResponse()
@@ -369,7 +371,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private String createRealm() {
-        return "Basic realm=\"" + mdsHost + "\"";
+        return "Basic realm=\"" + mdsUri + "\"";
     }
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {

@@ -12,8 +12,4 @@ public class NoCredentialsForCustomerRuntimeException extends ClientRuntimeExcep
     public NoCredentialsForCustomerRuntimeException() {
         super(NO_CREDENTIALS_FOR_CUSTOMER);
     }
-
-    public NoCredentialsForCustomerRuntimeException(ClientException e) {
-        super(e);
-    }
 }
