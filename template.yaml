@@ -27,6 +27,9 @@ Parameters:
   CustomerSecretsSecretKey:
     Type: String
     Default: dataCiteCustomerSecrets
+  DoiHost:
+    Type: String
+
 
 Globals:
   Function:
@@ -119,6 +122,7 @@ Resources:
           CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
 
       Events:
         EventBridgeEvent:
