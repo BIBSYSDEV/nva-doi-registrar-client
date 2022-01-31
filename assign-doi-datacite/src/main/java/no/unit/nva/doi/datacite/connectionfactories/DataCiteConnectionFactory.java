@@ -1,5 +1,7 @@
 package no.unit.nva.doi.datacite.connectionfactories;
 
+import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_URI;
+import static no.unit.nva.doi.DataciteConfig.DATACITE_REST_URI;
 import java.net.Authenticator;
 import java.net.InetAddress;
 import java.net.PasswordAuthentication;
@@ -32,48 +34,34 @@ public class DataCiteConnectionFactory {
 
     public static final PasswordAuthentication DO_NOT_SEND_CREDENTIALS = null;
     private final PasswordAuthenticationFactory authenticationFactory;
-    private final String mdsApiHostName;
-    private final String restApiHostName;
-    private final int apiPort;
     private final Builder httpBuilder;
     private final DataCiteConfigurationFactory configurationFactory;
+    private final URI dataciteMdsHost;
+    private final URI dataciteRestUri;
 
     /**
      * Creates a dataciteConnectionFactory.
      *
      * @param configurationFactory DataCiteConfiguration Factory
-     * @param mdsApiHostName             the MDS API hostname
-     * @param restApiHostName             the REST API hostname
-     * @param apiPort              the API port
      */
-    public DataCiteConnectionFactory(DataCiteConfigurationFactory configurationFactory,
-                                     String mdsApiHostName,
-                                     String restApiHostName,
-                                     int apiPort) {
-        this(HttpClient.newBuilder(),
-            configurationFactory,
-                mdsApiHostName, restApiHostName, apiPort);
+    public DataCiteConnectionFactory(DataCiteConfigurationFactory configurationFactory) {
+        this(HttpClient.newBuilder(), configurationFactory, DATACITE_MDS_URI, DATACITE_REST_URI);
     }
 
     /**
      * Constructor for testing.
      *
      * @param httpBuilder HttpClient to override security configuration
-     * @param mdsApiHostName             the MDS API hostname
-     * @param restApiHostName             the REST API hostname
-     * @param apiPort     MDS API port
      */
     public DataCiteConnectionFactory(HttpClient.Builder httpBuilder,
                                      DataCiteConfigurationFactory configurationFactory,
-                                     String mdsApiHostName,
-                                     String restApiHostName,
-                                     int apiPort) {
+                                     URI dataciteMdsHost,
+                                     URI dataciteRestUri) {
         this.authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
-        this.mdsApiHostName = mdsApiHostName;
-        this.restApiHostName = restApiHostName;
-        this.apiPort = apiPort;
         this.httpBuilder = httpBuilder;
         this.configurationFactory = configurationFactory;
+        this.dataciteMdsHost = dataciteMdsHost;
+        this.dataciteRestUri = dataciteRestUri;
     }
 
     /**
@@ -85,13 +73,13 @@ public class DataCiteConnectionFactory {
      */
     public DataCiteMdsConnection getAuthenticatedMdsConnection(URI customerId) {
         HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
-        return new DataCiteMdsConnection(httpClient, mdsApiHostName, apiPort);
+        return new DataCiteMdsConnection(httpClient, dataciteMdsHost);
     }
 
     public DataCiteRestConnection getAuthenticatedRestConnection(URI customerId) {
         HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
         DataCiteMdsClientSecretConfig clientConfigWithCredentials = configurationFactory.getCredentials(customerId);
-        return new DataCiteRestConnection(httpClient, restApiHostName, apiPort, clientConfigWithCredentials);
+        return new DataCiteRestConnection(dataciteRestUri, httpClient, clientConfigWithCredentials);
     }
 
     public HttpClient getAuthenticatedHttpClientForDatacite(URI customerId) {
@@ -122,13 +110,13 @@ public class DataCiteConnectionFactory {
 
                 if (isCommunicatingTowardsConfiguredDataCiteApi(host, port)) {
                     return super.requestPasswordAuthenticationInstance(host,
-                        addr,
-                        port,
-                        protocol,
-                        prompt,
-                        scheme,
-                        url,
-                        reqType);
+                                                                       addr,
+                                                                       port,
+                                                                       protocol,
+                                                                       prompt,
+                                                                       scheme,
+                                                                       url,
+                                                                       reqType);
                 }
                 return DO_NOT_SEND_CREDENTIALS;
             }
@@ -139,7 +127,7 @@ public class DataCiteConnectionFactory {
             }
 
             private boolean isCommunicatingTowardsConfiguredDataCiteApi(String host, int port) {
-                return host.equalsIgnoreCase(mdsApiHostName) && port == apiPort;
+                return host.equalsIgnoreCase(dataciteMdsHost.getHost()) && port == dataciteMdsHost.getPort();
             }
         };
     }

@@ -10,7 +10,6 @@ public final class FindableDoiAppEnv {
     public static final String DATACITE_MDS_HOST = "DATACITE_MDS_HOST";
     public static final String DATACITE_REST_HOST = "DATACITE_REST_HOST";
 
-    public static final String DATACITE_PORT = "DATACITE_PORT";
     public static final String CUSTOMER_SECRETS_SECRET_NAME = "CUSTOMER_SECRETS_SECRET_NAME";
     public static final String CUSTOMER_SECRETS_SECRET_KEY = "CUSTOMER_SECRETS_SECRET_KEY";
     private static final Environment ENVIRONMENT = new Environment();
@@ -29,10 +28,6 @@ public final class FindableDoiAppEnv {
         return getEnvValue(DATACITE_REST_HOST);
     }
 
-    @JacocoGenerated
-    public static int getDataCitePort() {
-        return Integer.parseInt(getEnvValue(DATACITE_PORT));
-    }
 
     @JacocoGenerated
     private static String getEnvValue(final String name) {

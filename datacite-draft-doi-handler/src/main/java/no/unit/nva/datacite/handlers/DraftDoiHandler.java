@@ -84,11 +84,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
             new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(
-            configFactory,
-            DraftDoiAppEnv.getDataCiteMdsApiHost(),
-            DraftDoiAppEnv.getDataCiteRestApiHost(),
-            DraftDoiAppEnv.getDataCitePort());
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
         return new DataCiteClient(configFactory, connectionFactory);
     }
 

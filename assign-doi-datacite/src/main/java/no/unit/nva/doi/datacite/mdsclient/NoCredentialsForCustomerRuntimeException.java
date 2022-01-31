@@ -1,6 +1,5 @@
 package no.unit.nva.doi.datacite.mdsclient;
 
-import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
 import nva.commons.core.JacocoGenerated;
 
@@ -11,9 +10,5 @@ public class NoCredentialsForCustomerRuntimeException extends ClientRuntimeExcep
 
     public NoCredentialsForCustomerRuntimeException() {
         super(NO_CREDENTIALS_FOR_CUSTOMER);
-    }
-
-    public NoCredentialsForCustomerRuntimeException(ClientException e) {
-        super(e);
     }
 }
