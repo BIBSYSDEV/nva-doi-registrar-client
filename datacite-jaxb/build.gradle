@@ -51,5 +51,6 @@ build{
 
 jar {
     from "$buildDir/classes/java/main"
+    //SAM build does not know what to do with the generated duplicates.
     duplicatesStrategy(DuplicatesStrategy.WARN)
 }
