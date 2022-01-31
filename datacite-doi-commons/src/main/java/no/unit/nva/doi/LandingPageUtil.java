@@ -10,8 +10,7 @@ import nva.commons.core.paths.UriWrapper;
  */
 public final class LandingPageUtil {
 
-    public static final String PATH_TO_REGISTRATIONS = "registration";
-    public static final String PATH_FOR_PUBLIC_PAGE_OF_REGISTRATION = "public";
+    public static final String PATH_TO_REGISTRATIONS = "publication";
     public static final String API_HOST = new Environment().readEnv("API_HOST");
 
     private LandingPageUtil() {
@@ -22,7 +21,6 @@ public final class LandingPageUtil {
         return UriWrapper.fromHost(API_HOST)
             .addChild(PATH_TO_REGISTRATIONS)
             .addChild(publicationIdentifier.toString())
-            .addChild(PATH_FOR_PUBLIC_PAGE_OF_REGISTRATION)
             .getUri();
     }
 }
