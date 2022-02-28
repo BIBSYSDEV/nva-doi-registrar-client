@@ -6,7 +6,6 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
-import java.util.Optional;
 import no.unit.nva.datacite.commons.DoiUpdateDto;
 import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
@@ -19,9 +18,7 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
-import no.unit.nva.model.DoiRequestStatus;
-import no.unit.nva.model.Organization;
-import no.unit.nva.model.Publication;
+import no.unit.nva.identifiers.SortableIdentifier;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
 import nva.commons.secrets.SecretsReader;
@@ -66,16 +63,16 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
     protected DoiUpdateEvent processInputPayload(DoiUpdateRequestEvent input,
                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
                                                  Context context) {
-        Publication publication = getPublication(input);
-        if (doiIsRequested(publication)) {
-            URI customerId = getCustomerId(publication);
+        DoiUpdateRequestEvent.Item item = input.getItem();
+        SortableIdentifier publicationIdentifier = item.getPublicationIdentifier();
+        if (input.getItem().isDoiRequested()) {
+            URI customerId = item.getCustomerId();
             logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
-
-            return attempt(() -> createNewDoi(publication, customerId))
+            return attempt(() -> createNewDoi(publicationIdentifier, customerId))
                 .map(doiUpdateDto -> new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC, doiUpdateDto))
                 .orElseThrow(this::handleCreatingNewDoiError);
         }
-        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getIdentifier().toString());
+        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publicationIdentifier.toString());
     }
 
     @JacocoGenerated
@@ -88,38 +85,21 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
         return new DataCiteClient(configFactory, connectionFactory);
     }
 
-    private boolean doiIsRequested(Publication publication) {
-        return DoiRequestStatus.REQUESTED.equals(publication.getDoiRequest().getStatus());
-    }
-
     private <T> RuntimeException handleCreatingNewDoiError(Failure<T> fail) {
         return new RuntimeException(ERROR_DRAFTING_DOI_LOG, fail.getException());
     }
 
-    private DoiUpdateDto createNewDoi(Publication publication, URI customerId) throws ClientException {
+    private DoiUpdateDto createNewDoi(SortableIdentifier publicationIdentifier, URI customerId) throws ClientException {
         Doi doi = doiClient.createDoi(customerId);
         logger.debug(DRAFTED_NEW_DOI_LOG, doi);
-        return createUpdateDoi(publication, doi);
+        return createUpdateDoi(publicationIdentifier, doi);
     }
 
-    private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
+    private DoiUpdateDto createUpdateDoi(SortableIdentifier publicationIdentifier, Doi doi) {
         return new DoiUpdateDto.Builder()
             .withDoi(doi.getUri())
-            .withPublicationId(input.getIdentifier())
+            .withPublicationId(publicationIdentifier)
             .withModifiedDate(Instant.now())
             .build();
-    }
-
-    private URI getCustomerId(Publication publication) {
-        return Optional
-            .ofNullable(publication.getPublisher())
-            .map(Organization::getId)
-            .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
-    }
-
-    private Publication getPublication(DoiUpdateRequestEvent input) {
-        return Optional
-            .ofNullable(input.getItem())
-            .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
     }
 }

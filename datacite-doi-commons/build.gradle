@@ -4,9 +4,6 @@ plugins{
 
 dependencies {
 
-    implementation project(":datacite-transform")
-    implementation project(":datacite-jaxb")
-    implementation libs.nva.datamodel
     implementation libs.nva.core
     implementation libs.nva.identifiers
     implementation libs.bundles.logging

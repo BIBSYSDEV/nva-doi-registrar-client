@@ -3,8 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(":datacite-doi-commons")
-
+    implementation(project(':datacite-doi-commons'))
     implementation libs.nva.core
     implementation libs.nva.json
     implementation libs.nva.doi

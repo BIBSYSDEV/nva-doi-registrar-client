@@ -2,8 +2,11 @@ package no.unit.nva.datacite.commons;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.net.URI;
 import java.util.Objects;
-import no.unit.nva.model.Publication;
+
+import no.unit.nva.identifiers.SortableIdentifier;
 import nva.commons.core.JacocoGenerated;
 
 public class DoiUpdateRequestEvent {
@@ -14,15 +17,15 @@ public class DoiUpdateRequestEvent {
     @JsonProperty(TOPIC)
     private final String topic;
     @JsonProperty(ITEM)
-    private final Publication item;
+    private final Item item;
 
     @JacocoGenerated
     @JsonCreator
     public DoiUpdateRequestEvent(
         @JsonProperty(TOPIC) String type,
-        @JsonProperty(ITEM) Publication publication) {
+        @JsonProperty(ITEM) Item item) {
         this.topic = type;
-        this.item = publication;
+        this.item = item;
     }
 
     @JacocoGenerated
@@ -50,7 +53,74 @@ public class DoiUpdateRequestEvent {
     }
 
     @JacocoGenerated
-    public Publication getItem() {
+    public Item getItem() {
         return item;
+    }
+
+    public static class Item {
+
+        private String metadata;
+        private URI customerId;
+        private URI doi;
+        private SortableIdentifier publicationIdentifier;
+        private boolean canBecomeFindable;
+        private boolean doiRequested;
+        private URI landingPage;
+
+        public String getMetadata() {
+            return metadata;
+        }
+
+        public void setMetadata(String metadata) {
+            this.metadata = metadata;
+        }
+
+        public URI getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(URI customerId) {
+            this.customerId = customerId;
+        }
+
+        public URI getDoi() {
+            return doi;
+        }
+
+        public void setDoi(URI doi) {
+            this.doi = doi;
+        }
+
+        public SortableIdentifier getPublicationIdentifier() {
+            return publicationIdentifier;
+        }
+
+        public void setPublicationIdentifier(SortableIdentifier publicationIdentifier) {
+            this.publicationIdentifier = publicationIdentifier;
+        }
+
+        public boolean isCanBecomeFindable() {
+            return canBecomeFindable;
+        }
+
+        public void setCanBecomeFindable(boolean canBecomeFindable) {
+            this.canBecomeFindable = canBecomeFindable;
+        }
+
+        public URI getLandingPage() {
+            return landingPage;
+        }
+
+        public void setLandingPage(URI landingPage) {
+            this.landingPage = landingPage;
+        }
+
+        public boolean isDoiRequested() {
+            return doiRequested;
+        }
+
+        public void setDoiRequested(boolean doiRequested) {
+            this.doiRequested = doiRequested;
+        }
     }
 }

@@ -111,7 +111,6 @@ public class DeleteDraftDoiHandler
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
             new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
 

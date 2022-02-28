@@ -1,0 +1,18 @@
+{
+  "detail": {
+    "requestPayload": {},
+    "responseContext": {},
+    "responsePayload": {
+      "type": "publication.doiupdate.request",
+      "item": {
+        "metadata": "<xml>",
+        "customerId": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934",
+        "doi": "https://doi.org/10.1000/182",
+        "publicationIdentifier":  "017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8",
+        "canBecomeFindable": true,
+        "doiRequested":  false,
+        "landingPage": "https://api.localhost.nva.unit.no/publication/017781d37d91-c509622e-39b5-4eae-9cac-cc4c1e17f2f8"
+      }
+    }
+  }
+}
