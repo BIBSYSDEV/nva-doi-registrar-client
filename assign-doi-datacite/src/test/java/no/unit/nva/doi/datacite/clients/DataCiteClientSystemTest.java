@@ -88,8 +88,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     private static final String HTTP_RESPONSE_OK = "OK";
     private static final String doiPath = FORWARD_SLASH + DataCiteMdsConnection.DATACITE_PATH_DOI;
     private static final Integer MAX_WELL_KNOWN_PORT = 1024;
-    private DataCiteMdsClientSecretConfig validSecretConfig;
     private static final int MAX_PORT = 65000 - MAX_WELL_KNOWN_PORT;
+    private DataCiteMdsClientSecretConfig validSecretConfig;
     private DataCiteClient doiClient;
     private WireMockServer wireMockServer;
     private URI mdsUri;
@@ -106,10 +106,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
                                                               INSTITUTION_PREFIX,
                                                               EXAMPLE_MDS_USERNAME,
                                                               EXAMPLE_MDS_PASSWORD);
-    }
-
-    private Integer randomPort() {
-        return MAX_WELL_KNOWN_PORT + randomInteger(MAX_PORT);
     }
 
     @AfterEach
@@ -243,6 +239,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
         assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+    }
+
+    private Integer randomPort() {
+        return MAX_WELL_KNOWN_PORT + randomInteger(MAX_PORT);
     }
 
     private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {

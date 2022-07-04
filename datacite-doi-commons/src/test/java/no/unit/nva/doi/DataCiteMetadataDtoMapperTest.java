@@ -1,6 +1,9 @@
 package no.unit.nva.doi;
 
 import static no.unit.nva.hamcrest.DoesNotHaveEmptyValues.doesNotHaveEmptyValues;
+import static no.unit.nva.testutils.RandomDataGenerator.randomElement;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import java.net.URI;
@@ -9,6 +12,7 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.model.Contributor;
 import no.unit.nva.model.EntityDescription;
 import no.unit.nva.model.Identity;
+import no.unit.nva.model.NameType;
 import no.unit.nva.model.Organization;
 import no.unit.nva.model.Organization.Builder;
 import no.unit.nva.model.Publication;
@@ -29,7 +33,8 @@ public class DataCiteMetadataDtoMapperTest {
     public static final String SOME_MONTH = "12";
     public static final String SOME_DAY = "52";
     public static final int NOT_THE_CREATOR = 2;
-    public static final Organization SOME_PUBLISHER = new Builder().withId(URI.create("https://some-org.example.org")).build();
+    public static final Organization SOME_PUBLISHER = new Builder().withId(URI.create("https://some-org.example.org"))
+        .build();
     public static final String SOME_ARP_ID = "someArpId";
     public static final int THE_CREATOR = 1;
     public static final String SOME_OTHER_ARP_ID = "someOtherArpId";
@@ -75,9 +80,11 @@ public class DataCiteMetadataDtoMapperTest {
             .withSequence(THE_CREATOR)
             .withAffiliations(List.of(SOME_PUBLISHER))
             .withIdentity(new Identity.Builder()
-                .withArpId(SOME_OTHER_ARP_ID)
-                .withName(THE_CREATOR_NAME)
-                .build())
+                              .withId(randomUri())
+                              .withNameType(randomElement(NameType.values()))
+                              .withOrcId(randomString())
+                              .withName(THE_CREATOR_NAME)
+                              .build())
             .build();
     }
 
@@ -86,9 +93,11 @@ public class DataCiteMetadataDtoMapperTest {
             .withSequence(NOT_THE_CREATOR)
             .withAffiliations(List.of(SOME_PUBLISHER))
             .withIdentity(new Identity.Builder()
-                .withArpId(SOME_ARP_ID)
-                .withName(NOT_THE_CREATOR_NAME)
-                .build())
+                              .withId(randomUri())
+                              .withNameType(randomElement(NameType.values()))
+                              .withOrcId(randomString())
+                              .withName(NOT_THE_CREATOR_NAME)
+                              .build())
             .build();
     }
 
