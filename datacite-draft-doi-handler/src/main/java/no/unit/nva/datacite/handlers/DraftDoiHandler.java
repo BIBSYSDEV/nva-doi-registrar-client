@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
+import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
@@ -19,7 +20,6 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
-import no.unit.nva.model.DoiRequestStatus;
 import no.unit.nva.model.Organization;
 import no.unit.nva.model.Publication;
 import nva.commons.core.JacocoGenerated;
@@ -29,21 +29,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
-
+    
     // exception messages
     public static final String PUBLICATION_IS_MISSING_ERROR = "Publication is missing";
     public static final String CUSTOMER_ID_IS_MISSING_ERROR = "CustomerId is missing";
-
+    
     // log messages
     public static final String RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG =
         "Received request to create draft new DOI for {}";
     public static final String DRAFTED_NEW_DOI_LOG = "Drafted new DOI: {}";
     public static final String ERROR_DRAFTING_DOI_LOG = "Error drafting DOI ";
-
     private static final Logger logger = LoggerFactory.getLogger(DraftDoiHandler.class);
-    public static final String NOT_APPROVED_DOI_REQUEST_ERROR = "DoiRequest has not been approved for publication:";
     private final DoiClient doiClient;
-
+    
     /**
      * Default constructor for DraftDoiHandler.
      */
@@ -51,7 +49,7 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
     public DraftDoiHandler() {
         this(defaultDoiClient());
     }
-
+    
     /**
      * Constructor for DraftDoiHandler.
      *
@@ -61,65 +59,65 @@ public class DraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpda
         super(DoiUpdateRequestEvent.class);
         this.doiClient = doiClient;
     }
-
+    
     @Override
     protected DoiUpdateEvent processInputPayload(DoiUpdateRequestEvent input,
                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
                                                  Context context) {
         Publication publication = getPublication(input);
-        if (doiIsRequested(publication)) {
-            URI customerId = getCustomerId(publication);
-            logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
-
-            return attempt(() -> createNewDoi(publication, customerId))
-                .map(doiUpdateDto -> new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC, doiUpdateDto))
-                .orElseThrow(this::handleCreatingNewDoiError);
+        if (nonNull(publication.getDoi())) {
+            throw new IllegalStateException("Publication has a DOI already.");
         }
-        throw new IllegalStateException(NOT_APPROVED_DOI_REQUEST_ERROR + publication.getIdentifier().toString());
+        return draftNewDoi(publication);
     }
-
+    
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
+        
         DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
             new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
+        
         DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
         return new DataCiteClient(configFactory, connectionFactory);
     }
-
-    private boolean doiIsRequested(Publication publication) {
-        return DoiRequestStatus.REQUESTED.equals(publication.getDoiRequest().getStatus());
+    
+    private DoiUpdateEvent draftNewDoi(Publication publication) {
+        URI customerId = getCustomerId(publication);
+        logger.debug(RECEIVED_REQUEST_TO_CREATE_DRAFT_NEW_DOI_LOG, customerId);
+        
+        return attempt(() -> createNewDoi(publication, customerId))
+                   .map(doiUpdateDto -> new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC, doiUpdateDto))
+                   .orElseThrow(this::handleCreatingNewDoiError);
     }
-
+    
     private <T> RuntimeException handleCreatingNewDoiError(Failure<T> fail) {
         return new RuntimeException(ERROR_DRAFTING_DOI_LOG, fail.getException());
     }
-
+    
     private DoiUpdateDto createNewDoi(Publication publication, URI customerId) throws ClientException {
         Doi doi = doiClient.createDoi(customerId);
         logger.debug(DRAFTED_NEW_DOI_LOG, doi);
         return createUpdateDoi(publication, doi);
     }
-
+    
     private DoiUpdateDto createUpdateDoi(Publication input, Doi doi) {
         return new DoiUpdateDto.Builder()
-            .withDoi(doi.getUri())
-            .withPublicationId(input.getIdentifier())
-            .withModifiedDate(Instant.now())
-            .build();
+                   .withDoi(doi.getUri())
+                   .withPublicationId(input.getIdentifier())
+                   .withModifiedDate(Instant.now())
+                   .build();
     }
-
+    
     private URI getCustomerId(Publication publication) {
         return Optional
-            .ofNullable(publication.getPublisher())
-            .map(Organization::getId)
-            .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
+                   .ofNullable(publication.getPublisher())
+                   .map(Organization::getId)
+                   .orElseThrow(() -> new IllegalArgumentException(CUSTOMER_ID_IS_MISSING_ERROR));
     }
-
+    
     private Publication getPublication(DoiUpdateRequestEvent input) {
         return Optional
-            .ofNullable(input.getItem())
-            .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
+                   .ofNullable(input.getItem())
+                   .orElseThrow(() -> new IllegalArgumentException(PUBLICATION_IS_MISSING_ERROR));
     }
 }

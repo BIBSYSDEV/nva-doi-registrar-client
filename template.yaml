@@ -137,9 +137,6 @@ Resources:
                     - PublicationService.Doi.CreationRequest
                     - PublicationService.Doi.UpdateRequest
                   item:
-                    doiRequest:
-                      status:
-                        - REQUESTED
                     doi:
                       - exists: false
       EventInvokeConfig:
@@ -183,9 +180,6 @@ Resources:
                   item:
                     status:
                       - PUBLISHED
-                    doiRequest:
-                      status:
-                        - APPROVED
                     doi:
                       - exists: true
       EventInvokeConfig:
