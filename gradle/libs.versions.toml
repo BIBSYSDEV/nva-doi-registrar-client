@@ -68,7 +68,7 @@ jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.re
 
 [bundles]
 testing = ['junit-jupiter-engine', 'hamcrest', 'mockito-core', 'nva-testutils']
-jackson = ['jackson-core', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310', 'jackson-databind', 'jackson-annotations']
+jackson = ['jackson-core', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310', 'jackson-databind', 'jackson-annotations', 'jackson-problem']
 logging = ['log4j-core', 'log4j-api', 'slf4j']
 xsd2java = ["xsd2java-xjc", "xsd2java-impl", "xsd2java-api", "xsd2java-activation", "xsd2java-jakarta"]
 
