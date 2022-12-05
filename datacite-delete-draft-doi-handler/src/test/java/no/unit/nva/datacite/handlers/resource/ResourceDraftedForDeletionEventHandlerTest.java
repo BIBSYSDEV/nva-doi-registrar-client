@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.handlers;
+package no.unit.nva.datacite.handlers.resource;
 
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,7 +20,7 @@ import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DeleteDraftDoiHandlerTest {
+public class ResourceDraftedForDeletionEventHandlerTest {
 
     public static final String DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON = "delete_draft_publication_without_doi.json";
     public static final String DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON = "delete_draft_publication_with_doi.json";
@@ -29,15 +29,15 @@ public class DeleteDraftDoiHandlerTest {
     public static final String NOT_DRAFT = "findable";
 
     private DoiClient doiClient;
-    private DeleteDraftDoiHandler handler;
+    private ResourceDraftedForDeletionEventHandler handler;
     private ByteArrayOutputStream outputStream;
     private Context context;
 
 
     @BeforeEach
     public void setUp() throws ClientException {
-        doiClient = doiClientReturningDoi(DeleteDraftDoiHandler.DRAFT);
-        handler = new DeleteDraftDoiHandler(doiClient);
+        doiClient = doiClientReturningDoi(ResourceDraftedForDeletionEventHandler.DRAFT);
+        handler = new ResourceDraftedForDeletionEventHandler(doiClient);
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
     }
@@ -60,26 +60,26 @@ public class DeleteDraftDoiHandlerTest {
 
         RuntimeException exception = assertThrows(RuntimeException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
-        assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.EXPECTED_EVENT_WITH_DOI)));
+        assertThat(exception.getMessage(), is(equalTo(ResourceDraftedForDeletionEventHandler.EXPECTED_EVENT_WITH_DOI)));
     }
 
     @Test
     public void handleRequestThrowsExceptionWhenRemoteServiceFails() throws ClientException {
         doiClient = doiClientReturningError();
-        handler = new DeleteDraftDoiHandler(doiClient);
+        handler = new ResourceDraftedForDeletionEventHandler(doiClient);
 
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
-        assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI)));
+        assertThat(exception.getMessage(), is(equalTo(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI)));
     }
 
     private DoiClient doiClientReturningError() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(), any()))
-            .thenAnswer(invocation -> doiState(DeleteDraftDoiHandler.DRAFT));
-        doThrow(new RuntimeException(DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI))
+            .thenAnswer(invocation -> doiState(ResourceDraftedForDeletionEventHandler.DRAFT));
+        doThrow(new RuntimeException(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI))
             .when(doiClient).deleteDraftDoi(any(), any());
         return doiClient;
     }
@@ -87,13 +87,13 @@ public class DeleteDraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsExceptionWhenDoiIsNotInDraftState() throws ClientException {
         doiClient = doiClientReturningDoi(NOT_DRAFT);
-        handler = new DeleteDraftDoiHandler(doiClient);
+        handler = new ResourceDraftedForDeletionEventHandler(doiClient);
 
         InputStream inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
             () -> handler.handleRequest(inputStream, outputStream, context));
-        assertThat(exception.getMessage(), is(equalTo(DeleteDraftDoiHandler.NOT_DRAFT_DOI_ERROR)));
+        assertThat(exception.getMessage(), is(equalTo(ResourceDraftedForDeletionEventHandler.NOT_DRAFT_DOI_ERROR)));
     }
 
     private DoiClient doiClientReturningDoi(String state) throws ClientException {
@@ -104,6 +104,6 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     private DoiStateDto doiState(String state) {
-        return new DoiStateDto(DeleteDraftDoiHandlerTest.DOI_IDENTIFIER, state);
+        return new DoiStateDto(ResourceDraftedForDeletionEventHandlerTest.DOI_IDENTIFIER, state);
     }
 }

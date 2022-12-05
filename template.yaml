@@ -188,11 +188,48 @@ Resources:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
 
-  DeleteDraftDoiHandler:
+  DataCiteDeleteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-findable-doi-handler
+      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.DeleteDraftRequest
+                  item:
+                    doi:
+                      - exists: false
+      EventInvokeConfig:
+        DestinationConfig:
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+
+  ResourceDraftedForDeletionEventHandler:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.DeleteDraftDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.ResourceDraftedForDeletionEventHandler::handleRequest
       Runtime: java11
       MemorySize: 512
       Role: !GetAtt LambdaRole.Arn
@@ -224,7 +261,7 @@ Resources:
             Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !GetAtt DeleteDraftDoiHandlerDLQ.Arn
+            Destination: !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
 
   DataCiteFindableDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
@@ -232,7 +269,10 @@ Resources:
   DataCiteDraftDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
-  DeleteDraftDoiHandlerDLQ:
+  DataCiteDeleteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  ResourceDraftedForDeletionEventHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
 

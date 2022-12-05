@@ -1,7 +1,7 @@
-package no.unit.nva.datacite.handlers;
+package no.unit.nva.datacite.handlers.resource;
 
-import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
+import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
+import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +18,7 @@ import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
-public class DeleteDraftDoiHandler
+public class ResourceDraftedForDeletionEventHandler
     extends DestinationsEventBridgeEventHandler<ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
 
     public static final String DRAFT = "draft";
@@ -36,7 +36,7 @@ public class DeleteDraftDoiHandler
      * @throws IOException IOException
      */
     @JacocoGenerated
-    public DeleteDraftDoiHandler() {
+    public ResourceDraftedForDeletionEventHandler() {
         this(defaultDoiClient());
     }
 
@@ -45,7 +45,7 @@ public class DeleteDraftDoiHandler
      *
      * @param doiClient doiClient
      */
-    public DeleteDraftDoiHandler(DoiClient doiClient) {
+    public ResourceDraftedForDeletionEventHandler(DoiClient doiClient) {
         super(ResourceDraftedForDeletionEvent.class);
         this.doiClient = doiClient;
     }
