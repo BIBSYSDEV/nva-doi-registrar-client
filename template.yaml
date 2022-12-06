@@ -106,7 +106,6 @@ Resources:
                 Resource:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
-
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -124,7 +123,6 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
-
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
@@ -148,7 +146,6 @@ Resources:
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-
 
   DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
@@ -189,7 +186,7 @@ Resources:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
 
-  DataCiteDeleteDraftDoiHandlerFunction:
+  DeleteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
@@ -219,7 +216,7 @@ Resources:
                     - PublicationService.Doi.DeleteDraftRequest
                   item:
                     doi:
-                      - exists: false
+                      - exists: true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
@@ -229,7 +226,7 @@ Resources:
             Type: SQS
             Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
 
-  ResourceDraftedForDeletionEventHandler:
+  ResourceDraftedForDeletion:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
