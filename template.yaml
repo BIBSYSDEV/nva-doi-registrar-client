@@ -222,6 +222,9 @@ Resources:
                       - exists: false
       EventInvokeConfig:
         DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
