@@ -82,7 +82,8 @@ Resources:
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-                  - !GetAtt DeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
           PolicyDocument:
             Version: '2012-10-17'
