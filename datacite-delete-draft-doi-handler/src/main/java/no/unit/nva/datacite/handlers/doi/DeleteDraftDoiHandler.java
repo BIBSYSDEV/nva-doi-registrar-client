@@ -26,6 +26,7 @@ import nva.commons.secrets.SecretsReader;
 public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
 
     private static final String DOI_STATE_DRAFT = "draft";
+    protected static final String PUBLICATION_HAS_NO_PUBLISHER = "Publication has no publisher";
     protected static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";
     protected static final String ERROR_GETTING_DOI_STATE = "Error getting DOI state";
     protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
@@ -48,9 +49,9 @@ public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<D
                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
                                                  Context context) {
 
-        var doi = verifyEventHasDoi(input);
+        var doi = extractDoiFromPublicationOrFail(input);
 
-        var customerId = input.getItem().getPublisher().getId();
+        var customerId = extractPublisherIdFromPublicationOrFail(input);
         var publicationIdentifier = input.getItem().getIdentifier();
         verifyDoiIsInDraftState(customerId, doi);
 
@@ -58,7 +59,14 @@ public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<D
                                   deleteDraftDoi(customerId, publicationIdentifier, doi));
     }
 
-    private Doi verifyEventHasDoi(DoiUpdateRequestEvent event) {
+    private URI extractPublisherIdFromPublicationOrFail(DoiUpdateRequestEvent input) {
+        if (Objects.isNull(input.getItem()) || Objects.isNull(input.getItem().getPublisher())) {
+            throw new RuntimeException(PUBLICATION_HAS_NO_PUBLISHER);
+        }
+        return input.getItem().getPublisher().getId();
+    }
+
+    private Doi extractDoiFromPublicationOrFail(DoiUpdateRequestEvent event) {
         if (Objects.isNull(event.getItem()) || Objects.isNull(event.getItem().getDoi())) {
             throw new RuntimeException(EXPECTED_EVENT_WITH_DOI);
         }

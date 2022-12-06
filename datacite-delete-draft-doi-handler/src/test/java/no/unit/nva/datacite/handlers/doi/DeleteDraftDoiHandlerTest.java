@@ -5,6 +5,7 @@ import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.ERROR_DELE
 import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.ERROR_GETTING_DOI_STATE;
 import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.EXPECTED_EVENT_WITH_DOI;
 import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.NOT_DRAFT_DOI_ERROR;
+import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.PUBLICATION_HAS_NO_PUBLISHER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -116,6 +117,19 @@ public class DeleteDraftDoiHandlerTest {
             assertThrows(RuntimeException.class,
                          () -> handler.handleRequest(inputStream, outputStream, context),
                          ERROR_DELETING_DRAFT_DOI);
+        }
+    }
+
+    @Test
+    void shouldThrowExceptionIfNoPublisherIsPresentInPublication() throws IOException, ClientException {
+        var doiClient = doiClientMock(DOI_STATE_DRAFT);
+        var handler = new DeleteDraftDoiHandler(doiClient);
+
+        try (InputStream inputStream
+                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_publisher_in_publication.json")) {
+            assertThrows(RuntimeException.class,
+                         () -> handler.handleRequest(inputStream, outputStream, context),
+                         PUBLICATION_HAS_NO_PUBLISHER);
         }
     }
 
