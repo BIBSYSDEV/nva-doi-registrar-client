@@ -81,9 +81,9 @@ public class ResourceDraftedForDeletionEventHandlerTest {
         handler = new ResourceDraftedForDeletionEventHandler(doiClient);
 
         try (var inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
-            RuntimeException exception = assertThrows(RuntimeException.class,
-                                                      () -> handler.handleRequest(inputStream, outputStream, context));
-            assertThat(exception.getMessage(), is(equalTo(ResourceDraftedForDeletionEventHandler.NOT_DRAFT_DOI_ERROR)));
+            assertThrows(RuntimeException.class,
+                         () -> handler.handleRequest(inputStream, outputStream, context),
+                         ResourceDraftedForDeletionEventHandler.NOT_DRAFT_DOI_ERROR);
         }
     }
 

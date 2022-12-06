@@ -75,7 +75,8 @@ public class DeleteDraftDoiHandlerTest {
         var doiClient = doiClientMock(DOI_STATE_DRAFT);
         var handler = new DeleteDraftDoiHandler(doiClient);
 
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_item.json")) {
+        try (InputStream inputStream
+                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_item.json")) {
             assertThrows(RuntimeException.class,
                          () -> handler.handleRequest(inputStream, outputStream, context),
                          EXPECTED_EVENT_WITH_DOI);
