@@ -29,13 +29,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DeleteDraftDoiHandlerTest {
+
     private static final String DOI_IDENTIFIER = "10.23/456789";
     private static final String DOI_STATE_DRAFT = "draft";
     private static final String DOI_STATE_FINDABLE = "findable";
 
     private ByteArrayOutputStream outputStream;
     private Context context;
-
 
     @BeforeEach
     public void setUp() {
@@ -53,7 +53,7 @@ public class DeleteDraftDoiHandlerTest {
 
             verify(doiClient, times(1)).deleteDraftDoi(any(), any());
 
-            DoiUpdateEvent event = dtoObjectMapper.readValue(outputStream.toString(),DoiUpdateEvent.class);
+            DoiUpdateEvent event = dtoObjectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class);
             assertThat(event.getItem().getDoi().isEmpty(), is(equalTo(true)));
         }
     }
@@ -65,7 +65,7 @@ public class DeleteDraftDoiHandlerTest {
 
         try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
             assertThrows(RuntimeException.class,
-                         () ->handler.handleRequest(inputStream, outputStream, context),
+                         () -> handler.handleRequest(inputStream, outputStream, context),
                          NOT_DRAFT_DOI_ERROR);
         }
     }
@@ -77,7 +77,7 @@ public class DeleteDraftDoiHandlerTest {
 
         try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_item.json")) {
             assertThrows(RuntimeException.class,
-                         () ->handler.handleRequest(inputStream, outputStream, context),
+                         () -> handler.handleRequest(inputStream, outputStream, context),
                          EXPECTED_EVENT_WITH_DOI);
         }
     }
@@ -89,7 +89,7 @@ public class DeleteDraftDoiHandlerTest {
 
         try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_doi.json")) {
             assertThrows(RuntimeException.class,
-                         () ->handler.handleRequest(inputStream, outputStream, context),
+                         () -> handler.handleRequest(inputStream, outputStream, context),
                          EXPECTED_EVENT_WITH_DOI);
         }
     }
@@ -101,7 +101,7 @@ public class DeleteDraftDoiHandlerTest {
 
         try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
             assertThrows(RuntimeException.class,
-                         () ->handler.handleRequest(inputStream, outputStream, context),
+                         () -> handler.handleRequest(inputStream, outputStream, context),
                          ERROR_GETTING_DOI_STATE);
         }
     }
@@ -113,7 +113,7 @@ public class DeleteDraftDoiHandlerTest {
 
         try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
             assertThrows(RuntimeException.class,
-                         () ->handler.handleRequest(inputStream, outputStream, context),
+                         () -> handler.handleRequest(inputStream, outputStream, context),
                          ERROR_DELETING_DRAFT_DOI);
         }
     }
@@ -143,5 +143,4 @@ public class DeleteDraftDoiHandlerTest {
     private DoiStateDto doiState(String state) {
         return new DoiStateDto(DOI_IDENTIFIER, state);
     }
-
 }
