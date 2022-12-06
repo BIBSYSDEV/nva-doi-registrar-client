@@ -192,7 +192,7 @@ Resources:
   DataCiteDeleteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: datacite-findable-doi-handler
+      CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
@@ -249,6 +249,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
               detail:
                 responsePayload:
                   topic:
