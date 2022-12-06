@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.handlers;
+package no.unit.nva.datacite.handlers.resource;
 
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;

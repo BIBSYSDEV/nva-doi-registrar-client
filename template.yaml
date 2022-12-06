@@ -82,7 +82,8 @@ Resources:
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-                  - !GetAtt DeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
           PolicyDocument:
             Version: '2012-10-17'
@@ -105,7 +106,6 @@ Resources:
                 Resource:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
-
   DataCiteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -123,7 +123,6 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
-
       Events:
         EventBridgeEvent:
           Type: EventBridgeRule
@@ -147,7 +146,6 @@ Resources:
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-
 
   DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
@@ -188,11 +186,51 @@ Resources:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
 
-  DeleteDraftDoiHandler:
+  DeleteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.DeleteDraftDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.DeleteDraftRequest
+                  item:
+                    doi:
+                      - exists: true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+
+  ResourceDraftedForDeletion:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-delete-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.resource.ResourceDraftedForDeletionEventHandler::handleRequest
       Runtime: java11
       MemorySize: 512
       Role: !GetAtt LambdaRole.Arn
@@ -211,6 +249,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
               detail:
                 responsePayload:
                   topic:
@@ -224,7 +263,7 @@ Resources:
             Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !GetAtt DeleteDraftDoiHandlerDLQ.Arn
+            Destination: !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
 
   DataCiteFindableDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
@@ -232,7 +271,10 @@ Resources:
   DataCiteDraftDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
-  DeleteDraftDoiHandlerDLQ:
+  DataCiteDeleteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  ResourceDraftedForDeletionEventHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
 
