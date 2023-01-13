@@ -5,6 +5,7 @@ import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.PUBLICATION_
 import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_ID_FIELD_INFO;
 import static no.unit.nva.datacite.handlers.PublicationPointers.PUBLICATION_INSTITUTION_OWNER_FIELD_INFO;
 import static nva.commons.core.attempt.Try.attempt;
+import static nva.commons.core.paths.UriWrapper.HTTPS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -192,8 +193,8 @@ public class FindableDoiEventHandlerTest {
     }
     
     private URI constructExpectedLandingPageUri(String identifier) {
-        return UriWrapper.fromHost(FindableDoiEventHandler.API_HOST)
-                   .addChild("publication")
+        return new UriWrapper(HTTPS, "nva.sikt.no")
+                   .addChild("registration")
                    .addChild(identifier)
                    .getUri();
     }

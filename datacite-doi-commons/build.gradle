@@ -17,6 +17,7 @@ dependencies {
 
 test{
     environment "API_HOST", "api.localhost.nva.aws.unit.no"
+    environment "FRONTEND_DOMAIN", "nva.sikt.no"
 
 }
 

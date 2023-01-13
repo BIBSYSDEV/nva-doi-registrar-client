@@ -1,5 +1,6 @@
 package no.unit.nva.doi;
 
+import static nva.commons.core.paths.UriWrapper.HTTPS;
 import java.net.URI;
 import no.unit.nva.identifiers.SortableIdentifier;
 import nva.commons.core.Environment;
@@ -10,15 +11,15 @@ import nva.commons.core.paths.UriWrapper;
  */
 public final class LandingPageUtil {
 
-    public static final String PATH_TO_REGISTRATIONS = "publication";
-    public static final String API_HOST = new Environment().readEnv("API_HOST");
+    private static final String PATH_TO_REGISTRATIONS = "registration";
+    private static final String FRONTEND_DOMAIN = new Environment().readEnv("FRONTEND_DOMAIN");
 
     private LandingPageUtil() {
 
     }
 
     public static URI publicationFrontPage(SortableIdentifier publicationIdentifier) {
-        return UriWrapper.fromHost(API_HOST)
+        return new UriWrapper(HTTPS, FRONTEND_DOMAIN)
             .addChild(PATH_TO_REGISTRATIONS)
             .addChild(publicationIdentifier.toString())
             .getUri();

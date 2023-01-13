@@ -21,6 +21,11 @@ Parameters:
   ApiDomain:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/NVA/ApiDomain'
+  NvaApplicationDomain:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NVA/ApplicationDomain
+    Description: Domain-name for the frontend
+
   CustomerSecretsSecretName:
     Type: String
     Default: dataCiteCustomerSecrets
@@ -37,7 +42,7 @@ Globals:
     Environment:
       Variables:
         API_HOST: !Ref ApiDomain
-
+        FRONTEND_DOMAIN: !Ref NvaApplicationDomain
 
 Resources:
   LambdaRole:

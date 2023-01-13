@@ -31,4 +31,5 @@ dependencies {
 
 test{
     environment "API_HOST", "api.localhost.nva.unit.no"
+    environment "FRONTEND_DOMAIN", "nva.sikt.no"
 }
