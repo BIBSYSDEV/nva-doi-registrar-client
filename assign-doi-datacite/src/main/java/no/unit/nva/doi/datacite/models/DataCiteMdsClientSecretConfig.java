@@ -28,8 +28,10 @@ public class DataCiteMdsClientSecretConfig extends DataCiteMdsClientConfig {
      * @param dataCiteMdsClientUsername Username
      * @param dataCiteMdsClientPassword Password
      */
-    public DataCiteMdsClientSecretConfig(URI customerId, String customerDoiPrefix,
-                                         String dataCiteMdsClientUsername, String dataCiteMdsClientPassword) {
+    public DataCiteMdsClientSecretConfig(URI customerId,
+                                         String customerDoiPrefix,
+                                         String dataCiteMdsClientUsername,
+                                         String dataCiteMdsClientPassword) {
         super(customerId, customerDoiPrefix);
         this.dataCiteMdsClientUsername = dataCiteMdsClientUsername;
         this.dataCiteMdsClientPassword = dataCiteMdsClientPassword;

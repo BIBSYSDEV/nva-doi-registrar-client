@@ -8,5 +8,3 @@ include 'datacite-findable-doi-handler'
 include 'datacite-delete-draft-doi-handler'
 include 'datacite-transform'
 include 'datacite-jaxb'
-
-

@@ -184,7 +184,7 @@ public class FindableDoiEventHandlerTest {
     private String verifyPartsOfMetadata() {
         String expectedLandingPageUri = constructExpectedLandingPageUri(RESOURCES_IDENTIFIER).toString();
         return and(
-            contains("JournalArticle"),
+            contains("AcademicArticle"),
             and(
                 contains("<title>The resource title"),
                 contains("identifierType=\"URL\">" + expectedLandingPageUri + "</identifier>")
