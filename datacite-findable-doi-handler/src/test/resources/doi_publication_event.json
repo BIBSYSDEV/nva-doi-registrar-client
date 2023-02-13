@@ -92,7 +92,7 @@
                           "bool": true
                         },
                         "type": {
-                          "s": "JournalArticle"
+                          "s": "AcademicArticle"
                         }
                       }
                     },

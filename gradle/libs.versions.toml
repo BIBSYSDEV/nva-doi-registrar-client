@@ -4,7 +4,7 @@ nvaCommons = { strictly = '1.27.2' }
 jackson = { strictly = '2.14.1' }
 mockito = { strictly = '4.2.0' }
 junit = { strictly = '5.8.2' }
-nvaDatamodel = { strictly = '0.19.26' }
+nvaDatamodel = { strictly = '0.19.33' }
 awsSdk = { strictly = '1.12.369' }
 jaxbApi = { strictly = '2.3.1' }
 jaxbRuntime = { strictly = '2.3.2' }
