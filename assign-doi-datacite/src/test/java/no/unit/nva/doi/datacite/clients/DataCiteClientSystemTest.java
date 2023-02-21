@@ -149,7 +149,7 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     void createDoiWithPrefixForCustomerReturnsDoiOnSuccess() throws ClientException {
         String randomSuffix = UUID.randomUUID().toString();
         DraftDoiDto draftDoiDto = DraftDoiDto.create(DEMO_PREFIX, randomSuffix);
-        var expectedCreatedServerDoi = createDoi(DataCiteClient.DOI_HOST, DEMO_PREFIX, randomSuffix);
+        var expectedCreatedServerDoi = createDoi("https://doi.org", DEMO_PREFIX, randomSuffix);
 
         stubCreateDoiResponse(draftDoiDto);
 

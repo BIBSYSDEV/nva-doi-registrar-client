@@ -65,7 +65,7 @@ public class DataCiteClient implements DoiClient {
             HttpResponse<String> response = sendDraftDoiRequest(connection, doiPrefix);
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
 
-            return responseBody.toDoi().changeHost(DOI_HOST);
+            return responseBody.toDoi();
         } catch (IOException | InterruptedException e) {
             throw logAndCreateClientException("createDoi", e);
         }
