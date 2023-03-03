@@ -75,12 +75,12 @@ public class DoiUpdateRequestEvent {
         return topic;
     }
 
+    @Deprecated
     @JacocoGenerated
     public Publication getItem() {
         return item;
     }
 
-    @Deprecated
     @JacocoGenerated
     public URI getDoi() {
         return doi;
