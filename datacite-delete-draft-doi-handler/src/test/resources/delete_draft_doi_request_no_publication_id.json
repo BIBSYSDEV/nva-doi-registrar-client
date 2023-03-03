@@ -24,7 +24,9 @@
       "executedVersion": "$LATEST"
     },
     "responsePayload": {
-      "topic": "publication.doiupdate.request"
+      "topic": "publication.doiupdate.request",
+      "doi": "http://doi.org/10.23/456789",
+      "customerId": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
     }
   }
 }

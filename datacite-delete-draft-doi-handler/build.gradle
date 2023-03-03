@@ -10,7 +10,6 @@ dependencies {
     implementation libs.nva.core
     implementation libs.nva.json
     implementation libs.nva.doi
-    implementation libs.nva.datamodel
     implementation libs.nva.identifiers
     implementation libs.nva.eventhandlers
     implementation libs.nva.secrets
