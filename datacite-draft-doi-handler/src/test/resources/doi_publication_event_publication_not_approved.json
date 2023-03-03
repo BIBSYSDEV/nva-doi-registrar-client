@@ -25,25 +25,6 @@
     },
     "responsePayload": {
       "type": "publication.doiupdate.request",
-      "item": {
-        "type": "Publication",
-        "identifier": "017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d",
-        "status": "DRAFT",
-        "owner": "og@unit.no",
-        "publisher": {
-          "type": "Organization",
-          "id": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
-        },
-        "doiRequest": {
-          "type": "DoiRequest",
-          "status": "APPROVED",
-          "modifiedDate": "2021-02-05T16:14:32.516044Z",
-          "createdDate": "2021-02-05T16:14:32.516044Z"
-        },
-        "entityDescription": {
-          "type": "EntityDescription"
-        }
-      },
       "publicationId": "https://api.dev.nva.aws.unit.no/publication/017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d",
       "customerId": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
     }

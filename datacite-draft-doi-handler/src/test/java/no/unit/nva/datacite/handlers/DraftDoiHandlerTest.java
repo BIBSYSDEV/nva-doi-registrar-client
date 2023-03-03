@@ -107,7 +107,7 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingEventItem() throws IOException {
         try (InputStream inputStream = IoUtils.inputStreamFromResources(
-            "doi_publication_event_empty_item.json")) {
+            "doi_publication_event_publication_id_empty.json")) {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                                                               () -> handler.handleRequest(inputStream, outputStream,
                                                                                           context));
@@ -118,7 +118,7 @@ public class DraftDoiHandlerTest {
     @Test
     public void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() throws IOException {
         try (InputStream inputStream = IoUtils.inputStreamFromResources(
-            "doi_publication_event_empty_institution_owner.json")) {
+            "doi_publication_event_empty_customer_id.json")) {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                                                               () -> handler.handleRequest(inputStream, outputStream,
                                                                                           context));
