@@ -38,6 +38,8 @@ Parameters:
   DoiHost:
     Type: String
 
+Conditions:
+  WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
 
 Globals:
   Function:
