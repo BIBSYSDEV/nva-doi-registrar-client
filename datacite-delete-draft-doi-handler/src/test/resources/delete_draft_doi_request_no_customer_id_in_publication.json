@@ -25,13 +25,8 @@
     },
     "responsePayload": {
       "topic": "publication.doiupdate.request",
-      "item": {
-        "type": "Publication",
-        "identifier": "017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d",
-        "status": "DRAFT",
-        "owner": "og@unit.no",
-        "doi": "http://doi.org/10.23/456789"
-      }
+      "doi": "http://doi.org/10.23/456789",
+      "publicationId": "https://api.dev.nva.aws.unit.no/publication/017772f8ce52-4d10352d-7974-472e-be34-484c5f4f194d"
     }
   }
 }

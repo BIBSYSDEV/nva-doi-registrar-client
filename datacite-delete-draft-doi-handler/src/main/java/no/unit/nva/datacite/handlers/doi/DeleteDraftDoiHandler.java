@@ -1,11 +1,12 @@
 package no.unit.nva.datacite.handlers.doi;
 
+import static java.util.Objects.isNull;
 import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.URI;
 import java.time.Instant;
-import java.util.Objects;
+import java.util.ArrayList;
 import no.unit.nva.datacite.commons.DoiUpdateDto;
 import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
@@ -25,13 +26,12 @@ import nva.commons.secrets.SecretsReader;
 
 public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
 
-    private static final String DOI_STATE_DRAFT = "draft";
     protected static final String PUBLICATION_HAS_NO_PUBLISHER = "Publication has no publisher";
     protected static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";
     protected static final String ERROR_GETTING_DOI_STATE = "Error getting DOI state";
     protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
     protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
-
+    private static final String DOI_STATE_DRAFT = "draft";
     private final DoiClient doiClient;
 
     @JacocoGenerated
@@ -47,30 +47,41 @@ public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<D
     @Override
     protected DoiUpdateEvent processInputPayload(DoiUpdateRequestEvent input,
                                                  AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+
                                                  Context context) {
-
-        var doi = extractDoiFromPublicationOrFail(input);
-
-        var customerId = extractPublisherIdFromPublicationOrFail(input);
-        var publicationIdentifier = input.getItem().getIdentifier();
+        validateInput(input);
+        var doi = Doi.fromUri(input.getDoi());
+        var customerId = input.getCustomerId();
+        var publicationIdentifier = SortableIdentifier.fromUri(input.getPublicationId());
         verifyDoiIsInDraftState(customerId, doi);
 
         return new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
                                   deleteDraftDoi(customerId, publicationIdentifier, doi));
     }
 
-    private URI extractPublisherIdFromPublicationOrFail(DoiUpdateRequestEvent input) {
-        if (Objects.isNull(input.getItem()) || Objects.isNull(input.getItem().getPublisher())) {
-            throw new RuntimeException(PUBLICATION_HAS_NO_PUBLISHER);
+    private static void validateInput(DoiUpdateRequestEvent input) {
+        var problems = new ArrayList<String>();
+        if (isNull(input.getCustomerId())) {
+            problems.add("No customer in event.");
         }
-        return input.getItem().getPublisher().getId();
+        if (isNull(input.getDoi())) {
+            problems.add("No doi in event.");
+        }
+        if (isNull(input.getPublicationId())) {
+            problems.add("No publication Id in event.");
+        }
+        if (!problems.isEmpty()) {
+            throw new RuntimeException(String.join("\n", problems));
+        }
     }
 
-    private Doi extractDoiFromPublicationOrFail(DoiUpdateRequestEvent event) {
-        if (Objects.isNull(event.getItem()) || Objects.isNull(event.getItem().getDoi())) {
-            throw new RuntimeException(EXPECTED_EVENT_WITH_DOI);
-        }
-        return Doi.fromUri(event.getItem().getDoi());
+    @JacocoGenerated
+    private static DoiClient defaultDoiClient() {
+        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
+            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
+
+        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
+        return new DataCiteClient(configFactory, connectionFactory);
     }
 
     private void verifyDoiIsInDraftState(URI customerId, Doi doi) {
@@ -100,14 +111,5 @@ public class DeleteDraftDoiHandler extends DestinationsEventBridgeEventHandler<D
                    .withPublicationId(publicationIdentifier)
                    .withModifiedDate(Instant.now())
                    .build();
-    }
-
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
-        return new DataCiteClient(configFactory, connectionFactory);
     }
 }

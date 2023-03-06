@@ -72,12 +72,12 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    void shouldThrowExceptionIfNoPublicationInEvent() throws IOException, ClientException {
+    void shouldThrowExceptionIfNoPublicationIDInEvent() throws IOException, ClientException {
         var doiClient = doiClientMock(DOI_STATE_DRAFT);
         var handler = new DeleteDraftDoiHandler(doiClient);
 
         try (InputStream inputStream
-                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_item.json")) {
+                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_publication_id.json")) {
             assertThrows(RuntimeException.class,
                          () -> handler.handleRequest(inputStream, outputStream, context),
                          EXPECTED_EVENT_WITH_DOI);
@@ -126,7 +126,7 @@ public class DeleteDraftDoiHandlerTest {
         var handler = new DeleteDraftDoiHandler(doiClient);
 
         try (InputStream inputStream
-                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_publisher_in_publication.json")) {
+                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_customer_id_in_publication.json")) {
             assertThrows(RuntimeException.class,
                          () -> handler.handleRequest(inputStream, outputStream, context),
                          PUBLICATION_HAS_NO_PUBLISHER);
