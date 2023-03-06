@@ -6,6 +6,14 @@ Description: >
   Sample SAM Template for AWS
 
 Parameters:
+  CognitoAuthorizerArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+    Default: doi-registrar
   DataCiteMdsHost:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: dataCiteMdsHost
@@ -29,10 +37,6 @@ Parameters:
     Default: dataCiteCustomerSecrets
   DoiHost:
     Type: String
-  CustomDomainBasePath:
-    Type: String
-    Description: Base path mapping in CustomDomain
-    Default: doi-registrar
 
 
 Globals:
@@ -44,6 +48,10 @@ Globals:
 
 
 Resources:
+
+  ApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -284,7 +292,7 @@ Resources:
           Parameters:
             Location: ./docs/openapi.yaml
 
-  #===========================BasePathMappings========================================================
+  #===========================BasePathMappings========================================================#
 
   NvaDoiRegistrarClientBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
