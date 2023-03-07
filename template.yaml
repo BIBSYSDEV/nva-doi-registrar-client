@@ -37,6 +37,10 @@ Parameters:
     Default: dataCiteCustomerSecrets
   DoiHost:
     Type: String
+  Suffix:
+    Type: String
+    Default: ''
+    Description: Suffix used for naming resources for feature branches to avoid conflicts.
 
 Conditions:
   WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
