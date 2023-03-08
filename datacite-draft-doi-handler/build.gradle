@@ -31,3 +31,8 @@ dependencies {
     testImplementation libs.bundles.testing
     testImplementation libs.wiremock
 }
+
+test {
+    environment "ALLOWED_ORIGIN", "*"
+    environment "DATACITE_REST_HOST", "someHost"
+}
