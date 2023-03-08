@@ -106,4 +106,12 @@ public class ReserveDraftDoiHandlerTest {
         });
         return doiClient;
     }
+
+    @Test
+    void some() throws JsonProcessingException {
+        var string =
+            "{ \"customer\" : \"https://api.sandbox.nva.aws.unit.no/customer/8fb3c2f4-da97-4eb1-be65-307c86b993ee\"}";
+        var c = dtoObjectMapper.readValue(string, ReserveDoiRequest.class);
+        var ss = "";
+    }
 }
