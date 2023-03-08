@@ -175,11 +175,6 @@ Resources:
                 responsePayload:
                   topic:
                     - PublicationService.Doi.UpdateRequest
-                  item:
-                    status:
-                      - PUBLISHED
-                    doi:
-                      - exists: true
       EventInvokeConfig:
         DestinationConfig:
           OnFailure:
