@@ -1,411 +1,411 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-#Description: >
-#  AWS
-#
-#  Sample SAM Template for AWS
-#
-#Parameters:
-#  CognitoAuthorizerArn:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Description: Reference to Cognito UserPool for the stage
-#    Default: CognitoAuthorizerArn
-#  CustomDomainBasePath:
-#    Type: String
-#    Description: Base path mapping in CustomDomain
-#    Default: doi-registrar
-#  DataCiteMdsHost:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: dataCiteMdsHost
-#  DataCiteRestHost:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: dataCiteRestHost
-#  EventBusName:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: '/NVA/Events/EventsBusName'
-#  EventBusArn:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: '/NVA/Events/EventsBusArn'
-#  ApiDomain:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    Default: '/NVA/ApiDomain'
-#  CustomerSecretsSecretName:
-#    Type: String
-#    Default: dataCiteCustomerSecrets
-#  CustomerSecretsSecretKey:
-#    Type: String
-#    Default: dataCiteCustomerSecrets
-#  DoiHost:
-#    Type: String
-#  Suffix:
-#    Type: String
-#    Default: ''
-#    Description: Suffix used for naming resources for feature branches to avoid conflicts.
-#
-#Conditions:
-#  WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
-#
-#Globals:
-#  Function:
-#    Timeout: 60
-#    Environment:
-#      Variables:
-#        API_HOST: !Ref ApiDomain
-#
-#
+Description: >
+  AWS
+
+  Sample SAM Template for AWS
+
+Parameters:
+  CognitoAuthorizerArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+    Default: doi-registrar
+  DataCiteMdsHost:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: dataCiteMdsHost
+  DataCiteRestHost:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: dataCiteRestHost
+  EventBusName:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/Events/EventsBusName'
+  EventBusArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/Events/EventsBusArn'
+  ApiDomain:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/NVA/ApiDomain'
+  CustomerSecretsSecretName:
+    Type: String
+    Default: dataCiteCustomerSecrets
+  CustomerSecretsSecretKey:
+    Type: String
+    Default: dataCiteCustomerSecrets
+  DoiHost:
+    Type: String
+  Suffix:
+    Type: String
+    Default: ''
+    Description: Suffix used for naming resources for feature branches to avoid conflicts.
+
+Conditions:
+  WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
+
+Globals:
+  Function:
+    Timeout: 60
+    Environment:
+      Variables:
+        API_HOST: !Ref ApiDomain
+
+
 Resources:
 
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
-#
-#  LambdaRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: lambda.amazonaws.com
-#            Action: sts:AssumeRole
-#      Path: /
-#      Policies:
-#        - PolicyName: LambdaDefaults
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - logs:CreateLogGroup
-#                  - logs:CreateLogStream
-#                  - logs:PutLogEvents
-#                Resource: "*"
-#        - PolicyName: InvokeLambda
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - lambda:InvokeFunction
-#                #Allow all resources to avoid circular dependencies.
-#                Resource: '*'
-#        - PolicyName: SqsEvents
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - sqs:SendMessage
-#                  - sqs:DeleteMessage
-#                Resource:
-#                  - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-#                  - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-#                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
-#                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
-#        - PolicyName: EventBridgeEvents
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - events:PutEvents
-#                  - events:PutRule
-#                Resource: !Ref EventBusArn
-#        - PolicyName: ReadSecrets
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - secretsmanager:GetResourcePolicy
-#                  - secretsmanager:GetSecretValue
-#                  - secretsmanager:DescribeSecret
-#                  - secretsmanager:ListSecretVersionIds
-#                Resource:
-#                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
-#
-#  DataCiteDraftDoiHandlerFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: datacite-draft-doi-handler
-#      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
-#      Runtime: java11
-#      MemorySize: 1408
-#      Role: !GetAtt LambdaRole.Arn
-#      Environment:
-#        Variables:
-#          EVENT_BUS: !Ref EventBusName
-#          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-#          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-#          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-#          DATACITE_REST_HOST: !Ref DataCiteRestHost
-#          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-#          DOI_HOST: !Ref DoiHost
-#      Events:
-#        EventBridgeEvent:
-#          Type: EventBridgeRule
-#          Properties:
-#            EventBusName: !Ref EventBusName
-#            Pattern:
-#              detail-type: [ "Lambda Function Invocation Result - Success" ]
-#              detail:
-#                responsePayload:
-#                  topic:
-#                    - PublicationService.Doi.CreationRequest
-#                    - PublicationService.Doi.UpdateRequest
-#                  item:
-#                    doi:
-#                      - exists: false
-#      EventInvokeConfig:
-#        DestinationConfig:
-#          OnSuccess:
-#            Type: EventBridge
-#            Destination: !Ref EventBusArn
-#          OnFailure:
-#            Type: SQS
-#            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-#
-#  DataCiteFindableDoiHandlerFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: datacite-findable-doi-handler
-#      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-#      Runtime: java11
-#      MemorySize: 1408
-#      Role: !GetAtt LambdaRole.Arn
-#      Environment:
-#        Variables:
-#          EVENT_BUS: !Ref EventBusName
-#          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-#          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-#          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-#          DATACITE_REST_HOST: !Ref DataCiteRestHost
-#          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-#          DOI_HOST: !Ref DoiHost
-#      Events:
-#        EventBridgeEvent:
-#          Type: EventBridgeRule
-#          Properties:
-#            EventBusName: !Ref EventBusName
-#            Pattern:
-#              detail-type: [ "Lambda Function Invocation Result - Success" ]
-#              detail:
-#                responsePayload:
-#                  topic:
-#                    - PublicationService.Doi.UpdateRequest
-#                  item:
-#                    status:
-#                      - PUBLISHED
-#                    doi:
-#                      - exists: true
-#      EventInvokeConfig:
-#        DestinationConfig:
-#          OnFailure:
-#            Type: SQS
-#            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-#
-#  DeleteDraftDoiHandlerFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: datacite-delete-draft-doi-handler
-#      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
-#      Runtime: java11
-#      MemorySize: 1408
-#      Role: !GetAtt LambdaRole.Arn
-#      Environment:
-#        Variables:
-#          EVENT_BUS: !Ref EventBusName
-#          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-#          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-#          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-#          DATACITE_REST_HOST: !Ref DataCiteRestHost
-#          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-#          DOI_HOST: !Ref DoiHost
-#      Events:
-#        EventBridgeEvent:
-#          Type: EventBridgeRule
-#          Properties:
-#            EventBusName: !Ref EventBusName
-#            Pattern:
-#              detail-type: [ "Lambda Function Invocation Result - Success" ]
-#              detail:
-#                responsePayload:
-#                  topic:
-#                    - PublicationService.Doi.DeleteDraftRequest
-#                  item:
-#                    doi:
-#                      - exists: true
-#      EventInvokeConfig:
-#        DestinationConfig:
-#          OnSuccess:
-#            Type: EventBridge
-#            Destination: !Ref EventBusArn
-#          OnFailure:
-#            Type: SQS
-#            Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
-#
-#  ResourceDraftedForDeletion:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: datacite-delete-draft-doi-handler
-#      Handler: no.unit.nva.datacite.handlers.resource.ResourceDraftedForDeletionEventHandler::handleRequest
-#      Runtime: java11
-#      MemorySize: 512
-#      Role: !GetAtt LambdaRole.Arn
-#      Environment:
-#        Variables:
-#          EVENT_BUS: !Ref EventBusName
-#          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-#          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-#          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-#          DATACITE_REST_HOST: !Ref DataCiteRestHost
-#          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-#          DOI_HOST: !Ref DoiHost
-#      Events:
-#        EventBridgeEvent:
-#          Type: EventBridgeRule
-#          Properties:
-#            EventBusName: !Ref EventBusName
-#            Pattern:
-#              detail-type: [ "Lambda Function Invocation Result - Success" ]
-#              detail:
-#                responsePayload:
-#                  topic:
-#                    - PublicationService.Resource.DraftForDeletion
-#                  hasDoi:
-#                    - true
-#
-#  DataCiteReserveDraftDoiHandlerFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: datacite-draft-doi-handler
-#      Handler: no.unit.nva.datacite.handlers.ReserveDraftDoiHandler::handleRequest
-#      Runtime: java11
-#      MemorySize: 1408
-#      Role: !GetAtt LambdaRole.Arn
-#      Environment:
-#        Variables:
-#          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-#          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-#          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-#          DATACITE_REST_HOST: !Ref DataCiteRestHost
-#          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-#          DOI_HOST: !Ref DoiHost
-#      Events:
-#        GetEvent:
-#          Type: Api
-#          Properties:
-#            Path: /
-#            Method: post
-#            RestApiId: !Ref NvaDoiRegistrarClientApi
-#
-#
-#  NvaDoiRegistrarClientApi:
-#    Type: AWS::Serverless::Api
-#    Properties:
-#      AccessLogSetting:
-#        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
-#        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
-#      StageName: Prod
-#      EndpointConfiguration: REGIONAL
-#      DefinitionBody:
-#        'Fn::Transform':
-#          Name: AWS::Include
-#          Parameters:
-#            Location: ./docs/openapi.yaml
-#
-#  #===========================BasePathMappings========================================================#
-#
-#  NvaDoiRegistrarClientBasePathMapping:
-#    Type: AWS::ApiGateway::BasePathMapping
-#    Properties:
-#      BasePath: !If
-#        - WithSuffix
-#        - !Sub ${CustomDomainBasePath}-${Suffix}
-#        - !Sub ${CustomDomainBasePath}
-#      DomainName: !Ref ApiDomain
-#      RestApiId: !Ref NvaDoiRegistrarClientApi
-#      Stage: !Ref NvaDoiRegistrarClientApi.Stage
-#
-#
-#  #============================ Deploy API ============================================================================#
-#  # This solves the problem described here:
-#  # https://stackoverflow.com/questions/41423439/cloudformation-doesnt-deploy-to-api-gateway-stages-on-update
-#  #====================================================================================================================#
-#
-#  ApiGatewayCreateDeploymentLambdaRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: lambda.amazonaws.com
-#            Action: sts:AssumeRole
-#      Path: /
-#      ManagedPolicyArns:
-#        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
-#      Policies:
-#        - PolicyName: ApiGatewayAdmin
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - apigateway:POST
-#                Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${NvaDoiRegistrarClientApi}/deployments'
-#
-#  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
-#  ApiGatewayCreateDeploymentLambda:
-#    Type: AWS::Lambda::Function
-#    Properties:
-#      Handler: index.lambda_handler
-#      Timeout: 30
-#      Role: !GetAtt ApiGatewayCreateDeploymentLambdaRole.Arn
-#      Runtime: python3.8
-#      Code:
-#        ZipFile: |
-#          import json, boto3
-#          import cfnresponse
-#          client = boto3.client('apigateway')
-#
-#          def lambda_handler(event, context):
-#            responseData = {}
-#            responseStatus = cfnresponse.SUCCESS
-#            if event['RequestType'] == 'Update':
-#              try:
-#                properties = event['ResourceProperties']
-#                response = client.create_deployment(
-#                  restApiId=properties['RestApiId'],
-#                  stageName=properties['StageName'],
-#                  description='Deployed from Custom Resource'
-#                )
-#              except:
-#                responseStatus = cfnresponse.FAILED
-#
-#            cfnresponse.send(event, context, responseStatus, responseData)
-#
-#  ApiGatewayCreateDeploymentCustomResource:
-#    Type: AWS::CloudFormation::CustomResource
-#    Properties:
-#      ServiceToken: !GetAtt ApiGatewayCreateDeploymentLambda.Arn
-#      RestApiId: !Ref NvaDoiRegistrarClientApi
-#      StageName: !Ref NvaDoiRegistrarClientApi.Stage
-#      Timestamp: '${BUILD_TIMESTAMP}'
-#      AuthorizerArn: !Ref CognitoAuthorizerArn
-#
-#  DataCiteFindableDoiHandlerDLQ:
-#    Type: "AWS::SQS::Queue"
-#
-#  DataCiteDraftDoiHandlerDLQ:
-#    Type: "AWS::SQS::Queue"
-#
-#  DataCiteDeleteDraftDoiHandlerDLQ:
-#    Type: "AWS::SQS::Queue"
-#
-#  ResourceDraftedForDeletionEventHandlerDLQ:
-#    Type: "AWS::SQS::Queue"
-#
-#
-#
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaDefaults
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                #Allow all resources to avoid circular dependencies.
+                Resource: '*'
+        - PolicyName: SqsEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:DeleteMessage
+                Resource:
+                  - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
+        - PolicyName: EventBridgeEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                  - events:PutRule
+                Resource: !Ref EventBusArn
+        - PolicyName: ReadSecrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetResourcePolicy
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:ListSecretVersionIds
+                Resource:
+                  Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
+
+  DataCiteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.DraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.CreationRequest
+                    - PublicationService.Doi.UpdateRequest
+                  item:
+                    doi:
+                      - exists: false
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
+  DataCiteFindableDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-findable-doi-handler
+      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.UpdateRequest
+                  item:
+                    status:
+                      - PUBLISHED
+                    doi:
+                      - exists: true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
+  DeleteDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-delete-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.DeleteDraftRequest
+                  item:
+                    doi:
+                      - exists: true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnSuccess:
+            Type: EventBridge
+            Destination: !Ref EventBusArn
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+
+  ResourceDraftedForDeletion:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-delete-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.resource.ResourceDraftedForDeletionEventHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Resource.DraftForDeletion
+                  hasDoi:
+                    - true
+
+  DataCiteReserveDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.ReserveDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+            RestApiId: !Ref NvaDoiRegistrarClientApi
+
+
+  NvaDoiRegistrarClientApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
+        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
+      StageName: Prod
+      EndpointConfiguration: REGIONAL
+      DefinitionBody:
+        'Fn::Transform':
+          Name: AWS::Include
+          Parameters:
+            Location: ./docs/openapi.yaml
+
+  #===========================BasePathMappings========================================================#
+
+  NvaDoiRegistrarClientBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !If
+        - WithSuffix
+        - !Sub ${CustomDomainBasePath}-${Suffix}
+        - !Sub ${CustomDomainBasePath}
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref NvaDoiRegistrarClientApi
+      Stage: !Ref NvaDoiRegistrarClientApi.Stage
+
+
+  #============================ Deploy API ============================================================================#
+  # This solves the problem described here:
+  # https://stackoverflow.com/questions/41423439/cloudformation-doesnt-deploy-to-api-gateway-stages-on-update
+  #====================================================================================================================#
+
+  ApiGatewayCreateDeploymentLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: ApiGatewayAdmin
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - apigateway:POST
+                Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${NvaDoiRegistrarClientApi}/deployments'
+
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
+  ApiGatewayCreateDeploymentLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.lambda_handler
+      Timeout: 30
+      Role: !GetAtt ApiGatewayCreateDeploymentLambdaRole.Arn
+      Runtime: python3.8
+      Code:
+        ZipFile: |
+          import json, boto3
+          import cfnresponse
+          client = boto3.client('apigateway')
+
+          def lambda_handler(event, context):
+            responseData = {}
+            responseStatus = cfnresponse.SUCCESS
+            if event['RequestType'] == 'Update':
+              try:
+                properties = event['ResourceProperties']
+                response = client.create_deployment(
+                  restApiId=properties['RestApiId'],
+                  stageName=properties['StageName'],
+                  description='Deployed from Custom Resource'
+                )
+              except:
+                responseStatus = cfnresponse.FAILED
+
+            cfnresponse.send(event, context, responseStatus, responseData)
+
+  ApiGatewayCreateDeploymentCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt ApiGatewayCreateDeploymentLambda.Arn
+      RestApiId: !Ref NvaDoiRegistrarClientApi
+      StageName: !Ref NvaDoiRegistrarClientApi.Stage
+      Timestamp: '${BUILD_TIMESTAMP}'
+      AuthorizerArn: !Ref CognitoAuthorizerArn
+
+  DataCiteFindableDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  DataCiteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  DataCiteDeleteDraftDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+  ResourceDraftedForDeletionEventHandlerDLQ:
+    Type: "AWS::SQS::Queue"
+
+
+
