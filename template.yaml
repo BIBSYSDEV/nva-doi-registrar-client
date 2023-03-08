@@ -291,6 +291,7 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
+          ALLOWED_ORIGIN: '*'
       Events:
         GetEvent:
           Type: Api
