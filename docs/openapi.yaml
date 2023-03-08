@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: NVA Doi Registrar API
+  version: 1.0.0
+paths:
+  /:
+    post:
+      summary: Reserve Doi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReserveDoiRequest'
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteReserveDraftDoiHandlerFunction.Arn}/invocations
+        responses: { }
+        httpMethod: POST
+        type: AWS_PROXY
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doi'
+
+components:
+  schemas:
+    ReserveDoiRequest:
+      type: object
+      properties:
+        customer:
+          type: string
+    Doi:
+      type: object
+      properties:
+        doi:
+          type: string
+
+  securitySchemes:
+    CognitoUserPool:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: cognito_user_pools
+      x-amazon-apigateway-authorizer:
+        type: cognito_user_pools
+        providerARNs:
+          - Ref:
+              CognitoAuthorizerArn

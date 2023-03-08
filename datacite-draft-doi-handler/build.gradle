@@ -14,12 +14,12 @@ dependencies {
     implementation libs.nva.secrets
     implementation libs.nva.eventhandlers
     implementation libs.nva.identifiers
+    implementation libs.nva.apigateway
+
     implementation libs.bundles.logging
     implementation libs.bundles.jackson
 
     runtimeOnly libs.jaxb.runtime
-
-    testImplementation libs.bundles.testing
 
     compileOnly(libs.aws.sdk.apigateway) {
         because "PMD complains for the com/amazonaws/regions/Regions class"
@@ -28,4 +28,11 @@ dependencies {
     compileOnly(libs.aws.sdk.secrets) {
         because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
     }
+    testImplementation libs.bundles.testing
+    testImplementation libs.wiremock
+}
+
+test {
+    environment "ALLOWED_ORIGIN", "*"
+    environment "DATACITE_REST_HOST", "someHost"
 }
