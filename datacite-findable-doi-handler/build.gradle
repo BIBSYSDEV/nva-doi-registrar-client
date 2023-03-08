@@ -27,6 +27,7 @@ dependencies {
 
     testImplementation libs.bundles.testing
     testImplementation libs.nva.logutils
+    testImplementation libs.wiremock
 }
 
 test{

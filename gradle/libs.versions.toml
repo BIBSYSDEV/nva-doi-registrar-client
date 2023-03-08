@@ -11,7 +11,7 @@ jaxbRuntime = { strictly = '2.3.2' }
 commonsLang = { strictly = '3.12.0' }
 secretsCaching = { strictly = '1.0.1' }
 zalando = { strictly = '0.26.0' }
-wiremock = { strictly = '2.27.2' }
+wiremock = { strictly = "2.32.0" }
 nva-datacite = { strictly = '0.4.0' }
 log4j = { strictly = '2.17.2' }
 slf4j = { strictly = '1.8.0-beta4' }
@@ -61,7 +61,6 @@ xsd2java-impl = { group = 'com.sun.xml.bind', name = 'jaxb-impl', version.ref = 
 xsd2java-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'javaXmlBind' }
 xsd2java-jakarta = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version.ref = 'jakartaXmlBind' }
 xsd2java-activation = { group = 'javax.activation', name = 'javax.activation-api', version.ref = 'javaxActivation' }
-
 
 jaxb-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'jaxbApi' }
 jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxbRuntime' }
