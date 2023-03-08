@@ -16,7 +16,7 @@ paths:
         - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReserveDraftDoiHandler.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteReserveDraftDoiHandlerFunction.Arn}/invocations
         responses: { }
         httpMethod: POST
         type: AWS_PROXY
