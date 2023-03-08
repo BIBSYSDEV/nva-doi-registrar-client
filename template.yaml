@@ -274,17 +274,33 @@ Resources:
                     - PublicationService.Resource.DraftForDeletion
                   hasDoi:
                     - true
-      EventInvokeConfig:
-        DestinationConfig:
-          OnSuccess:
-            Type: EventBridge
-            Destination: !Ref EventBusArn
-          OnFailure:
-            Type: SQS
-            Destination: !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
+
+  DataCiteReserveDraftDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.ReserveDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+            RestApiId: !Ref NvaDoiRegistrarClientApi
 
 
-  NvaDoiRegistrarClient:
+  NvaDoiRegistrarClientApi:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
@@ -308,8 +324,8 @@ Resources:
         - !Sub ${CustomDomainBasePath}-${Suffix}
         - !Sub ${CustomDomainBasePath}
       DomainName: !Ref ApiDomain
-      RestApiId: !Ref NvaDoiRegistrarClient
-      Stage: !Ref NvaDoiRegistrarClient.Stage
+      RestApiId: !Ref NvaDoiRegistrarClientApi
+      Stage: !Ref NvaDoiRegistrarClientApi.Stage
 
 
   #============================ Deploy API ============================================================================#
@@ -338,7 +354,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - apigateway:POST
-                Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${NvaDoiRegistrarClient}/deployments'
+                Resource: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${NvaDoiRegistrarClientApi}/deployments'
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
   ApiGatewayCreateDeploymentLambda:
@@ -374,8 +390,8 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt ApiGatewayCreateDeploymentLambda.Arn
-      RestApiId: !Ref NvaDoiRegistrarClient
-      StageName: !Ref NvaDoiRegistrarClient.Stage
+      RestApiId: !Ref NvaDoiRegistrarClientApi
+      StageName: !Ref NvaDoiRegistrarClientApi.Stage
       Timestamp: '${BUILD_TIMESTAMP}'
       AuthorizerArn: !Ref CognitoAuthorizerArn
 
