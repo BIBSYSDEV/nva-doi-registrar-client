@@ -64,7 +64,7 @@ public class FindableDoiEventHandlerTest {
     private static final URI DOI_IN_INPUT_EVENT = UriWrapper.fromUri("https://doi.org/10.1000/182").getUri();
     private final DoiClient doiClient = mock(DoiClient.class);
 
-    private final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
+    private static final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
     private FindableDoiEventHandler findableDoiHandler;
     private ByteArrayOutputStream outputStream;
     private Context context;
