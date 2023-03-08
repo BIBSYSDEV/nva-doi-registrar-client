@@ -1,5 +1,5 @@
-#AWSTemplateFormatVersion: '2010-09-09'
-#Transform: AWS::Serverless-2016-10-31
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 #Description: >
 #  AWS
 #
@@ -53,10 +53,10 @@
 #        API_HOST: !Ref ApiDomain
 #
 #
-#Resources:
-#
-#  ApiAccessLogGroup:
-#    Type: AWS::Logs::LogGroup
+Resources:
+
+  ApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
 #
 #  LambdaRole:
 #    Type: AWS::IAM::Role
