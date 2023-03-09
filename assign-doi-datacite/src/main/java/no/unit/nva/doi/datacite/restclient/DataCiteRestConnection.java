@@ -11,6 +11,8 @@ import java.util.Base64;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataCiteRestConnection {
 
@@ -20,6 +22,8 @@ public class DataCiteRestConnection {
     public static final String ACCEPT = "Accept";
     public static final String COLON = ":";
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final Logger logger = LoggerFactory.getLogger(DataCiteRestConnection.class);
+
     private final URI dataciteRestUri;
     private final HttpClient httpClient;
     private final DataCiteMdsClientSecretConfig configWithSecretes;
@@ -51,11 +55,12 @@ public class DataCiteRestConnection {
 
         String bodyJson = requestBodyContainingTheDoiPrefix();
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(requestTargetUri())
-            .POST(BodyPublishers.ofString(bodyJson))
-            .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
-            .headers(AUTHORIZATION_HEADER, authorizationString())
-            .build();
+                                      .uri(requestTargetUri())
+                                      .POST(BodyPublishers.ofString(bodyJson))
+                                      .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+                                      .headers(AUTHORIZATION_HEADER, authorizationString())
+                                      .build();
+        logger.info("URIII: {}", postRequest.uri());
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -63,12 +68,16 @@ public class DataCiteRestConnection {
         throws IOException, InterruptedException {
 
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(requestTargetUriToDoi(id))
-            .GET()
-            .header(ACCEPT, JSON_API_CONTENT_TYPE)
-            .headers(AUTHORIZATION_HEADER, authorizationString())
-            .build();
+                                      .uri(requestTargetUriToDoi(id))
+                                      .GET()
+                                      .header(ACCEPT, JSON_API_CONTENT_TYPE)
+                                      .headers(AUTHORIZATION_HEADER, authorizationString())
+                                      .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static String basicAuth(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
     private String requestBodyContainingTheDoiPrefix() {
@@ -81,10 +90,6 @@ public class DataCiteRestConnection {
             configWithSecretes.getDataCiteMdsClientUsername(),
             configWithSecretes.getDataCiteMdsClientPassword()
         );
-    }
-
-    private static String basicAuth(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
     private URI requestTargetUri() {
