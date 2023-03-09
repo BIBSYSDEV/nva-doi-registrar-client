@@ -11,8 +11,6 @@ import java.util.Base64;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import nva.commons.core.paths.UriWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataCiteRestConnection {
 
@@ -22,8 +20,6 @@ public class DataCiteRestConnection {
     public static final String ACCEPT = "Accept";
     public static final String COLON = ":";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final Logger logger = LoggerFactory.getLogger(DataCiteRestConnection.class);
-
     private final URI dataciteRestUri;
     private final HttpClient httpClient;
     private final DataCiteMdsClientSecretConfig configWithSecretes;
@@ -60,7 +56,6 @@ public class DataCiteRestConnection {
                                       .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
                                       .headers(AUTHORIZATION_HEADER, authorizationString())
                                       .build();
-        logger.info("URIII: {}", postRequest.uri());
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
