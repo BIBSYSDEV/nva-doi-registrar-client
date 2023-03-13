@@ -63,7 +63,6 @@ public class DataCiteClient implements DoiClient {
             DataCiteRestConnection connection = prepareAuthenticatedDataCiteRestConnection(customerId);
             String doiPrefix = customerConfigInfo.getCustomerDoiPrefix();
             HttpResponse<String> response = sendDraftDoiRequest(connection, doiPrefix);
-            logger.info("Responseee: {}", response);
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
 
             return responseBody.toDoi().changeHost(DOI_HOST);
@@ -79,7 +78,7 @@ public class DataCiteClient implements DoiClient {
     public void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml) throws ClientException {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
-                .postMetadata(doi.toIdentifier(), metadataDataCiteXml);
+                               .postMetadata(doi.toIdentifier(), metadataDataCiteXml);
 
             logger.info("Datacite response:" + response.body());
             if (isUnsuccessfulResponse(response)) {
@@ -98,7 +97,7 @@ public class DataCiteClient implements DoiClient {
     public void setLandingPage(URI customerId, Doi doi, URI landingPage) throws ClientException {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
-                .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
+                               .registerUrl(doi.toIdentifier(), landingPage.toASCIIString());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_SETTING_DOI_URL_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new SetLandingPageException(doi, response.statusCode());
@@ -115,7 +114,7 @@ public class DataCiteClient implements DoiClient {
     public void deleteMetadata(URI customerId, Doi doi) throws ClientException {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
-                .deleteMetadata(doi.toIdentifier());
+                               .deleteMetadata(doi.toIdentifier());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_METADATA_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new DeleteMetadataException(doi, response.statusCode());
@@ -132,7 +131,7 @@ public class DataCiteClient implements DoiClient {
     public void deleteDraftDoi(URI customerId, Doi doi) throws ClientException {
         try {
             var response = prepareAuthenticatedMdsDataCiteConnection(customerId)
-                .deleteDoi(doi.toIdentifier());
+                               .deleteDoi(doi.toIdentifier());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_DELETING_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new DeleteDraftDoiException(doi, response.statusCode());
@@ -146,7 +145,7 @@ public class DataCiteClient implements DoiClient {
     public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
         try {
             var response = prepareAuthenticatedDataCiteRestConnection(customerId)
-                .getDoi(doi.toIdentifier());
+                               .getDoi(doi.toIdentifier());
             if (isUnsuccessfulResponse(response)) {
                 logger.error(ERROR_GETTING_DOI_TEMPLATE, doi.toIdentifier(), response.statusCode());
                 throw new GetDoiException(doi, response.statusCode());
