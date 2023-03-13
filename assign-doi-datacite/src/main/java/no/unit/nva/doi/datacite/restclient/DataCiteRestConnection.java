@@ -51,11 +51,11 @@ public class DataCiteRestConnection {
 
         String bodyJson = requestBodyContainingTheDoiPrefix();
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(requestTargetUri())
-            .POST(BodyPublishers.ofString(bodyJson))
-            .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
-            .headers(AUTHORIZATION_HEADER, authorizationString())
-            .build();
+                                      .uri(requestTargetUri())
+                                      .POST(BodyPublishers.ofString(bodyJson))
+                                      .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+                                      .headers(AUTHORIZATION_HEADER, authorizationString())
+                                      .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -63,12 +63,16 @@ public class DataCiteRestConnection {
         throws IOException, InterruptedException {
 
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(requestTargetUriToDoi(id))
-            .GET()
-            .header(ACCEPT, JSON_API_CONTENT_TYPE)
-            .headers(AUTHORIZATION_HEADER, authorizationString())
-            .build();
+                                      .uri(requestTargetUriToDoi(id))
+                                      .GET()
+                                      .header(ACCEPT, JSON_API_CONTENT_TYPE)
+                                      .headers(AUTHORIZATION_HEADER, authorizationString())
+                                      .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static String basicAuth(String username, String password) {
+        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
     private String requestBodyContainingTheDoiPrefix() {
@@ -81,10 +85,6 @@ public class DataCiteRestConnection {
             configWithSecretes.getDataCiteMdsClientUsername(),
             configWithSecretes.getDataCiteMdsClientPassword()
         );
-    }
-
-    private static String basicAuth(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
     }
 
     private URI requestTargetUri() {
