@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -61,10 +62,9 @@ public class FindableDoiEventHandlerTest {
         UriWrapper.fromUri("https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934")
             .getUri();
 
-    private static final URI DOI_IN_INPUT_EVENT = UriWrapper.fromUri("https://doi.org/10.1000/182").getUri();
-    private final DoiClient doiClient = mock(DoiClient.class);
-
+    private static final URI VALID_SAMPLE_DOI = UriWrapper.fromUri("https://doi.org/10.1000/182").getUri();
     private static final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
+    private final DoiClient doiClient = mock(DoiClient.class);
     private FindableDoiEventHandler findableDoiHandler;
     private ByteArrayOutputStream outputStream;
     private Context context;
@@ -132,7 +132,7 @@ public class FindableDoiEventHandlerTest {
             assertThat(response.getItem().getModifiedDate(), is(notNullValue()));
 
             URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
-            Doi expectedDoi = Doi.fromUri(DOI_IN_INPUT_EVENT);
+            Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
             verify(doiClient).updateMetadata(
                 eq(expectedCustomerId),
                 eq(expectedDoi),
@@ -144,7 +144,7 @@ public class FindableDoiEventHandlerTest {
             );
             var eventEmitted = readOutputStream(outputStream);
             assertThat(eventEmitted.getTopic(), is(equalTo("DoiRegistrarService.Doi.Updated")));
-            assertThat(eventEmitted.getItem(), allOf(hasProperty("doi", equalTo(Optional.of(DOI_IN_INPUT_EVENT))),
+            assertThat(eventEmitted.getItem(), allOf(hasProperty("doi", equalTo(Optional.of(VALID_SAMPLE_DOI))),
                                                      hasProperty(
                                                          "publicationIdentifier",
                                                          is(equalTo(new SortableIdentifier(publicationIdentifier))))));
@@ -161,6 +161,38 @@ public class FindableDoiEventHandlerTest {
         assertThat(testingAppender.getMessages(), containsString(SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI));
     }
 
+    @Test
+    void whenDoiIsNotPresentInEventDraftDoiIsCreatedAndMadeFindableInOneStep() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        var doiUpdateRequestNotContaininDoi = createDoiUpdateRequestNotContainingDoi(publicationIdentifier);
+        var awsEventBridgeEvent = crateAwsEventBridgeEvent(doiUpdateRequestNotContaininDoi);
+        try (var inputStream = toInputStream(awsEventBridgeEvent)) {
+            mockDataciteXmlBody(publicationIdentifier);
+            mockCreateDoiResponse();
+            findableDoiHandler.handleRequest(inputStream, outputStream, context);
+            
+            URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
+            Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
+            verify(doiClient).createDoi(
+                eq(expectedCustomerId));
+            verify(doiClient).updateMetadata(
+                eq(expectedCustomerId),
+                eq(expectedDoi),
+                eq(DATACITE_XML_BODY));
+            verify(doiClient).setLandingPage(
+                expectedCustomerId,
+                expectedDoi,
+                UriWrapper.fromUri(createPublicationId(publicationIdentifier)).getUri()
+            );
+            var eventEmitted = readOutputStream(outputStream);
+            assertThat(eventEmitted.getTopic(), is(equalTo("DoiRegistrarService.Doi.Updated")));
+            assertThat(eventEmitted.getItem(), allOf(hasProperty("doi", equalTo(Optional.of(VALID_SAMPLE_DOI))),
+                                                     hasProperty(
+                                                         "publicationIdentifier",
+                                                         is(equalTo(new SortableIdentifier(publicationIdentifier))))));
+        }
+    }
+
     private static AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> crateAwsEventBridgeEvent(
         DoiUpdateRequestEvent doiUpdateRequestEvent) {
         var request = new AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>>();
@@ -168,6 +200,11 @@ public class FindableDoiEventHandlerTest {
         awsEventBridgeDetail.setResponsePayload(doiUpdateRequestEvent);
         request.setDetail(awsEventBridgeDetail);
         return request;
+    }
+
+    private void mockCreateDoiResponse() throws ClientException {
+        when(doiClient.createDoi(any()))
+            .thenAnswer(invocation -> Doi.fromUri(VALID_SAMPLE_DOI));
     }
 
     private DoiUpdateEvent readOutputStream(ByteArrayOutputStream outputStream) throws IOException {
@@ -196,7 +233,15 @@ public class FindableDoiEventHandlerTest {
     private DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID) {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
                                          null,
-                                         DOI_IN_INPUT_EVENT,
+                                         VALID_SAMPLE_DOI,
+                                         UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
+                                         CUSTOMER_ID_IN_INPUT_EVENT);
+    }
+
+    private DoiUpdateRequestEvent createDoiUpdateRequestNotContainingDoi(String publicationID) {
+        return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
+                                         null,
+                                         null,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
                                          CUSTOMER_ID_IN_INPUT_EVENT);
     }

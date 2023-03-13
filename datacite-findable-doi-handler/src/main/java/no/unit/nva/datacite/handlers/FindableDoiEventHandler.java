@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.handlers;
 
+import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -53,14 +54,12 @@ public class FindableDoiEventHandler
                                                  Context context) {
 
         validateInput(input);
-        var customerId = input.getCustomerId();
-        var doi = Doi.fromUri(input.getDoi());
-        var publicationIdentifier = SortableIdentifier.fromUri(input.getPublicationId());
-        var publicationId = input.getPublicationId();
-
-        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), publicationId, customerId);
-
         try {
+            var customerId = input.getCustomerId();
+            var doi = getDoiFromEventOfDraftDoi(input);
+            var publicationIdentifier = SortableIdentifier.fromUri(input.getPublicationId());
+            var publicationId = input.getPublicationId();
+            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), publicationId, customerId);
             String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(publicationId);
             doiClient.updateMetadata(customerId, doi, dataCiteXmlMetadata);
             doiClient.setLandingPage(customerId, doi, publicationId);
@@ -96,6 +95,14 @@ public class FindableDoiEventHandler
             new DataCiteConnectionFactory(dataCiteConfigurationFactory);
 
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+    }
+
+    private Doi getDoiFromEventOfDraftDoi(DoiUpdateRequestEvent input) throws ClientException {
+        return nonNull(input.getDoi()) ? Doi.fromUri(input.getDoi()) : draftDoi(input);
+    }
+
+    private Doi draftDoi(DoiUpdateRequestEvent input) throws ClientException {
+        return doiClient.createDoi(input.getCustomerId());
     }
 
     private DoiUpdateDto createDoiUpdateDto(Doi doi, SortableIdentifier publicationIdentifier) {
