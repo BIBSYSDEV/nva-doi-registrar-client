@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -55,16 +56,14 @@ public class FindableDoiEventHandler
 
         validateInput(input);
         try {
-            var customerId = input.getCustomerId();
             var doi = getDoiFromEventOfDraftDoi(input);
-            var publicationIdentifier = SortableIdentifier.fromUri(input.getPublicationId());
-            var publicationId = input.getPublicationId();
-            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), publicationId, customerId);
-            String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(publicationId);
-            doiClient.updateMetadata(customerId, doi, dataCiteXmlMetadata);
-            doiClient.setLandingPage(customerId, doi, publicationId);
+            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
+                         input.getCustomerId());
+            String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(input.getPublicationId());
+            doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
+            doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
-                                                                createDoiUpdateDto(doi, publicationIdentifier));
+                                                                createDoiUpdateDto(doi, input.getPublicationId()));
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
@@ -105,7 +104,8 @@ public class FindableDoiEventHandler
         return doiClient.createDoi(input.getCustomerId());
     }
 
-    private DoiUpdateDto createDoiUpdateDto(Doi doi, SortableIdentifier publicationIdentifier) {
+    private DoiUpdateDto createDoiUpdateDto(Doi doi, URI publicationId) {
+        var publicationIdentifier = SortableIdentifier.fromUri(publicationId);
         return new DoiUpdateDto.Builder()
                    .withPublicationId(publicationIdentifier)
                    .withModifiedDate(Instant.now())
