@@ -232,7 +232,6 @@ public class FindableDoiEventHandlerTest {
 
     private DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID) {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
-                                         null,
                                          VALID_SAMPLE_DOI,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
                                          CUSTOMER_ID_IN_INPUT_EVENT);
@@ -240,7 +239,6 @@ public class FindableDoiEventHandlerTest {
 
     private DoiUpdateRequestEvent createDoiUpdateRequestNotContainingDoi(String publicationID) {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
-                                         null,
                                          null,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
                                          CUSTOMER_ID_IN_INPUT_EVENT);
