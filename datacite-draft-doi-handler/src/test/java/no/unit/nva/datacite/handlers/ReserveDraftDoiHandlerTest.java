@@ -2,9 +2,6 @@ package no.unit.nva.datacite.handlers;
 
 import static com.google.common.net.HttpHeaders.ACCEPT;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.datacite.handlers.DraftDoiHandlerTest.EXPECTED_ERROR_MESSAGE;
-import static no.unit.nva.datacite.handlers.DraftDoiHandlerTest.SAMPLE_DOI_PREFIX;
-import static no.unit.nva.datacite.handlers.DraftDoiHandlerTest.SAMPLE_STATUS_CODE;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,6 +39,12 @@ import org.zalando.problem.Problem;
 public class ReserveDraftDoiHandlerTest {
 
     public static final String DOI_IDENTIFIER = "10.1052/identifier";
+
+    public static final String EXPECTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
+
+    public static final int SAMPLE_STATUS_CODE = 500;
+
+    public static final String SAMPLE_DOI_PREFIX = "10.1234";
     private final Environment environment = mock(Environment.class);
     private Context context;
     private AtomicReference<URI> inputBuffer;
