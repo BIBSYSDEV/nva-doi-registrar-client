@@ -1,8 +1,10 @@
 package no.unit.nva.datacite.handlers;
 
+import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -53,19 +55,15 @@ public class FindableDoiEventHandler
                                                  Context context) {
 
         validateInput(input);
-        var customerId = input.getCustomerId();
-        var doi = Doi.fromUri(input.getDoi());
-        var publicationIdentifier = SortableIdentifier.fromUri(input.getPublicationId());
-        var publicationId = input.getPublicationId();
-
-        logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), publicationId, customerId);
-
         try {
-            String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(publicationId);
-            doiClient.updateMetadata(customerId, doi, dataCiteXmlMetadata);
-            doiClient.setLandingPage(customerId, doi, publicationId);
+            var doi = getDoiFromEventOrDraftDoi(input);
+            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
+                         input.getCustomerId());
+            String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(input.getPublicationId());
+            doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
+            doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
-                                                                createDoiUpdateDto(doi, publicationIdentifier));
+                                                                createDoiUpdateDto(doi, input.getPublicationId()));
             logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
@@ -98,7 +96,16 @@ public class FindableDoiEventHandler
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
-    private DoiUpdateDto createDoiUpdateDto(Doi doi, SortableIdentifier publicationIdentifier) {
+    private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) throws ClientException {
+        return nonNull(input.getDoi()) ? Doi.fromUri(input.getDoi()) : draftDoi(input);
+    }
+
+    private Doi draftDoi(DoiUpdateRequestEvent input) throws ClientException {
+        return doiClient.createDoi(input.getCustomerId());
+    }
+
+    private DoiUpdateDto createDoiUpdateDto(Doi doi, URI publicationId) {
+        var publicationIdentifier = SortableIdentifier.fromUri(publicationId);
         return new DoiUpdateDto.Builder()
                    .withPublicationId(publicationIdentifier)
                    .withModifiedDate(Instant.now())
