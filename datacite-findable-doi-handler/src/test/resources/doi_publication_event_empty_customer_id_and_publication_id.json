@@ -92,7 +92,7 @@
                           "bool": true
                         },
                         "type": {
-                          "s": "AcademicArticle"
+                          "s": "JournalArticle"
                         }
                       }
                     },
@@ -289,63 +289,9 @@
     },
     "responsePayload": {
       "type": "publication.doiupdate.request",
-      "item": {
-        "type": "Publication",
-        "identifier": "017781d2cecf-deeac454-fe20-4ef9-95e7-c993740c412b",
-        "status": "PUBLISHED",
-        "owner": "og@unit.no",
-        "publisher": {
-          "type": "Organization",
-          "id": "https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934"
-        },
-        "modifiedDate": "2021-02-08T13:27:27.663594Z",
-        "doiRequest": {
-          "type": "DoiRequest",
-          "status": "APPROVED",
-          "modifiedDate": "2021-02-08T13:27:37.115526Z",
-          "createdDate": "2021-02-08T13:27:37.115526Z"
-        },
-        "doi": "https://doi.org/10.1000/182",
-        "entityDescription": {
-          "type": "EntityDescription",
-          "mainTitle": "The resource title",
-          "date": {
-            "type": "PublicationDate",
-            "year": "2021",
-            "month": "2",
-            "day": "2"
-          },
-          "contributors": [
-            {
-              "type": "Contributor",
-              "identity": {
-                "type": "Identity",
-                "id": "https://api.dev.nva.aws.unit.no/person/1582627888604",
-                "name": "Gkorgkas,Orestis Stylianos",
-                "orcId": "0000-0001-8310-5489"
-              },
-              "affiliations": [
-                {
-                  "type": "Organization",
-                  "id": "https://api.cristin.no/v2/institutions/20202"
-                }
-              ],
-              "sequence": 1,
-              "correspondingAuthor": false
-            }
-          ],
-          "reference": {
-            "type": "Reference",
-            "publicationInstance": {
-              "type": "JournalArticle",
-              "peerReviewed": true,
-              "pages": {
-                "type": "Range"
-              }
-            }
-          }
-        }
-      }
+      "doi": "https://doi.org/10.1000/182",
+      "publicationId": null,
+      "customerId": null
     }
   }
 }
