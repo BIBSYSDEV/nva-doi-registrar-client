@@ -5,7 +5,6 @@ plugins{
 dependencies {
     implementation project(":assign-doi-datacite")
     implementation project(":doi-commons")
-    implementation project(":datacite-doi-commons")
 
     implementation libs.nva.doi
     implementation libs.nva.core
