@@ -153,9 +153,8 @@ Resources:
                   topic:
                     - PublicationService.Doi.CreationRequest
                     - PublicationService.Doi.UpdateRequest
-                  item:
-                    doi:
-                      - exists: false
+                  doi:
+                    - exists: false
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
@@ -227,9 +226,8 @@ Resources:
                 responsePayload:
                   topic:
                     - PublicationService.Doi.DeleteDraftRequest
-                  item:
-                    doi:
-                      - exists: true
+                  doi:
+                    - exists: true
       EventInvokeConfig:
         DestinationConfig:
           OnSuccess:
