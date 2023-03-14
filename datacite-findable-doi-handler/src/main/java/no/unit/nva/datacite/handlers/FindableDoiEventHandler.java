@@ -56,7 +56,7 @@ public class FindableDoiEventHandler
 
         validateInput(input);
         try {
-            var doi = getDoiFromEventOfDraftDoi(input);
+            var doi = getDoiFromEventOrDraftDoi(input);
             logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
                          input.getCustomerId());
             String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(input.getPublicationId());
@@ -96,7 +96,7 @@ public class FindableDoiEventHandler
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
-    private Doi getDoiFromEventOfDraftDoi(DoiUpdateRequestEvent input) throws ClientException {
+    private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) throws ClientException {
         return nonNull(input.getDoi()) ? Doi.fromUri(input.getDoi()) : draftDoi(input);
     }
 
