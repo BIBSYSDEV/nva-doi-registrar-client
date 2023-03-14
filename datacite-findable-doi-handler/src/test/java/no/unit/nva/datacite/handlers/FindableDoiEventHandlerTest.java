@@ -75,7 +75,7 @@ public class FindableDoiEventHandlerTest {
     public void init(WireMockRuntimeInfo wireMockRuntimeInfo) {
         baseUrl = wireMockRuntimeInfo.getHttpBaseUrl();
         var httpClient = WiremockHttpClient.create();
-        findableDoiHandler = new FindableDoiEventHandler(doiClient, new PublicationApiClient(httpClient));
+        findableDoiHandler = new FindableDoiEventHandler(doiClient, new DataCiteMetadataResolver(httpClient));
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
     }

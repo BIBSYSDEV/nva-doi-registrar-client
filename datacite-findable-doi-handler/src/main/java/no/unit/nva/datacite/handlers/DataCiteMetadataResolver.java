@@ -11,18 +11,19 @@ import java.net.http.HttpResponse.BodyHandlers;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.attempt.Failure;
 
-public class PublicationApiClient {
+public class DataCiteMetadataResolver {
 
     private static final String ACCEPT = "Accept";
     private static final String APPLICATION_VND_DATACITE_DATACITE_XML = "application/vnd.datacite.datacite+xml";
+    public static final String PUBLICATION_API_ERROR_MESSAGE = "Publication api answered with status: ";
     private final HttpClient httpClient;
 
-    public PublicationApiClient(HttpClient httpClient) {
+    public DataCiteMetadataResolver(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
     @JacocoGenerated
-    public PublicationApiClient() {
+    public DataCiteMetadataResolver() {
         this(HttpClient.newBuilder().build());
     }
 
@@ -39,7 +40,7 @@ public class PublicationApiClient {
 
     private String getBodyFromResponse(HttpResponse<String> response) {
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-            throw new PublicationApiClientException("Publication api answered with status: " + response.statusCode());
+            throw new PublicationApiClientException(PUBLICATION_API_ERROR_MESSAGE + response.statusCode());
         }
         return response.body();
     }

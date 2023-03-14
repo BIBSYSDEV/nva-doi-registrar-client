@@ -36,17 +36,17 @@ public class FindableDoiEventHandler
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {} : {}";
     private static final Logger logger = LoggerFactory.getLogger(FindableDoiEventHandler.class);
     private final DoiClient doiClient;
-    private final PublicationApiClient publicationApiClient;
+    private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
     @JacocoGenerated
     public FindableDoiEventHandler() {
-        this(defaultDoiClient(), new PublicationApiClient());
+        this(defaultDoiClient(), new DataCiteMetadataResolver());
     }
 
-    public FindableDoiEventHandler(DoiClient doiClient, PublicationApiClient publicationApiClient) {
+    public FindableDoiEventHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver) {
         super(DoiUpdateRequestEvent.class);
         this.doiClient = doiClient;
-        this.publicationApiClient = publicationApiClient;
+        this.dataCiteMetadataResolver = dataCiteMetadataResolver;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class FindableDoiEventHandler
             var doi = getDoiFromEventOrDraftDoi(input);
             logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
                          input.getCustomerId());
-            String dataCiteXmlMetadata = publicationApiClient.getDataCiteMetadataXml(input.getPublicationId());
+            String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
             doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
             doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
