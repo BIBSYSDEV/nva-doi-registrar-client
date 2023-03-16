@@ -57,7 +57,7 @@ public class FindableDoiEventHandler
         validateInput(input);
         try {
             var doi = getDoiFromEventOrDraftDoi(input);
-            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
+            logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
                          input.getCustomerId());
             String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
             doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
