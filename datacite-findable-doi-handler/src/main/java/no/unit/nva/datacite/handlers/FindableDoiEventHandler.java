@@ -64,7 +64,7 @@ public class FindableDoiEventHandler
             doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
                                                                 createDoiUpdateDto(doi, input.getPublicationId()));
-            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
+            logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
