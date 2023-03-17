@@ -57,14 +57,14 @@ public class FindableDoiEventHandler
         validateInput(input);
         try {
             var doi = getDoiFromEventOrDraftDoi(input);
-            logger.debug(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
+            logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
                          input.getCustomerId());
             String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
             doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
             doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
                                                                 createDoiUpdateDto(doi, input.getPublicationId()));
-            logger.debug(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
+            logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
             return doiUpdateHolder;
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
