@@ -4,20 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
-import no.unit.nva.model.Publication;
 import nva.commons.core.JacocoGenerated;
 
 public class DoiUpdateRequestEvent {
 
     public static final String TOPIC = "topic";
-    public static final String ITEM = "item";
 
     @JsonProperty(TOPIC)
     private final String topic;
-
-    @Deprecated
-    @JsonProperty(ITEM)
-    private final Publication item;
 
     @JsonProperty("doi")
     private final URI doi;
@@ -32,12 +26,10 @@ public class DoiUpdateRequestEvent {
     @JsonCreator
     public DoiUpdateRequestEvent(
         @JsonProperty(TOPIC) String type,
-        @JsonProperty(ITEM) Publication publication,
         @JsonProperty("doi") URI doi,
         @JsonProperty("publicationId") URI publicationId,
         @JsonProperty("customerId") URI customerId) {
         this.topic = type;
-        this.item = publication;
         this.doi = doi;
         this.publicationId = publicationId;
         this.customerId = customerId;
@@ -47,7 +39,6 @@ public class DoiUpdateRequestEvent {
     @Override
     public int hashCode() {
         return Objects.hash(getTopic(),
-                            getItem(),
                             getDoi(),
                             getPublicationId(),
                             getCustomerId());
@@ -64,7 +55,6 @@ public class DoiUpdateRequestEvent {
         }
         DoiUpdateRequestEvent that = (DoiUpdateRequestEvent) o;
         return Objects.equals(getTopic(), that.getTopic())
-               && Objects.equals(getItem(), that.getItem())
                && Objects.equals(getDoi(), that.getDoi())
                && Objects.equals(getCustomerId(), that.getCustomerId())
                && Objects.equals(getPublicationId(), that.getPublicationId());
@@ -75,11 +65,6 @@ public class DoiUpdateRequestEvent {
         return topic;
     }
 
-    @Deprecated
-    @JacocoGenerated
-    public Publication getItem() {
-        return item;
-    }
 
     @JacocoGenerated
     public URI getDoi() {

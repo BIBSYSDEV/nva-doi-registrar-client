@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation project(":datacite-doi-commons")
 
     implementation libs.nva.core
     implementation libs.nva.json
@@ -19,9 +18,9 @@ dependencies {
 
 }
 
-
-test{
+test {
     environment "DOI_HOST", "example.doi.host.org"
-    environment "DATACITE_MDS_HOST","localhost"
+    environment "DATACITE_MDS_HOST", "localhost"
     environment "DATACITE_REST_HOST", "localhost"
+    environment "API_HOST", "api.localhost.nva.aws.unit.no"
 }
