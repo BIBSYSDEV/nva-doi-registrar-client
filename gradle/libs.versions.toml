@@ -5,6 +5,7 @@ jackson = { strictly = '2.14.1' }
 mockito = { strictly = '4.2.0' }
 junit = { strictly = '5.8.2' }
 awsSdk = { strictly = '1.12.369' }
+awsLambdaEvents = { strictly = '3.11.0' }
 jaxbApi = { strictly = '2.3.1' }
 jaxbRuntime = { strictly = '2.3.2' }
 commonsLang = { strictly = '3.12.0' }
@@ -40,6 +41,7 @@ jackson-problem = { group = 'org.zalando', name = 'jackson-datatype-problem', ve
 aws-sdk = { group = 'com.amazonaws', name = 'aws-java-sdk', version.ref = 'awsSdk' }
 aws-sdk-apigateway = { group = 'com.amazonaws', name = 'aws-java-sdk-api-gateway', version.ref = 'awsSdk' }
 aws-sdk-secrets = { group = 'com.amazonaws', name = 'aws-java-sdk-secretsmanager', version.ref = 'awsSdk' }
+aws-lambda-events = { group = 'com.amazonaws', name = 'aws-lambda-java-events', version.ref = 'awsLambdaEvents' }
 
 commons-lang3 = { group = 'org.apache.commons', name = 'commons-lang3', version.ref = "commonsLang" }
 aws-secretsmanager-caching = { group = 'com.amazonaws.secretsmanager', name = 'aws-secretsmanager-caching-java', version.ref = 'secretsCaching' }
