@@ -382,7 +382,7 @@ Resources:
         Message:
           Type: SQS
           Properties:
-            Queue: !Ref DataCiteFindableDoiHandlerDLQ
+            Queue: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
             BatchSize: 1
 
 
