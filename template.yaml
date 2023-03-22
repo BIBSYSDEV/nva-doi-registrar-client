@@ -374,7 +374,7 @@ Resources:
   FindableDoiDLQFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Timeout: 900
+      Timeout: 30
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiDLQHandler::handleRequest
       Runtime: java11
