@@ -380,7 +380,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Events:
         Message:
-          Type: Sqs
+          Type: SQS
           Properties:
             Queue: !Ref DataCiteFindableDoiHandlerDLQ
             BatchSize: 1
