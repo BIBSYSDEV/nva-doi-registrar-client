@@ -65,7 +65,7 @@ public class FindableDoiEventHandler
             DoiUpdateEvent doiUpdateHolder = new DoiUpdateEvent(DoiUpdateEvent.DOI_UPDATED_EVENT_TOPIC,
                                                                 createDoiUpdateDto(doi, input.getPublicationId()));
             logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri(), doiUpdateHolder.toJsonString());
-            return doiUpdateHolder;
+            throw new RuntimeException("I should be sent to DLQ");
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
         }
