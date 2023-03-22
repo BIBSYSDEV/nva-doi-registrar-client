@@ -384,7 +384,6 @@ Resources:
           Properties:
             Queue: !Ref DataCiteFindableDoiHandlerDLQ
             BatchSize: 1
-            RestApiId: !Ref NvaDoiRegistrarClientApi
 
 
 
