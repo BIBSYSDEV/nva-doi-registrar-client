@@ -153,6 +153,7 @@ Resources:
                   - sqs:SendMessage
                   - sqs:DeleteMessage
                   - sqs:ReceiveMessage
+                  - sqs:GetQueueAttributes
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
