@@ -124,6 +124,35 @@ Resources:
                 Resource:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
+  PipeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                #Allow all resources to avoid circular dependencies.
+                Resource: '*'
+        - PolicyName: SqsEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:DeleteMessage
+                  - sqs:ReceiveMessage
+                Resource:
+                  - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
+                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
+
+
   DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -381,6 +410,7 @@ Resources:
     Type : AWS::Pipes::Pipe
     Properties:
       Description: "Handles failed attempts from findable Doi event handler"
+      RoleArn: !GetAtt PipeRole.Arn
       Source: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
       Target: !GetAtt FindableDoiDLQFunction.Arn
 
