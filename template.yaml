@@ -99,6 +99,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:ReceiveMessage
                   - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
@@ -374,7 +375,7 @@ Resources:
   FindableDoiDLQFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Timeout: 30
+      Timeout: 900
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiDLQHandler::handleRequest
       Runtime: java11
