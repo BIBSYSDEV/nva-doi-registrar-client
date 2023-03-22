@@ -97,6 +97,7 @@ Resources:
                 Action:
                   - sqs:SendMessage
                   - sqs:DeleteMessage
+                  - sqs:ReceiveMessage
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
