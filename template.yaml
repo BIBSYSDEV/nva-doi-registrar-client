@@ -352,6 +352,10 @@ Resources:
       Timestamp: '${BUILD_TIMESTAMP}'
       AuthorizerArn: !Ref CognitoAuthorizerArn
 
+  #============================ AWS Pipes and DLQ handles =============================================================#
+  # These are dead letter queues and corresponding AWS pipes and lambdas for processing output from pipes
+  #====================================================================================================================#
+
   DataCiteFindableDoiHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
@@ -364,5 +368,20 @@ Resources:
   ResourceDraftedForDeletionEventHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
+  FindableDoiDLQFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-findable-doi-handler
+      Handler: no.unit.nva.datacite.handlers.FindableDoiDLQHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+
+  FindableDoiDlqPipe:
+    Type : AWS::Pipes::Pipe
+    Properties:
+      Description: "Handles failed attempts from findable Doi event handler"
+      Source: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+      Target: !GetAtt FindableDoiDLQFunction.Arn
 
 
