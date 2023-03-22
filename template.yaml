@@ -124,42 +124,6 @@ Resources:
                 Resource:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
-  PipeRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: pipes.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: InvokeLambda
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                #Allow all resources to avoid circular dependencies.
-                Resource: '*'
-        - PolicyName: SqsEvents
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                  - sqs:DeleteMessage
-                  - sqs:ReceiveMessage
-                  - sqs:GetQueueAttributes
-                Resource:
-                  - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-                  - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-                  - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
-                  - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
-
 
   DataCiteFindableDoiHandlerFunction:
     Type: AWS::Serverless::Function
@@ -390,7 +354,7 @@ Resources:
       AuthorizerArn: !Ref CognitoAuthorizerArn
 
   #============================ AWS Pipes and DLQ handlers =============================================================#
-  # These are Dead Letter Queues and corresponding AWS pipes and lambdas for processing messages in Dead Letter Queues
+  # These are Dead Letter Queues and corresponding lambdas for processing messages in Dead Letter Queues
   #====================================================================================================================#
 
   DataCiteFindableDoiHandlerDLQ:
@@ -408,18 +372,19 @@ Resources:
   FindableDoiDLQFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Timeout: 900
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiDLQHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
+      Events:
+        newMessage:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+            BatchSize: 1
+            RestApiId: !Ref NvaDoiRegistrarClientApi
 
-  FindableDoiDlqPipe:
-    Type : AWS::Pipes::Pipe
-    Properties:
-      Description: "Handles failed attempts from findable Doi event handler"
-      RoleArn: !GetAtt PipeRole.Arn
-      Source: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
-      Target: !GetAtt FindableDoiDLQFunction.Arn
 
 
