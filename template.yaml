@@ -196,7 +196,7 @@ Resources:
             Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
-            Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+            Destination: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
 
   DeleteDraftDoiHandlerFunction:
     Type: AWS::Serverless::Function
@@ -389,8 +389,8 @@ Resources:
       Timestamp: '${BUILD_TIMESTAMP}'
       AuthorizerArn: !Ref CognitoAuthorizerArn
 
-  #============================ AWS Pipes and DLQ handles =============================================================#
-  # These are dead letter queues and corresponding AWS pipes and lambdas for processing output from pipes
+  #============================ AWS Pipes and DLQ handlers =============================================================#
+  # These are Dead Letter Queues and corresponding AWS pipes and lambdas for processing messages in Dead Letter Queues
   #====================================================================================================================#
 
   DataCiteFindableDoiHandlerDLQ:
