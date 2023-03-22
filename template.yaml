@@ -379,10 +379,10 @@ Resources:
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Events:
-        newMessage:
-          Type: SQS
+        Message:
+          Type: Sqs
           Properties:
-            Queue: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
+            Queue: !Ref DataCiteFindableDoiHandlerDLQ
             BatchSize: 1
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
