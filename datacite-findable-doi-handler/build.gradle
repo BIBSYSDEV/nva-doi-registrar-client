@@ -14,6 +14,7 @@ dependencies {
     implementation libs.nva.json
     implementation libs.nva.doi
     implementation libs.nva.eventhandlers
+    implementation libs.nva.apigateway
     implementation libs.nva.identifiers
     implementation libs.nva.secrets
     implementation libs.bundles.logging
@@ -28,5 +29,6 @@ dependencies {
 }
 
 test{
+    environment "ALLOWED_ORIGIN", "*"
     environment "API_HOST", "api.localhost.nva.unit.no"
 }

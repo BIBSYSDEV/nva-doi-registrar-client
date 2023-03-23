@@ -256,6 +256,32 @@ Resources:
             Method: post
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
+  DataCiteFindableDoiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-findable-doi-handler
+      Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+          ALLOWED_ORIGIN: '*'
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+            RestApiId: !Ref NvaDoiRegistrarClientApi
+
 
   NvaDoiRegistrarClientApi:
     Type: AWS::Serverless::Api
