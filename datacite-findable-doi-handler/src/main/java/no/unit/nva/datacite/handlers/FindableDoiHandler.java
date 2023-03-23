@@ -6,8 +6,8 @@ import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecrets
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
-import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
+import no.unit.nva.datacite.handlers.model.DoiUpdateRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -21,7 +21,7 @@ import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
-public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequestEvent, DoiResponse> {
+public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequest, DoiResponse> {
 
     public static final String CUSTOMER_ID_IS_MISSING_ERROR_MESSAGE = "Customer ID is missing";
     public static final String PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE = "Publication ID is missing";
@@ -34,13 +34,13 @@ public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequestEvent,
     }
 
     public FindableDoiHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver) {
-        super(DoiUpdateRequestEvent.class);
+        super(DoiUpdateRequest.class);
         this.doiClient = doiClient;
         this.dataCiteMetadataResolver = dataCiteMetadataResolver;
     }
 
     @Override
-    protected DoiResponse processInput(DoiUpdateRequestEvent input, RequestInfo requestInfo, Context context)
+    protected DoiResponse processInput(DoiUpdateRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         validateRequest(input);
         var doi = Doi.fromUri(input.getDoi());
@@ -48,7 +48,7 @@ public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequestEvent,
     }
 
     @Override
-    protected Integer getSuccessStatusCode(DoiUpdateRequestEvent input, DoiResponse output) {
+    protected Integer getSuccessStatusCode(DoiUpdateRequest input, DoiResponse output) {
         return HttpURLConnection.HTTP_OK;
     }
 
@@ -64,14 +64,14 @@ public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequestEvent,
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
     }
 
-    private DoiResponse makeDoiFindable(DoiUpdateRequestEvent input, Doi doi) throws ClientException {
+    private DoiResponse makeDoiFindable(DoiUpdateRequest input, Doi doi) throws ClientException {
         String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
         doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
         doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
         return new DoiResponse(doi.getUri());
     }
 
-    private void validateRequest(DoiUpdateRequestEvent input) throws BadRequestException {
+    private void validateRequest(DoiUpdateRequest input) throws BadRequestException {
         if (isNull(input.getPublicationId())) {
             throw new BadRequestException(PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE);
         }

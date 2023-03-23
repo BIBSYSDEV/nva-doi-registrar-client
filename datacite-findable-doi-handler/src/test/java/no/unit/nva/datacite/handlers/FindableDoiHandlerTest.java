@@ -27,8 +27,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
-import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
+import no.unit.nva.datacite.handlers.model.DoiUpdateRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
@@ -112,25 +112,24 @@ public class FindableDoiHandlerTest {
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK).withBody(DATACITE_XML_BODY)));
     }
 
-    private DoiUpdateRequestEvent createDoiUpdateRequestWithoutCustomer(String publicationId) {
-        return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
-                                         VALID_SAMPLE_DOI,
-                                         UriWrapper.fromUri(createPublicationId(publicationId)).getUri(),
-                                         NULL_CUSTOMER_ID_IN_INPUT_EVENT);
+    private DoiUpdateRequest createDoiUpdateRequestWithoutCustomer(String publicationId) {
+        return new DoiUpdateRequest(
+            VALID_SAMPLE_DOI,
+            UriWrapper.fromUri(createPublicationId(publicationId)).getUri(),
+            NULL_CUSTOMER_ID_IN_INPUT_EVENT);
     }
 
-    private DoiUpdateRequestEvent createDoiUpdateRequestWithoutPublicationId() {
-        return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
-                                         VALID_SAMPLE_DOI,
-                                         null,
-                                         CUSTOMER_ID_IN_INPUT_EVENT);
+    private DoiUpdateRequest createDoiUpdateRequestWithoutPublicationId() {
+        return new DoiUpdateRequest(VALID_SAMPLE_DOI,
+                                    null,
+                                    CUSTOMER_ID_IN_INPUT_EVENT);
     }
 
-    private DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID) {
-        return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
-                                         VALID_SAMPLE_DOI,
-                                         UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
-                                         CUSTOMER_ID_IN_INPUT_EVENT);
+    private DoiUpdateRequest createDoiUpdateRequest(String publicationID) {
+        return new DoiUpdateRequest(
+            VALID_SAMPLE_DOI,
+            UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
+            CUSTOMER_ID_IN_INPUT_EVENT);
     }
 
     private String createPublicationId(String publicationIdentifier) {
@@ -138,21 +137,21 @@ public class FindableDoiHandlerTest {
     }
 
     private InputStream createRequestWithoutCustomer(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequestEvent>(dtoObjectMapper)
+        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequestWithoutCustomer(publicationId))
                    .build();
     }
 
     private InputStream createRequestWithoutPublicationId() throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequestEvent>(dtoObjectMapper)
+        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequestWithoutPublicationId())
                    .build();
     }
 
     private InputStream createRequest(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequestEvent>(dtoObjectMapper)
+        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequest(publicationId))
                    .build();
