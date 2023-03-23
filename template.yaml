@@ -252,7 +252,7 @@ Resources:
         GetEvent:
           Type: Api
           Properties:
-            Path: /
+            Path: /draft
             Method: post
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
@@ -278,7 +278,7 @@ Resources:
         GetEvent:
           Type: Api
           Properties:
-            Path: /
+            Path: /findable
             Method: post
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
