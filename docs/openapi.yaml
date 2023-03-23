@@ -3,7 +3,7 @@ info:
   title: NVA Doi Registrar API
   version: 1.0.0
 paths:
-  /:
+  /draft:
     post:
       summary: Reserve Doi
       requestBody:
@@ -28,6 +28,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Doi'
 
+  /findable:
+    post:
+      summary: Make Doi findable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoiUpdateRequest'
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteFindableDoiHandler.Arn}/invocations
+        responses: { }
+        httpMethod: POST
+        type: AWS_PROXY
+      responses:
+        '200':
+          description: Doi is updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doi'
+
 components:
   schemas:
     ReserveDoiRequest:
@@ -35,6 +60,16 @@ components:
       properties:
         customer:
           type: string
+    DoiUpdateRequest:
+      type: object
+      properties:
+        doi:
+          type: string
+        customerId:
+          type: string
+        publicationId:
+          type: string
+
     Doi:
       type: object
       properties:
