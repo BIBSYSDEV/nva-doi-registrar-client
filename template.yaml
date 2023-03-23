@@ -97,6 +97,9 @@ Resources:
                 Action:
                   - sqs:SendMessage
                   - sqs:DeleteMessage
+                  - sqs:ReceiveMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
                 Resource:
                   - !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
@@ -379,12 +382,11 @@ Resources:
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Events:
-        newMessage:
+        Message:
           Type: SQS
           Properties:
             Queue: !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
             BatchSize: 1
-            RestApiId: !Ref NvaDoiRegistrarClientApi
 
 
 
