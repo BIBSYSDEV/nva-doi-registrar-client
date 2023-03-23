@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
@@ -43,13 +44,14 @@ public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequest, DoiR
     protected DoiResponse processInput(DoiUpdateRequest input, RequestInfo requestInfo, Context context)
         throws ApiGatewayException {
         validateRequest(input);
-        var doi = Doi.fromUri(input.getDoi());
-        return attempt(() -> makeDoiFindable(input, doi)).orElseThrow();
+        return attempt(() -> getDoi(input))
+                   .map(doi -> makeDoiFindable(input, doi))
+                   .orElseThrow();
     }
 
     @Override
     protected Integer getSuccessStatusCode(DoiUpdateRequest input, DoiResponse output) {
-        return HttpURLConnection.HTTP_OK;
+        return HttpURLConnection.HTTP_CREATED;
     }
 
     @JacocoGenerated
@@ -62,6 +64,11 @@ public class FindableDoiHandler extends ApiGatewayHandler<DoiUpdateRequest, DoiR
             new DataCiteConnectionFactory(dataCiteConfigurationFactory);
 
         return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+    }
+
+    private Doi getDoi(DoiUpdateRequest input) throws ClientException {
+        var doi = input.getDoi();
+        return nonNull(doi) ? Doi.fromUri(doi) : doiClient.createDoi(input.getCustomerId());
     }
 
     private DoiResponse makeDoiFindable(DoiUpdateRequest input, Doi doi) throws ClientException {

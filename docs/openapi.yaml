@@ -46,8 +46,8 @@ paths:
         httpMethod: POST
         type: AWS_PROXY
       responses:
-        '200':
-          description: Doi is updated
+        '201':
+          description: Created
           content:
             application/json:
               schema:
