@@ -2,6 +2,10 @@ openapi: 3.0.3
 info:
   title: NVA Doi Registrar API
   version: 1.0.0
+x-amazon-apigateway-request-validators:
+  validate_body:
+    validateRequestBody: true
+    validateRequestParameters: false
 paths:
   /draft:
     post:
@@ -14,6 +18,7 @@ paths:
               $ref: '#/components/schemas/ReserveDoiRequest'
       security:
         - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-request-validator: validate_body
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteReserveDraftDoiHandlerFunction.Arn}/invocations
@@ -27,6 +32,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Doi'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   /findable:
     post:
@@ -36,9 +47,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DoiUpdateRequest'
+              $ref: '#/components/schemas/UpdateDoiRequest'
       security:
         - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-request-validator: validate_body
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteFindableDoiHandler.Arn}/invocations
@@ -52,6 +64,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Doi'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
 components:
   schemas:
@@ -59,8 +77,10 @@ components:
       type: object
       properties:
         customer:
-          type: string
-    DoiUpdateRequest:
+          type: object
+      required:
+        - customer
+    UpdateDoiRequest:
       type: object
       properties:
         doi:
@@ -69,11 +89,22 @@ components:
           type: string
         publicationId:
           type: string
-
+      required:
+        - customerId
+        - publicationId
     Doi:
       type: object
       properties:
         doi:
+          type: string
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
           type: string
 
   securitySchemes:

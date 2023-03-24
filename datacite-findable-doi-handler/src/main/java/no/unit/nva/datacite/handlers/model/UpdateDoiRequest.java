@@ -7,7 +7,7 @@ import java.util.Objects;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import nva.commons.core.JacocoGenerated;
 
-public class DoiUpdateRequest {
+public class UpdateDoiRequest {
 
     @JsonProperty("doi")
     private final URI doi;
@@ -20,7 +20,7 @@ public class DoiUpdateRequest {
 
     @JacocoGenerated
     @JsonCreator
-    public DoiUpdateRequest(
+    public UpdateDoiRequest(
         @JsonProperty("doi") URI doi,
         @JsonProperty("publicationId") URI publicationId,
         @JsonProperty("customerId") URI customerId) {

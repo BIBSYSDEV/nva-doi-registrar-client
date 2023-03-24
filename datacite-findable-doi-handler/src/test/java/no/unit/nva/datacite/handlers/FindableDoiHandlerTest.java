@@ -28,7 +28,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
-import no.unit.nva.datacite.handlers.model.DoiUpdateRequest;
+import no.unit.nva.datacite.handlers.model.UpdateDoiRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
@@ -112,21 +112,21 @@ public class FindableDoiHandlerTest {
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK).withBody(DATACITE_XML_BODY)));
     }
 
-    private DoiUpdateRequest createDoiUpdateRequestWithoutCustomer(String publicationId) {
-        return new DoiUpdateRequest(
+    private UpdateDoiRequest createDoiUpdateRequestWithoutCustomer(String publicationId) {
+        return new UpdateDoiRequest(
             VALID_SAMPLE_DOI,
             UriWrapper.fromUri(createPublicationId(publicationId)).getUri(),
             NULL_CUSTOMER_ID_IN_INPUT_EVENT);
     }
 
-    private DoiUpdateRequest createDoiUpdateRequestWithoutPublicationId() {
-        return new DoiUpdateRequest(VALID_SAMPLE_DOI,
+    private UpdateDoiRequest createDoiUpdateRequestWithoutPublicationId() {
+        return new UpdateDoiRequest(VALID_SAMPLE_DOI,
                                     null,
                                     CUSTOMER_ID_IN_INPUT_EVENT);
     }
 
-    private DoiUpdateRequest createDoiUpdateRequest(String publicationID) {
-        return new DoiUpdateRequest(
+    private UpdateDoiRequest createDoiUpdateRequest(String publicationID) {
+        return new UpdateDoiRequest(
             VALID_SAMPLE_DOI,
             UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
             CUSTOMER_ID_IN_INPUT_EVENT);
@@ -137,21 +137,21 @@ public class FindableDoiHandlerTest {
     }
 
     private InputStream createRequestWithoutCustomer(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
+        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequestWithoutCustomer(publicationId))
                    .build();
     }
 
     private InputStream createRequestWithoutPublicationId() throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
+        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequestWithoutPublicationId())
                    .build();
     }
 
     private InputStream createRequest(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<DoiUpdateRequest>(dtoObjectMapper)
+        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withBody(createDoiUpdateRequest(publicationId))
                    .build();
