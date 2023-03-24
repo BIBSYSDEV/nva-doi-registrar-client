@@ -1,6 +1,5 @@
 package no.unit.nva.datacite.handlers;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
@@ -17,8 +16,6 @@ import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
-import nva.commons.apigateway.exceptions.ApiGatewayException;
-import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
@@ -41,9 +38,7 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
     }
 
     @Override
-    protected DoiResponse processInput(UpdateDoiRequest input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        validateRequest(input);
+    protected DoiResponse processInput(UpdateDoiRequest input, RequestInfo requestInfo, Context context) {
         return attempt(() -> getDoi(input))
                    .map(doi -> makeDoiFindable(input, doi))
                    .orElseThrow();
@@ -76,14 +71,5 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
         doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
         doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
         return new DoiResponse(doi.getUri());
-    }
-
-    private void validateRequest(UpdateDoiRequest input) throws BadRequestException {
-        if (isNull(input.getPublicationId())) {
-            throw new BadRequestException(PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE);
-        }
-        if (isNull(input.getCustomerId())) {
-            throw new BadRequestException(CUSTOMER_ID_IS_MISSING_ERROR_MESSAGE);
-        }
     }
 }

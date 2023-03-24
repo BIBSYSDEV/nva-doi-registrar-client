@@ -5,10 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.google.common.net.HttpHeaders.ACCEPT;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.datacite.handlers.FindableDoiHandler.CUSTOMER_ID_IS_MISSING_ERROR_MESSAGE;
-import static no.unit.nva.datacite.handlers.FindableDoiHandler.PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,7 +39,6 @@ import nva.commons.core.paths.UriWrapper;
 import org.apache.hc.core5.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
 public class FindableDoiHandlerTest {
@@ -67,23 +63,6 @@ public class FindableDoiHandlerTest {
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
         handler = new FindableDoiHandler(doiClient, new DataCiteMetadataResolver(WiremockHttpClient.create()));
-    }
-
-    @Test
-    void handleRequestThrowsIllegalArgumentExceptionOnMissingCustomerId() throws IOException {
-        var publicationIdentifier = SortableIdentifier.next().toString();
-        handler.handleRequest(createRequestWithoutCustomer(publicationIdentifier), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getBodyObject(Problem.class).getDetail(),
-                   containsString(CUSTOMER_ID_IS_MISSING_ERROR_MESSAGE));
-    }
-
-    @Test
-    void handleRequestThrowsIllegalArgumentExceptionOnMissingPublicationId() throws IOException {
-        handler.handleRequest(createRequestWithoutPublicationId(), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getBodyObject(Problem.class).getDetail(),
-                   containsString(PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE));
     }
 
     @Test
@@ -112,19 +91,6 @@ public class FindableDoiHandlerTest {
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK).withBody(DATACITE_XML_BODY)));
     }
 
-    private UpdateDoiRequest createDoiUpdateRequestWithoutCustomer(String publicationId) {
-        return new UpdateDoiRequest(
-            VALID_SAMPLE_DOI,
-            UriWrapper.fromUri(createPublicationId(publicationId)).getUri(),
-            NULL_CUSTOMER_ID_IN_INPUT_EVENT);
-    }
-
-    private UpdateDoiRequest createDoiUpdateRequestWithoutPublicationId() {
-        return new UpdateDoiRequest(VALID_SAMPLE_DOI,
-                                    null,
-                                    CUSTOMER_ID_IN_INPUT_EVENT);
-    }
-
     private UpdateDoiRequest createDoiUpdateRequest(String publicationID) {
         return new UpdateDoiRequest(
             VALID_SAMPLE_DOI,
@@ -134,20 +100,6 @@ public class FindableDoiHandlerTest {
 
     private String createPublicationId(String publicationIdentifier) {
         return baseUrl + "/publication/" + publicationIdentifier;
-    }
-
-    private InputStream createRequestWithoutCustomer(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withBody(createDoiUpdateRequestWithoutCustomer(publicationId))
-                   .build();
-    }
-
-    private InputStream createRequestWithoutPublicationId() throws JsonProcessingException {
-        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withBody(createDoiUpdateRequestWithoutPublicationId())
-                   .build();
     }
 
     private InputStream createRequest(String publicationId) throws JsonProcessingException {
