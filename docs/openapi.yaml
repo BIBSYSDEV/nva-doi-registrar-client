@@ -77,7 +77,7 @@ components:
       type: object
       properties:
         customer:
-          type: object
+          type: string
       required:
         - customer
     UpdateDoiRequest:
