@@ -93,7 +93,7 @@ paths:
         '202':
           description: Doi was deleted successfully
         '502':
-          description: Bad Gateway
+          description: Not allowed to delete findable doi
           content:
             application/json:
               schema:
@@ -132,7 +132,6 @@ components:
       required:
         - doi
         - customerId
-        - publicationId
     Doi:
       type: object
       properties:

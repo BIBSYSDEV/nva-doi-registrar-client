@@ -24,7 +24,8 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
-public class DeleteDraftDoiEventHandler extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, DoiUpdateEvent> {
+public class DeleteDraftDoiEventHandler extends DestinationsEventBridgeEventHandler
+                                                    <DoiUpdateRequestEvent, DoiUpdateEvent> {
 
     protected static final String PUBLICATION_HAS_NO_PUBLISHER = "Publication has no publisher";
     protected static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";

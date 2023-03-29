@@ -17,6 +17,7 @@ import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
@@ -50,9 +51,9 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<DeleteDraftDoiReque
             .orElseThrow(failure -> new BadGatewayException(ERROR_DELETING_DRAFT_DOI));
     }
 
-    private String validateState(DoiStateDto doi) {
+    private String validateState(DoiStateDto doi) throws BadRequestException {
         if (!DOI_STATE_DRAFT.equalsIgnoreCase(doi.getState())) {
-            throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
+            throw new BadRequestException(NOT_DRAFT_DOI_ERROR);
         }
         return doi.getDoi();
     }
