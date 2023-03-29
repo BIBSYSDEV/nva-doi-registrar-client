@@ -1,161 +1,104 @@
 package no.unit.nva.datacite.handlers.doi;
 
+import static com.google.common.net.HttpHeaders.ACCEPT;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
-import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.ERROR_DELETING_DRAFT_DOI;
-import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.ERROR_GETTING_DOI_STATE;
-import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.EXPECTED_EVENT_WITH_DOI;
-import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.NOT_DRAFT_DOI_ERROR;
-import static no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler.PUBLICATION_HAS_NO_PUBLISHER;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static no.unit.nva.testutils.RandomDataGenerator.randomDoi;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import no.unit.nva.datacite.commons.DoiUpdateEvent;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.Map;
+import no.unit.nva.datacite.handlers.model.DeleteDraftDoiRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
-import nva.commons.core.ioutils.IoUtils;
+import no.unit.nva.doi.models.Doi;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
+import org.apache.hc.core5.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zalando.problem.Problem;
 
+@WireMockTest(httpsEnabled = true)
 public class DeleteDraftDoiHandlerTest {
 
-    private static final String DOI_IDENTIFIER = "10.23/456789";
-    private static final String DOI_STATE_DRAFT = "draft";
-    private static final String DOI_STATE_FINDABLE = "findable";
-
-    private ByteArrayOutputStream outputStream;
+    public static final String DRAFT_STATE = "draft";
+    public static final String PUBLISHED_STATE = "PUBLISHED";
+    private final Environment environment = mock(Environment.class);
     private Context context;
+    private ByteArrayOutputStream output;
 
     @BeforeEach
     public void setUp() {
-        outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
+        when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        output = new ByteArrayOutputStream();
     }
 
     @Test
-    void shouldDeleteDoiIfDoiIsInDraftState() throws IOException, ClientException {
-        var doiClient = doiClientMock(DOI_STATE_DRAFT);
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
-            handler.handleRequest(inputStream, outputStream, context);
-
-            verify(doiClient, times(1)).deleteDraftDoi(any(), any());
-
-            DoiUpdateEvent event = dtoObjectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class);
-            assertThat(event.getItem().getDoi().isEmpty(), is(equalTo(true)));
-        }
+    public void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
+        var doi = randomDoi();
+        var request = createRequest(doi);
+        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, DRAFT_STATE), environment);
+        handler.handleRequest(request, output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_ACCEPTED)));
     }
 
     @Test
-    void shouldThrowExceptionIfDoiIsNotInDraftState() throws IOException, ClientException {
-        var doiClient = doiClientMock(DOI_STATE_FINDABLE);
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         NOT_DRAFT_DOI_ERROR);
-        }
+    public void shouldReturnBadGatewayWhenBadResponseFromDataCiteVerifyingDoiStatus()
+        throws ClientException, IOException {
+        var doi = randomDoi();
+        var handler = new DeleteDraftDoiHandler(doiClientThrowingException(doi), environment);
+        handler.handleRequest(createRequest(doi), output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
     }
 
     @Test
-    void shouldThrowExceptionIfNoPublicationIDInEvent() throws IOException, ClientException {
-        var doiClient = doiClientMock(DOI_STATE_DRAFT);
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream
-                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_publication_id.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         EXPECTED_EVENT_WITH_DOI);
-        }
+    public void shouldReturnBadGatewayWhenDoiIsNotADraft()
+        throws IOException, ClientException {
+        var doi = randomDoi();
+        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, PUBLISHED_STATE), environment);
+        handler.handleRequest(createRequest(doi), output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
     }
 
-    @Test
-    void shouldThrowExceptionIfNoDoiInEvent() throws IOException, ClientException {
-        var doiClient = doiClientMock(DOI_STATE_DRAFT);
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_doi.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         EXPECTED_EVENT_WITH_DOI);
-        }
-    }
-
-    @Test
-    void shouldThrowExceptionIfNotAbleToCheckDoiState() throws IOException, ClientException {
-        var doiClient = doiClientMockThrowingExceptionGettingDoi();
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         ERROR_GETTING_DOI_STATE);
-        }
-    }
-
-    @Test
-    void shouldThrowExceptionIfNotAbleToDeleteDraftDoi() throws IOException, ClientException {
-        var doiClient = doiClientMockThrowingExceptionDeletingDraftDoi();
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream = IoUtils.inputStreamFromResources("delete_draft_doi_request_ok.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         ERROR_DELETING_DRAFT_DOI);
-        }
-    }
-
-    @Test
-    void shouldThrowExceptionIfNoPublisherIsPresentInPublication() throws IOException, ClientException {
-        var doiClient = doiClientMock(DOI_STATE_DRAFT);
-        var handler = new DeleteDraftDoiHandler(doiClient);
-
-        try (InputStream inputStream
-                 = IoUtils.inputStreamFromResources("delete_draft_doi_request_no_customer_id_in_publication.json")) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         PUBLICATION_HAS_NO_PUBLISHER);
-        }
-    }
-
-    private DoiClient doiClientMock(String state) throws ClientException {
+    private DoiClient doiClientThrowingException(URI doi) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any())).thenReturn(doiState(state));
-        doNothing().when(doiClient).deleteDraftDoi(any(), any());
+        when(doiClient.getDoi(any(), any())).thenAnswer(invocation -> {
+            throw new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
+        });
         return doiClient;
     }
 
-    private DoiClient doiClientMockThrowingExceptionGettingDoi() throws ClientException {
+    private DoiClient doiClientReturningDoi(URI doi, String state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any())).thenThrow(new ClientException());
-
+        when(doiClient.getDoi(any(), any()))
+            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), state));
         return doiClient;
     }
 
-    private DoiClient doiClientMockThrowingExceptionDeletingDraftDoi() throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any())).thenReturn(doiState(DOI_STATE_DRAFT));
-        doThrow(new ClientException()).when(doiClient).deleteDraftDoi(any(), any());
-
-        return doiClient;
-    }
-
-    private DoiStateDto doiState(String state) {
-        return new DoiStateDto(DOI_IDENTIFIER, state);
+    private InputStream createRequest(URI doi) throws JsonProcessingException {
+        return new HandlerRequestBuilder<DeleteDraftDoiRequest>(dtoObjectMapper)
+                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
+                   .withBody(new DeleteDraftDoiRequest(doi, randomUri(), randomUri()))
+                   .build();
     }
 }

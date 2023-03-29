@@ -71,6 +71,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
+  /delete:
+    post:
+      summary: Delete Draft Doi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteDoiRequest'
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-request-validator: validate_body
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations
+        responses: { }
+        httpMethod: POST
+        type: AWS_PROXY
+      responses:
+        '202':
+          description: Doi was deleted successfully
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
 components:
   schemas:
     ReserveDoiRequest:
@@ -90,6 +118,19 @@ components:
         publicationId:
           type: string
       required:
+        - customerId
+        - publicationId
+    DeleteDoiRequest:
+      type: object
+      properties:
+        doi:
+          type: string
+        customerId:
+          type: string
+        publicationId:
+          type: string
+      required:
+        - doi
         - customerId
         - publicationId
     Doi:
