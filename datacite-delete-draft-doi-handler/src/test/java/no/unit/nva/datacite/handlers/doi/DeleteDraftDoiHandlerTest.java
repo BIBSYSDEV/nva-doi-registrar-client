@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static software.amazon.awssdk.utils.http.SdkHttpUtils.urlEncode;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -118,10 +119,11 @@ public class DeleteDraftDoiHandlerTest {
     private InputStream createRequest(URI doi) throws JsonProcessingException {
         var pathParameters = Map.of("doiPrefix", doi.getRawPath().split("/")[1],
                                     "doiSuffix", doi.getRawPath().split("/")[2]);
+        Map<String, String> queryParameters = Map.of("customerId", urlEncode(randomUri().toString()));
         return new HandlerRequestBuilder<DeleteDraftDoiRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
                    .withPathParameters(pathParameters)
-                   .withCurrentCustomer(randomUri())
+                   .withQueryParameters(queryParameters)
                    .build();
     }
 }

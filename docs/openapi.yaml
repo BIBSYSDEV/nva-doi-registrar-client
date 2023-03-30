@@ -3,6 +3,9 @@ info:
   title: NVA Doi Registrar API
   version: 1.0.0
 x-amazon-apigateway-request-validators:
+  validate_parameters:
+    validateRequestBody: false
+    validateRequestParameters: true
   validate_body:
     validateRequestBody: true
     validateRequestParameters: false
@@ -48,9 +51,15 @@ paths:
             type: string
           required: true
           description: DOI of type 10.12345/abcd-1234
+        - in: query
+          name: customerId
+          schema:
+            type: string
+          required: true
+          description: CustomerId of NVA customer with DataCite config
       security:
         - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
-      x-amazon-apigateway-request-validator: validate_body
+      x-amazon-apigateway-request-validator: validate_parameters
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations

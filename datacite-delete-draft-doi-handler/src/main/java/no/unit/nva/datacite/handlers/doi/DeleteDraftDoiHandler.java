@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.handlers.doi;
 
+import static com.amazonaws.util.SdkHttpUtils.urlDecode;
 import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
@@ -16,7 +17,7 @@ import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.apigateway.exceptions.BadMethodException;
-import nva.commons.apigateway.exceptions.UnauthorizedException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
@@ -24,6 +25,7 @@ import nva.commons.secrets.SecretsReader;
 public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
     public static final String BAD_DATACITE_RESPONSE_MESSAGE = "Bad response from DataCite fetching doi";
+    public static final String CUSTOMER_ID = "customerId";
     protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
     protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
     private static final String DOI_STATE_DRAFT = "draft";
@@ -41,21 +43,22 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
     @Override
     protected Void processInput(Void input, RequestInfo requestInfo, Context context)
-        throws BadGatewayException, BadMethodException, UnauthorizedException {
-        var customerId = requestInfo.getCurrentCustomer();
+        throws BadGatewayException, BadMethodException, BadRequestException {
+        var customerId = URI.create(urlDecode(requestInfo.getQueryParameter(CUSTOMER_ID)));
         var doi = getDoiFromPath(requestInfo);
         validateRequest(customerId, doi);
         return attempt(() -> deleteDraftDoi(customerId, doi))
                    .orElseThrow(failure -> new BadGatewayException(ERROR_DELETING_DRAFT_DOI));
     }
 
-    private static Doi getDoiFromPath(RequestInfo requestInfo) {
-        return Doi.fromUriString(requestInfo.getPathParameter("doiPrefix") + "/" + requestInfo.getPathParameter("doiSuffix"));
-    }
-
     @Override
     protected Integer getSuccessStatusCode(Void input, Void output) {
         return HttpURLConnection.HTTP_ACCEPTED;
+    }
+
+    private static Doi getDoiFromPath(RequestInfo requestInfo) {
+        return Doi.fromUriString(
+            requestInfo.getPathParameter("doiPrefix") + "/" + requestInfo.getPathParameter("doiSuffix"));
     }
 
     @JacocoGenerated
