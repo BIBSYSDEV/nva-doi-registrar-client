@@ -116,9 +116,12 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     private InputStream createRequest(URI doi) throws JsonProcessingException {
+        var pathParameters = Map.of("doiPrefix", doi.getRawPath().split("/")[1],
+                                    "doiSuffix", doi.getRawPath().split("/")[2]);
         return new HandlerRequestBuilder<DeleteDraftDoiRequest>(dtoObjectMapper)
                    .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withBody(new DeleteDraftDoiRequest(doi, randomUri(), randomUri()))
+                   .withPathParameters(pathParameters)
+                   .withCurrentCustomer(randomUri())
                    .build();
     }
 }

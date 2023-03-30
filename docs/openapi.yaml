@@ -38,6 +38,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /draft/{doi}:
+    delete:
+      summary: Delete Draft Doi
+      parameters:
+        - in: path
+          name: doi
+          schema:
+            type: string
+          required: true
+          description: DOI of type 10.12345/abcd-1234
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-request-validator: validate_body
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations
+        responses: { }
+        httpMethod: POST
+        type: AWS_PROXY
+      responses:
+        '202':
+          description: Doi was deleted successfully
+        '405':
+          description: Not allowed to delete findable doi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          description: Problems fetching or deleting doi, bad response from DataCite
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   /findable:
     post:
@@ -71,40 +105,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
-  /delete:
-    delete:
-      summary: Delete Draft Doi
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteDoiRequest'
-      security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
-      x-amazon-apigateway-request-validator: validate_body
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations
-        responses: { }
-        httpMethod: POST
-        type: AWS_PROXY
-      responses:
-        '202':
-          description: Doi was deleted successfully
-        '405':
-          description: Not allowed to delete findable doi
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-        '502':
-          description: Problems fetching or deleting doi, bad response from DataCite
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-
 components:
   schemas:
     ReserveDoiRequest:
@@ -126,18 +126,6 @@ components:
       required:
         - customerId
         - publicationId
-    DeleteDoiRequest:
-      type: object
-      properties:
-        doi:
-          type: string
-        customerId:
-          type: string
-        publicationId:
-          type: string
-      required:
-        - doi
-        - customerId
     Doi:
       type: object
       properties:
