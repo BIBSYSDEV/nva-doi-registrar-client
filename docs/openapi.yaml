@@ -3,6 +3,9 @@ info:
   title: NVA Doi Registrar API
   version: 1.0.0
 x-amazon-apigateway-request-validators:
+  validate_parameters:
+    validateRequestBody: false
+    validateRequestParameters: true
   validate_body:
     validateRequestBody: true
     validateRequestParameters: false
@@ -34,6 +37,52 @@ paths:
                 $ref: '#/components/schemas/Doi'
         '502':
           description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /draft/{doiPrefix}/{doiSuffix}:
+    delete:
+      summary: Delete Draft Doi
+      parameters:
+        - in: path
+          name: doiPrefix
+          schema:
+            type: string
+          required: true
+          description: Doi prefix of type 10.12345
+        - in: path
+          name: doiSuffix
+          schema:
+            type: string
+          required: true
+          description: Doi suffix of type abcd-1234
+        - in: query
+          name: customerId
+          schema:
+            type: string
+          required: true
+          description: CustomerId of NVA customer with DataCite config
+      security:
+        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+      x-amazon-apigateway-request-validator: validate_parameters
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations
+        responses: { }
+        httpMethod: POST
+        type: AWS_PROXY
+      responses:
+        '202':
+          description: Doi was deleted successfully
+        '405':
+          description: Not allowed to delete findable doi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          description: Problems fetching or deleting doi, bad response from DataCite
           content:
             application/json:
               schema:

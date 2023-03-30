@@ -165,7 +165,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
+      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiEventHandler::handleRequest
       Runtime: java11
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
@@ -280,6 +280,32 @@ Resources:
           Properties:
             Path: /findable
             Method: post
+            RestApiId: !Ref NvaDoiRegistrarClientApi
+
+  DataCiteDeleteDraftDoiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-delete-draft-doi-handler
+      Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
+      Runtime: java11
+      MemorySize: 1408
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+          ALLOWED_ORIGIN: '*'
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /draft/{doiPrefix}/{doiSuffix}
+            Method: delete
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
 
