@@ -41,16 +41,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  /draft/{doi}:
+  /draft/{doiPrefix}/{doiSuffix}:
     delete:
       summary: Delete Draft Doi
       parameters:
         - in: path
-          name: doi
+          name: doiPrefix
           schema:
             type: string
           required: true
-          description: DOI of type 10.12345/abcd-1234
+          description: Doi prefix of type 10.12345
+        - in: path
+          name: doiSuffix
+          schema:
+            type: string
+          required: true
+          description: Doi suffix of type abcd-1234
         - in: query
           name: customerId
           schema:
