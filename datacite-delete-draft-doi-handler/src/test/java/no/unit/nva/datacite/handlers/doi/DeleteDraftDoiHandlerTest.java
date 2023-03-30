@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -77,6 +78,16 @@ public class DeleteDraftDoiHandlerTest {
         var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, PUBLISHED_STATE), environment);
         handler.handleRequest(createRequest(doi), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
+        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_METHOD)));
+    }
+
+    @Test
+    public void shouldReturnBadGatewayWhenDoiClientFailsOnDraftDoiDeletion()
+        throws ClientException, IOException {
+        var doi = randomDoi();
+        var handler = new DeleteDraftDoiHandler(doiClientThrowingExceptionWhenDeleting(doi), environment);
+        handler.handleRequest(createRequest(doi), output, context);
+        var response = GatewayResponse.fromOutputStream(output, Problem.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
     }
 
@@ -85,6 +96,15 @@ public class DeleteDraftDoiHandlerTest {
         when(doiClient.getDoi(any(), any())).thenAnswer(invocation -> {
             throw new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
         });
+        return doiClient;
+    }
+
+    private DoiClient doiClientThrowingExceptionWhenDeleting(URI doi) throws ClientException {
+        DoiClient doiClient = mock(DoiClient.class);
+        when(doiClient.getDoi(any(), any()))
+            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), "draft"));
+        doThrow(new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY))
+            .when(doiClient).deleteDraftDoi(any(), any());
         return doiClient;
     }
 

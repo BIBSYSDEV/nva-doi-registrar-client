@@ -72,7 +72,7 @@ paths:
                 $ref: '#/components/schemas/Problem'
 
   /delete:
-    post:
+    delete:
       summary: Delete Draft Doi
       requestBody:
         required: true
@@ -92,8 +92,14 @@ paths:
       responses:
         '202':
           description: Doi was deleted successfully
-        '502':
+        '405':
           description: Not allowed to delete findable doi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          description: Problems fetching or deleting doi, bad response from DataCite
           content:
             application/json:
               schema:
