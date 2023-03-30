@@ -305,7 +305,7 @@ Resources:
           Type: Api
           Properties:
             Path: /delete
-            Method: delete
+            Method: post
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
 
