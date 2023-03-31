@@ -3,6 +3,7 @@ package no.unit.nva.datacite.commons;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import no.unit.nva.commons.json.JsonSerializable;
+import nva.commons.core.JacocoGenerated;
 
 public class DoiUpdateEvent implements JsonSerializable {
 
@@ -21,10 +22,12 @@ public class DoiUpdateEvent implements JsonSerializable {
         this.item = item;
     }
 
+    @JacocoGenerated
     public String getTopic() {
         return topic;
     }
 
+    @JacocoGenerated
     public boolean hasItem() {
         return item != null;
     }
