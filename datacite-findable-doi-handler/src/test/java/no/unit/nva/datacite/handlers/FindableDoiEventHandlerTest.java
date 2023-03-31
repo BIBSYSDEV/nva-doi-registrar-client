@@ -13,7 +13,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -143,28 +142,13 @@ public class FindableDoiEventHandlerTest {
     }
 
     @Test
-    void whenDoiIsNotPresentInEventDraftDoiIsCreatedAndMadeFindableInOneStep() throws IOException, ClientException {
+    void whenDoiIsNotPresentInEventIllegalArgumentIsThrown() throws IOException {
         var publicationIdentifier = SortableIdentifier.next().toString();
         var doiUpdateRequestNotContaininDoi = createDoiUpdateRequestNotContainingDoi(publicationIdentifier);
         var awsEventBridgeEvent = crateAwsEventBridgeEvent(doiUpdateRequestNotContaininDoi);
         try (var inputStream = toInputStream(awsEventBridgeEvent)) {
-            mockDataciteXmlBody(publicationIdentifier);
-            mockCreateDoiResponse();
-            findableDoiHandler.handleRequest(inputStream, outputStream, context);
-            
-            URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
-            Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
-            verify(doiClient).createDoi(
-                eq(expectedCustomerId));
-            verify(doiClient).updateMetadata(
-                eq(expectedCustomerId),
-                eq(expectedDoi),
-                eq(DATACITE_XML_BODY));
-            verify(doiClient).setLandingPage(
-                expectedCustomerId,
-                expectedDoi,
-                UriWrapper.fromUri(createPublicationId(publicationIdentifier)).getUri()
-            );
+            assertThrows(IllegalArgumentException.class,
+                         () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
         }
     }
 
@@ -175,11 +159,6 @@ public class FindableDoiEventHandlerTest {
         awsEventBridgeDetail.setResponsePayload(doiUpdateRequestEvent);
         request.setDetail(awsEventBridgeDetail);
         return request;
-    }
-
-    private void mockCreateDoiResponse() throws ClientException {
-        when(doiClient.createDoi(any()))
-            .thenAnswer(invocation -> Doi.fromUri(VALID_SAMPLE_DOI));
     }
 
     private void mockDataciteXmlBody(String publicationIdentifier) {
