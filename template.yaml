@@ -154,9 +154,6 @@ Resources:
                     - PublicationService.Doi.UpdateRequest
       EventInvokeConfig:
         DestinationConfig:
-          OnSuccess:
-            Type: EventBridge
-            Destination: !Ref EventBusArn
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn

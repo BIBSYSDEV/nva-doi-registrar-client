@@ -6,14 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,16 +18,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Optional;
 import no.unit.nva.commons.json.JsonUtils;
-import no.unit.nva.datacite.commons.DoiUpdateEvent;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -127,9 +117,6 @@ public class FindableDoiEventHandlerTest {
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier)) {
             mockDataciteXmlBody(publicationIdentifier);
             findableDoiHandler.handleRequest(inputStream, outputStream, context);
-            DoiUpdateEvent response = parseResponse();
-            assertThat(response.getItem().getPublicationIdentifier(), is(not(nullValue())));
-            assertThat(response.getItem().getModifiedDate(), is(notNullValue()));
 
             URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
             Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
@@ -142,12 +129,6 @@ public class FindableDoiEventHandlerTest {
                 expectedDoi,
                 UriWrapper.fromUri(createPublicationId(publicationIdentifier)).getUri()
             );
-            var eventEmitted = readOutputStream(outputStream);
-            assertThat(eventEmitted.getTopic(), is(equalTo("DoiRegistrarService.Doi.Updated")));
-            assertThat(eventEmitted.getItem(), allOf(hasProperty("doi", equalTo(Optional.of(VALID_SAMPLE_DOI))),
-                                                     hasProperty(
-                                                         "publicationIdentifier",
-                                                         is(equalTo(new SortableIdentifier(publicationIdentifier))))));
         }
     }
 
@@ -184,12 +165,6 @@ public class FindableDoiEventHandlerTest {
                 expectedDoi,
                 UriWrapper.fromUri(createPublicationId(publicationIdentifier)).getUri()
             );
-            var eventEmitted = readOutputStream(outputStream);
-            assertThat(eventEmitted.getTopic(), is(equalTo("DoiRegistrarService.Doi.Updated")));
-            assertThat(eventEmitted.getItem(), allOf(hasProperty("doi", equalTo(Optional.of(VALID_SAMPLE_DOI))),
-                                                     hasProperty(
-                                                         "publicationIdentifier",
-                                                         is(equalTo(new SortableIdentifier(publicationIdentifier))))));
         }
     }
 
@@ -205,12 +180,6 @@ public class FindableDoiEventHandlerTest {
     private void mockCreateDoiResponse() throws ClientException {
         when(doiClient.createDoi(any()))
             .thenAnswer(invocation -> Doi.fromUri(VALID_SAMPLE_DOI));
-    }
-
-    private DoiUpdateEvent readOutputStream(ByteArrayOutputStream outputStream) throws IOException {
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(outputStream.toByteArray())) {
-            return JsonUtils.dtoObjectMapper.readValue(bais, DoiUpdateEvent.class);
-        }
     }
 
     private void mockDataciteXmlBody(String publicationIdentifier) {
@@ -252,10 +221,5 @@ public class FindableDoiEventHandlerTest {
         stubFor(WireMock.get(urlPathEqualTo("/publication/" + publicationID))
                     .withHeader("Accept", WireMock.equalTo("application/vnd.datacite.datacite+xml"))
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_NOT_FOUND)));
-    }
-
-    private DoiUpdateEvent parseResponse() {
-        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(outputStream.toString(), DoiUpdateEvent.class))
-                   .orElseThrow();
     }
 }

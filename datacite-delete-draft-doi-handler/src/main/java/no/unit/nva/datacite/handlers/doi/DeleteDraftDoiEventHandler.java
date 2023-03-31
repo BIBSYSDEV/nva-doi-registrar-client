@@ -24,6 +24,8 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
+
+//TODO: DELETE entire handler when https://unit.atlassian.net/browse/NP-42459 is in production
 public class DeleteDraftDoiEventHandler extends DestinationsEventBridgeEventHandler
                                                     <DoiUpdateRequestEvent, DoiUpdateEvent> {
 
