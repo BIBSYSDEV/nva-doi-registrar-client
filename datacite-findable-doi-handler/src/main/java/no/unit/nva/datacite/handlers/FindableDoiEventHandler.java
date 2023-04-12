@@ -1,11 +1,10 @@
 package no.unit.nva.datacite.handlers;
 
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
 import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.ArrayList;
-import java.util.Objects;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClient;
@@ -66,11 +65,14 @@ public class FindableDoiEventHandler
 
     private static void validateInput(DoiUpdateRequestEvent input) {
         var problems = new ArrayList<String>();
-        if (Objects.isNull(input.getPublicationId())) {
+        if (isNull(input.getPublicationId())) {
             problems.add("publicationID");
         }
-        if (Objects.isNull(input.getCustomerId())) {
+        if (isNull(input.getCustomerId())) {
             problems.add("customerID");
+        }
+        if (isNull(input.getDoi())) {
+            problems.add("doi");
         }
         if (!problems.isEmpty()) {
             throw new IllegalArgumentException(MANDATORY_FIELD_ERROR_PREFIX + String.join(", ", problems));
@@ -90,12 +92,6 @@ public class FindableDoiEventHandler
     }
 
     private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) throws ClientException {
-        //TODO: this handler should no longer need to draft DOI. It will only be triggered by updated publication
-        // with findable doi.
-        return nonNull(input.getDoi()) ? Doi.fromUri(input.getDoi()) : draftDoi(input);
-    }
-
-    private Doi draftDoi(DoiUpdateRequestEvent input) throws ClientException {
-        return doiClient.createDoi(input.getCustomerId());
+        return Doi.fromUri(input.getDoi());
     }
 }

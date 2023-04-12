@@ -18,6 +18,7 @@ import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
+
 public class ResourceDraftedForDeletionEventHandler
     extends DestinationsEventBridgeEventHandler<ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
 
@@ -100,6 +101,7 @@ public class ResourceDraftedForDeletionEventHandler
     }
 
     private ResourceDraftedForDeletionEvent copyDeletePublicationWithoutDoi(ResourceDraftedForDeletionEvent event) {
+        //Is this event necessary?
         return new ResourceDraftedForDeletionEvent(
             DELETED_DRAFT_DOI_EVENT_TOPIC,
             event.getIdentifier(),
