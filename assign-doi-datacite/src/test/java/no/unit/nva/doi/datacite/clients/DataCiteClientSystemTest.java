@@ -74,7 +74,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
-    public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE = "Failed to configure the trust everything rule for the http client, which is required to connect to " + "wiremock server and local signed SSL certificate for now.";
+    public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
+            "Failed to configure the trust everything rule for the http client, which is required to connect to " + "wiremock server and local signed SSL certificate for now.";
     public static final String DOIS_PATH_PREFIX = "/dois";
     public static final String DRAFT = "draft";
     public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
@@ -102,7 +103,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         mdsUri = URI.create(wireMockServer.baseUrl());
         restUri = URI.create(wireMockServer.baseUrl());
 
-        validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID, INSTITUTION_PREFIX, EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD);
+        validSecretConfig = new DataCiteMdsClientSecretConfig(EXAMPLE_CUSTOMER_ID,
+                INSTITUTION_PREFIX, EXAMPLE_MDS_USERNAME,
+                EXAMPLE_MDS_PASSWORD);
     }
 
     @AfterEach
@@ -117,11 +120,15 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         startProxyToWireMock();
         stubRequireAuthenticationForAllApiCalls();
 
-        DataCiteConfigurationFactory configurationFactory = new DataCiteConfigurationFactoryForSystemTests(Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
+        DataCiteConfigurationFactory configurationFactory =
+                new DataCiteConfigurationFactoryForSystemTests(Map.of(EXAMPLE_CUSTOMER_ID, validSecretConfig));
 
-        var httpClientBuilder = HttpClient.newBuilder().connectTimeout(Duration.ofMinutes(1)).sslContext(createInsecureSslContextTrustingEverything());
+        var httpClientBuilder = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMinutes(1))
+                .sslContext(createInsecureSslContextTrustingEverything());
 
-        DataCiteConnectionFactory mdsConnectionFactory = new DataCiteConnectionFactory(httpClientBuilder, configurationFactory, mdsUri, restUri);
+        DataCiteConnectionFactory mdsConnectionFactory =
+                new DataCiteConnectionFactory(httpClientBuilder, configurationFactory, mdsUri, restUri);
         doiClient = new DataCiteClient(configurationFactory, mdsConnectionFactory);
     }
 
@@ -227,10 +234,13 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.FINDABLE);
 
-        var actualException = assertThrows(DeleteDraftDoiException.class, () -> doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
+        var actualException = assertThrows(DeleteDraftDoiException.class,
+                () -> doiClient.deleteDraftDoi(EXAMPLE_CUSTOMER_ID, doi));
         assertThat(actualException, isA(ClientException.class));
-        assertThat(actualException.getMessage(), containsString(doi.toIdentifier()));
-        assertThat(actualException.getMessage(), containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+        assertThat(actualException.getMessage(),
+                containsString(doi.toIdentifier()));
+        assertThat(actualException.getMessage(),
+                containsString(String.valueOf(HttpStatus.SC_METHOD_NOT_ALLOWED)));
     }
 
     private Integer randomPort() {
@@ -238,7 +248,12 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {
-        stubFor(get(urlEqualTo(createDoisIdentifierPath(requestedDoi))).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_VND_API_JSON).withStatus(HttpStatus.SC_OK).withBody(getDoiResponseJson)));
+        stubFor(get(urlEqualTo(createDoisIdentifierPath(requestedDoi)))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, APPLICATION_VND_API_JSON)
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(getDoiResponseJson)));
     }
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
@@ -246,19 +261,29 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void verifyDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
-        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingMetadata)).withBasicAuth(getExpectedAuthenticatedCredentials()));
+        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingMetadata))
+                .withBasicAuth(getExpectedAuthenticatedCredentials()));
     }
 
     private void verifyDeleteDoiResponse(String expectedPathForDeletingDoiInDraftStatus) {
-        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingDoiInDraftStatus)).withBasicAuth(getExpectedAuthenticatedCredentials()));
+        verify(deleteRequestedFor(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+                .withBasicAuth(getExpectedAuthenticatedCredentials()));
     }
 
     private void stubDeleteMetadataResponse(String expectedPathForDeletingMetadata) {
-        stubFor(delete(urlEqualTo(expectedPathForDeletingMetadata)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(HTTP_RESPONSE_OK)));
+        stubFor(delete(urlEqualTo(expectedPathForDeletingMetadata))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(HTTP_RESPONSE_OK)));
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {
-        verify(putRequestedFor(urlEqualTo(createDoiIdentifierPath(requestedDoi))).withBasicAuth(getExpectedAuthenticatedCredentials()).withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)).withRequestBody(WireMock.equalTo(String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE))).withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
+        verify(putRequestedFor(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
+                .withBasicAuth(getExpectedAuthenticatedCredentials())
+                .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8))
+                .withRequestBody(WireMock.equalTo(String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
+                .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
     }
 
     private String createDoisIdentifierPath(Doi requestedDoi) {
@@ -270,7 +295,11 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void stubSetLandingPageResponse(Doi requestedDoi) {
-        stubFor(put(urlEqualTo(createDoiIdentifierPath(requestedDoi))).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8).withStatus(HttpStatus.SC_CREATED).withBody(HTTP_RESPONSE_OK)));
+        stubFor(put(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
+                        .withStatus(HttpStatus.SC_CREATED).withBody(HTTP_RESPONSE_OK)));
     }
 
     private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus) {
@@ -279,31 +308,54 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus, DoiStateStatus doiStateStatus) {
         if (doiStateStatus == DoiStateStatus.DRAFT) {
-            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(HTTP_RESPONSE_OK)));
+            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+                    .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                    .willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(HTTP_RESPONSE_OK)));
         } else {
-            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpStatus.SC_METHOD_NOT_ALLOWED)));
+            stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
+                    .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                    .willReturn(aResponse()
+                            .withStatus(HttpStatus.SC_METHOD_NOT_ALLOWED)));
         }
     }
 
     private void verifyUpdateMetadataResponse(String expectedPath) {
-        verify(postRequestedFor(urlEqualTo(expectedPath)).withBasicAuth(getExpectedAuthenticatedCredentials()).withRequestBody(WireMock.equalTo(getValidMetadataPayload())).withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
+        verify(postRequestedFor(urlEqualTo(expectedPath))
+                .withBasicAuth(getExpectedAuthenticatedCredentials())
+                .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
+                .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
     }
 
     private void verifyCreateDoiResponse(String doiPrefix) {
-        verify(postRequestedFor(urlEqualTo(DOIS_PATH_PREFIX)).withBasicAuth(getExpectedAuthenticatedCredentials()).withRequestBody(WireMock.containing(doiPrefix)).withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(JSON_API_CONTENT_TYPE)));
+        verify(postRequestedFor(urlEqualTo(DOIS_PATH_PREFIX))
+                .withBasicAuth(getExpectedAuthenticatedCredentials())
+                .withRequestBody(WireMock.containing(doiPrefix))
+                .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(JSON_API_CONTENT_TYPE)));
     }
 
     private void stubUpdateMetadataResponse(String expectedPathForUpdatingMetadata) {
-        stubFor(post(urlEqualTo(expectedPathForUpdatingMetadata)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(HTTP_RESPONSE_OK)));
+        stubFor(post(urlEqualTo(expectedPathForUpdatingMetadata))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(HTTP_RESPONSE_OK)));
     }
 
     private void stubCreateDoiResponse(DraftDoiDto expectedResponseBody) {
 
-        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpStatus.SC_CREATED).withBody(expectedResponseBody.toJson())));
+        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_CREATED)
+                        .withBody(expectedResponseBody.toJson())));
     }
 
     private void stubCreateFailedResponse(String expectedBody) {
-        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX)).withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD).willReturn(aResponse().withStatus(HttpURLConnection.HTTP_FORBIDDEN).withBody(expectedBody)));
+        stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
+                .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
+                .willReturn(aResponse()
+                        .withStatus(HttpURLConnection.HTTP_FORBIDDEN)
+                        .withBody(expectedBody)));
     }
 
     private void stubRequireAuthenticationForAllApiCalls() {
