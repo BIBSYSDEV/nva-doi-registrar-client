@@ -75,7 +75,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String TEST_CONFIGURATION_TRUST_MANAGER_FAILURE =
-            "Failed to configure the trust everything rule for the http client, which is required to connect to " + "wiremock server and local signed SSL certificate for now.";
+            "Failed to configure the trust everything rule for the http client, which is required to connect to "
+                    + "wiremock server and local signed SSL certificate for now.";
     public static final String DOIS_PATH_PREFIX = "/dois";
     public static final String DRAFT = "draft";
     public static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
@@ -282,7 +283,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         verify(putRequestedFor(urlEqualTo(createDoiIdentifierPath(requestedDoi)))
                 .withBasicAuth(getExpectedAuthenticatedCredentials())
                 .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8))
-                .withRequestBody(WireMock.equalTo(String.format(LANDING_PAGE_BODY_FORMAT, requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
+                .withRequestBody(WireMock.equalTo(String.format(
+                        LANDING_PAGE_BODY_FORMAT,
+                        requestedDoi.toIdentifier(), EXAMPLE_LANDING_PAGE)))
                 .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(TEXT_PLAIN_CHARSET_UTF_8)));
     }
 
@@ -306,7 +309,8 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus, DoiStateStatus.DRAFT);
     }
 
-    private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus, DoiStateStatus doiStateStatus) {
+    private void stubDeleteDraftApiResponse(String expectedPathForDeletingDoiInDraftStatus,
+                                            DoiStateStatus doiStateStatus) {
         if (doiStateStatus == DoiStateStatus.DRAFT) {
             stubFor(delete(urlEqualTo(expectedPathForDeletingDoiInDraftStatus))
                     .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
@@ -360,7 +364,10 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
     private void stubRequireAuthenticationForAllApiCalls() {
         // All unauthenticated request will be responded from the server to ask the client to authenticate itself.
-        stubFor(any(WireMock.anyUrl()).willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED).withHeader(HEADER_WWW_AUTHENTICATE, createRealm())));
+        stubFor(any(WireMock.anyUrl())
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_UNAUTHORIZED)
+                        .withHeader(HEADER_WWW_AUTHENTICATE, createRealm())));
     }
 
     private String createRealm() {
@@ -375,7 +382,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         // TODO Add wiremock's generated self signed certificate to the trust store during tests.
         try {
             var insecureSslContext = SSLContext.getInstance("SSL");
-            insecureSslContext.init(null, new X509ExtendedTrustManager[]{createTrustEverythingManager()}, new java.security.SecureRandom());
+            insecureSslContext.init(null,
+                    new X509ExtendedTrustManager[]{createTrustEverythingManager()},
+                    new java.security.SecureRandom());
             return insecureSslContext;
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -389,22 +398,26 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
 
         return new X509ExtendedTrustManager() {
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket)
+                    throws CertificateException {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket)
+                    throws CertificateException {
 
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                    throws CertificateException {
 
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine)
+                    throws CertificateException {
 
             }
 
