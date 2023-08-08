@@ -1,7 +1,3 @@
-plugins{
-    id 'nva.doiregistrar.service.java-library-conventions'
-}
-
 dependencies {
 
     implementation libs.jaxb.api

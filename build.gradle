@@ -4,7 +4,7 @@ plugins {
 
 //workaround for jacoco-merge to work
 allprojects {
-    apply plugin: 'nva.doiregistrar.service.java-common-conventions'
+    apply plugin: 'nva.doiregistrar.service.java-conventions'
 }
 
 wrapper {
