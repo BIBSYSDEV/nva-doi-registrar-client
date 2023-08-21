@@ -129,7 +129,7 @@ Resources:
     Properties:
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-      Runtime: java1
+      Runtime: java17
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
