@@ -27,6 +27,7 @@ public class DataCiteConfigurationFactory {
     public static final String ERROR_NOT_PRESENT_IN_CONFIG = " not present in config";
     public static final String ERROR_HAS_INVALID_CONFIGURATION = " has invalid configuration!";
 
+    @SuppressWarnings("PMD.ImmutableField")
     private Map<URI, DataCiteMdsClientSecretConfig> customerConfigurations = new ConcurrentHashMap<>();
 
     /**
@@ -111,7 +112,7 @@ public class DataCiteConfigurationFactory {
         }
     }
 
-    private void populateCustomerConfigurationMap(DataCiteMdsClientSecretConfig[] dataCiteMdsClientConfigs) {
+    private void populateCustomerConfigurationMap(DataCiteMdsClientSecretConfig... dataCiteMdsClientConfigs) {
         for (DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig : dataCiteMdsClientConfigs) {
             customerConfigurations.put(
                 dataCiteMdsClientSecretConfig.getCustomerId(), dataCiteMdsClientSecretConfig);
