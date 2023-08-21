@@ -1,7 +1,3 @@
-plugins {
-    id 'nva.doiregistrar.service.java-library-conventions'
-}
-
 project.ext {
     jaxbTargetDir = file("$buildDir/generated/sources/xjc")
 }

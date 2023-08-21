@@ -129,7 +129,7 @@ Resources:
     Properties:
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
@@ -166,7 +166,7 @@ Resources:
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.resource.ResourceDraftedForDeletionEventHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 512
       Role: !GetAtt LambdaRole.Arn
       Environment:
@@ -197,7 +197,7 @@ Resources:
     Properties:
       CodeUri: datacite-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.ReserveDraftDoiHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
@@ -222,7 +222,7 @@ Resources:
     Properties:
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
@@ -248,7 +248,7 @@ Resources:
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:

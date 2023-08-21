@@ -4,10 +4,10 @@ plugins {
 
 //workaround for jacoco-merge to work
 allprojects {
-    apply plugin: 'nva.doiregistrar.service.java-common-conventions'
+    apply plugin: 'nva.doiregistrar.service.java-conventions'
 }
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = "7.3.3"
+    gradleVersion = '8.2.1'
 }
