@@ -58,6 +58,7 @@ public class DataCiteClient implements DoiClient {
      */
     @Override
     public Doi createDoi(URI customerId) throws ClientException {
+        logger.info("retrieving customerconfig");
         DataCiteMdsClientConfig customerConfigInfo = configFactory.getConfig(customerId);
         try {
             logger.info("working with creating DOI");
