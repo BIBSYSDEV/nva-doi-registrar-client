@@ -109,7 +109,7 @@ public class DraftDoiDto {
         ObjectNode attributes = dtoObjectMapper.createObjectNode();
 
         rootNode.set(DATA_FIELD, data);
-        rootNode.put(TYPE_FIELD, TYPE_FIELD_VALUE);
+        data.put(TYPE_FIELD, TYPE_FIELD_VALUE);
         data.set(ATTRIBUTES_FIELD, attributes);
         attributes.put(DOI_FIELD, doi);
         attributes.put(PREFIX_FIELD, prefix);
