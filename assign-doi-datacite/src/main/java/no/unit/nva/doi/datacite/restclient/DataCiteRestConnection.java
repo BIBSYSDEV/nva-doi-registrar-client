@@ -8,9 +8,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.Base64;
+
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataCiteRestConnection {
 
@@ -23,6 +26,8 @@ public class DataCiteRestConnection {
     private final URI dataciteRestUri;
     private final HttpClient httpClient;
     private final DataCiteMdsClientSecretConfig configWithSecretes;
+
+    private static final Logger logger = LoggerFactory.getLogger(DataCiteRestConnection.class);
 
     /**
      * A DataCite connection for the RestApi.
@@ -48,8 +53,8 @@ public class DataCiteRestConnection {
     // TODO: remove the Authorization Header when DataCite REST-API prompts for Authentication
     public HttpResponse<String> createDoi()
         throws IOException, InterruptedException {
-
         String bodyJson = requestBodyContainingTheDoiPrefix();
+        logger.info("message body " + bodyJson);
         HttpRequest postRequest = HttpRequest.newBuilder()
                                       .uri(requestTargetUri())
                                       .POST(BodyPublishers.ofString(bodyJson))
@@ -92,7 +97,7 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUri() {
-        return new UriWrapper(dataciteRestUri).addChild(DOIS_PATH).getUri();
+        return UriWrapper.fromUri(dataciteRestUri).addChild(DOIS_PATH).getUri();
     }
 
     private URI requestTargetUriToDoi(String id) {
@@ -100,6 +105,6 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUriToDoi(String id) {
-        return new UriWrapper(dataciteRestUri).addChild(DOIS_PATH).addChild(id).getUri();
+        return UriWrapper.fromUri(dataciteRestUri).addChild(DOIS_PATH).addChild(id).getUri();
     }
 }
