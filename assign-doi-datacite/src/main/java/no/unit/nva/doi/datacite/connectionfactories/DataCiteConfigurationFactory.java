@@ -12,6 +12,8 @@ import no.unit.nva.doi.datacite.mdsclient.NoCredentialsForCustomerRuntimeExcepti
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientConfig;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import nva.commons.secrets.SecretsReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DataCite configuration factory to obtain DataCite related configuration.
@@ -26,6 +28,8 @@ public class DataCiteConfigurationFactory {
     public static final String CUSTOMER_SECRETS_SECRET_KEY_ENV_VAR = "CUSTOMER_SECRETS_SECRET_KEY";
     public static final String ERROR_NOT_PRESENT_IN_CONFIG = " not present in config";
     public static final String ERROR_HAS_INVALID_CONFIGURATION = " has invalid configuration!";
+
+    private static final Logger logger = LoggerFactory.getLogger(DataCiteConfigurationFactory.class);
 
     @SuppressWarnings("PMD.ImmutableField")
     private Map<URI, DataCiteMdsClientSecretConfig> customerConfigurations = new ConcurrentHashMap<>();
@@ -62,6 +66,7 @@ public class DataCiteConfigurationFactory {
      * @throws DataCiteMdsConfigValidationFailedException no valid customer configuration
      */
     public DataCiteMdsClientConfig getConfig(URI customerId) throws DataCiteMdsConfigValidationFailedException {
+        printConfigs(customerConfigurations);
         DataCiteMdsClientSecretConfig value = customerConfigurations.get(customerId);
         if (isNull(value)) {
             throw new DataCiteMdsConfigValidationFailedException(customerId + ERROR_NOT_PRESENT_IN_CONFIG);
@@ -70,6 +75,16 @@ public class DataCiteConfigurationFactory {
             .filter(DataCiteMdsClientConfig::isFullyConfigured)
             .orElseThrow(
                 () -> new DataCiteMdsConfigValidationFailedException(customerId + ERROR_HAS_INVALID_CONFIGURATION));
+    }
+
+    private void printConfigs(Map<URI, DataCiteMdsClientSecretConfig> customerConfigurations) {
+        var supportedCustomers = customerConfigurations.keySet();
+        logger.info("Number of customers: " + supportedCustomers.size());
+        supportedCustomers.forEach(this::printCustomer);
+    }
+
+    private void printCustomer(URI customer) {
+        logger.info("Supporting customer: " + customer.toString());
     }
 
     /**
