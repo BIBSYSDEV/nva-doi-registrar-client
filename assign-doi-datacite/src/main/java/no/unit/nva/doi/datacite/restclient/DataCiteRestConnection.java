@@ -86,6 +86,11 @@ public class DataCiteRestConnection {
     }
 
     private String authorizationString() {
+        //TODO: REMOVE
+        logger.info("username: "
+                + configWithSecretes.getDataCiteMdsClientUsername()
+                + "password: "
+                + configWithSecretes.getDataCiteMdsClientPassword());
         return basicAuth(
             configWithSecretes.getDataCiteMdsClientUsername(),
             configWithSecretes.getDataCiteMdsClientPassword()
