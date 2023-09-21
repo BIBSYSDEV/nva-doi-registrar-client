@@ -78,14 +78,20 @@ public class DataCiteConfigurationFactory {
     }
 
     private void printConfigs(Map<URI, DataCiteMdsClientSecretConfig> customerConfigurations) {
-        var supportedCustomers = customerConfigurations.keySet();
-        logger.info("Number of customers: " + supportedCustomers.size());
-        supportedCustomers.forEach(this::printCustomer);
+        logger.info("Number of customers: " + customerConfigurations.size());
+        customerConfigurations.forEach(this::printCustomer);
     }
 
-    private void printCustomer(URI customer) {
-        logger.info("Supporting customer: " + customer.toString());
+    //TODO: this should not be merged. AND YES I DID THIS OUT OF DESPERATION
+    private void printCustomer(URI uri, DataCiteMdsClientSecretConfig dataCiteMdsClientSecretConfig) {
+        logger.info("Customer with uri "
+                + uri.toString()
+                + ", has dataciteusername: "
+                + dataCiteMdsClientSecretConfig.getDataCiteMdsClientUsername()
+                + ", and password "
+                + dataCiteMdsClientSecretConfig.getDataCiteMdsClientPassword());
     }
+
 
     /**
      * Retrieve numbver of configured configurations.
