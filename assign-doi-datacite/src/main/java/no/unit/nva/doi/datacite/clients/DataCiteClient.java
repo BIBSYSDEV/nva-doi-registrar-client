@@ -60,8 +60,10 @@ public class DataCiteClient implements DoiClient {
     public Doi createDoi(URI customerId) throws ClientException {
         DataCiteMdsClientConfig customerConfigInfo = configFactory.getConfig(customerId);
         try {
+            logger.info("working with creating DOI");
             DataCiteRestConnection connection = prepareAuthenticatedDataCiteRestConnection(customerId);
             String doiPrefix = customerConfigInfo.getCustomerDoiPrefix();
+            logger.info("got credentials");
             HttpResponse<String> response = sendDraftDoiRequest(connection, doiPrefix);
             DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
 
