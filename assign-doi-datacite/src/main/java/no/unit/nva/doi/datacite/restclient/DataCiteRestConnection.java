@@ -55,6 +55,7 @@ public class DataCiteRestConnection {
         throws IOException, InterruptedException {
         String bodyJson = requestBodyContainingTheDoiPrefix();
         logger.info("message body " + bodyJson);
+        logger.info("Request target uri: " + requestTargetUri().toString());
         HttpRequest postRequest = HttpRequest.newBuilder()
                                       .uri(requestTargetUri())
                                       .POST(BodyPublishers.ofString(bodyJson))
