@@ -16,12 +16,17 @@ import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.attempt.Failure;
 import nva.commons.secrets.SecretsReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest, DoiResponse> {
 
     public static final String BAD_RESPONSE_FROM_DATA_CITE = "Bad response from DataCite";
     private final DoiClient doiClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(ReserveDraftDoiHandler.class);
 
     public ReserveDraftDoiHandler(DoiClient doiClient, Environment environment) {
         super(ReserveDoiRequest.class, environment);
@@ -39,7 +44,14 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
         var customerId = input.getCustomer();
         return attempt(() -> doiClient.createDoi(customerId))
                    .map(doi -> new DoiResponse(doi.getUri()))
-                   .orElseThrow(failure -> new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE));
+                   .orElseThrow(failure -> handleFailure(failure, input));
+    }
+
+    private BadGatewayException handleFailure(Failure<DoiResponse> failure, ReserveDoiRequest input) {
+        logger.error("failed to draft doi");
+        logger.error("Exception: " + failure.getException());
+        logger.error("Input " + input.toJsonString());
+        return new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
     }
 
     @Override
