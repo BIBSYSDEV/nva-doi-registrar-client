@@ -18,7 +18,7 @@ import org.apache.http.HttpHeaders;
  * <p>The HttpClient provided should have a {@link java.net.Authenticator} associated to do pre-emptive
  * authentication towards the API server.
  *
- * <p>Use the {@link DataCiteConnectionFactory#getAuthenticatedMdsConnection(URI)}} to construct new instances.
+ * <p>Use the {@link DataCiteConnectionFactory(URI)}} to construct new instances.
  */
 public class DataCiteMdsConnection {
 
@@ -164,17 +164,17 @@ public class DataCiteMdsConnection {
     }
 
     private URI createUriForUpdatingMetadata(String doi) {
-        return new UriWrapper(dataciteMdsHost)
-            .addChild(DATACITE_PATH_METADATA)
-            .addChild(doi)
-            .getUri();
+        return UriWrapper.fromUri(dataciteMdsHost)
+                .addChild(DATACITE_PATH_METADATA)
+                .addChild(doi)
+                .getUri();
     }
 
     private URI createUriForAccessingDoi(String doi) {
-        return new UriWrapper(dataciteMdsHost)
-            .addChild(DATACITE_PATH_DOI)
-            .addChild(doi)
-            .getUri();
+        return UriWrapper.fromUri(dataciteMdsHost)
+                .addChild(DATACITE_PATH_DOI)
+                .addChild(doi)
+                .getUri();
     }
 
     private Builder getRequest(URI uri) {
