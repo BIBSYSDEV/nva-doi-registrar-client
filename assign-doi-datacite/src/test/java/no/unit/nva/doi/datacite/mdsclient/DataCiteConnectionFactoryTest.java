@@ -54,13 +54,13 @@ class DataCiteConnectionFactoryTest {
 
     @Test
     void getAuthenticatedConnectionIsInstanceOfDataciteMdsConnectionForKnownCustomer() {
-        assertThat(sut.getAuthenticatedMdsConnection(KNOWN_CUSTOMER_ID), is(instanceOf((DataCiteMdsConnection.class))));
+        assertThat(sut.getAuthenticatedMdsConnection(), is(instanceOf((DataCiteMdsConnection.class))));
     }
 
     @Test
     void getAuthenticatedConnectionHasAuthenticatorButThrowsExceptionForUnknownCustomerWhenAskedForCredentials() {
 
-        var authenticator = sut.getAuthenticatedMdsConnection(UNKNOWN_CUSTOMER_ID)
+        var authenticator = sut.getAuthenticatedMdsConnection()
             .getHttpClient()
             .authenticator();
         assertThat(authenticator.isPresent(), is(true));
@@ -70,7 +70,7 @@ class DataCiteConnectionFactoryTest {
 
     @Test
     void getAuthenticatedConnectionAttachesPasswordAuthenticationOnHttpClient() {
-        Optional<Authenticator> authenticator = sut.getAuthenticatedMdsConnection(KNOWN_CUSTOMER_ID)
+        Optional<Authenticator> authenticator = sut.getAuthenticatedMdsConnection()
             .getHttpClient()
             .authenticator();
         assertThat(authenticator.isPresent(), is(true));
@@ -79,7 +79,7 @@ class DataCiteConnectionFactoryTest {
     private PasswordAuthentication prompAuthenticatorForCredentials(Authenticator authenticator)
         throws UnknownHostException, MalformedURLException {
 
-        var uriInRequest = new UriWrapper(DATACITE_MDS_URI).addChild("dummypath").getUri();
+        var uriInRequest = UriWrapper.fromUri(DATACITE_MDS_URI).addChild("dummypath").getUri();
 
         return authenticator
             .requestPasswordAuthenticationInstance(DATACITE_MDS_URI.getHost(), InetAddress.getLocalHost(),

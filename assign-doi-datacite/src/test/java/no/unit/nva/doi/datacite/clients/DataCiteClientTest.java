@@ -3,7 +3,6 @@ package no.unit.nva.doi.datacite.clients;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,7 +44,7 @@ class DataCiteClientTest extends DataciteClientTestBase {
 
         mdsConnectionFactory = mock(DataCiteConnectionFactory.class);
         mdsConnectionThrowingIoException = mock(DataCiteMdsConnection.class);
-        when(mdsConnectionFactory.getAuthenticatedMdsConnection(any(URI.class)))
+        when(mdsConnectionFactory.getAuthenticatedMdsConnection())
             .thenReturn(mdsConnectionThrowingIoException);
 
         when(mdsConnectionThrowingIoException.deleteDoi(anyString())).thenThrow(IOException.class);

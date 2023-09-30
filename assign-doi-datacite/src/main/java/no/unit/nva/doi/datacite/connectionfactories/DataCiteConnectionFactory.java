@@ -3,10 +3,8 @@ package no.unit.nva.doi.datacite.connectionfactories;
 import static no.unit.nva.doi.DataciteConfig.DATACITE_MDS_URI;
 import static no.unit.nva.doi.DataciteConfig.DATACITE_REST_URI;
 import java.net.Authenticator;
-import java.net.InetAddress;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Builder;
 import java.net.http.HttpClient.Version;
@@ -25,15 +23,9 @@ import no.unit.nva.doi.datacite.restclient.DataCiteRestConnection;
  * <p>Our {@link PasswordAuthentication} will only provide credentials for valid endpoints for the {@link HttpClient}
  * during server challenge (pre-emptive authentication).
  *
- * <p>Use {@link #getAuthenticatedMdsConnection(URI)}}
- * or {@link #getAuthenticatedRestConnection(URI)} to construct a new authenticated API connection.
  *
- * @see #createNvaCustomerAuthenticator(URI)
  */
 public class DataCiteConnectionFactory {
-
-    public static final PasswordAuthentication DO_NOT_SEND_CREDENTIALS = null;
-    private final PasswordAuthenticationFactory authenticationFactory;
     private final Builder httpBuilder;
     private final DataCiteConfigurationFactory configurationFactory;
     private final URI dataciteMdsHost;
@@ -57,7 +49,6 @@ public class DataCiteConnectionFactory {
                                      DataCiteConfigurationFactory configurationFactory,
                                      URI dataciteMdsHost,
                                      URI dataciteRestUri) {
-        this.authenticationFactory = new PasswordAuthenticationFactory(configurationFactory);
         this.httpBuilder = httpBuilder;
         this.configurationFactory = configurationFactory;
         this.dataciteMdsHost = dataciteMdsHost;
@@ -67,68 +58,28 @@ public class DataCiteConnectionFactory {
     /**
      * Get a authenteicated connection towards DataCite MDS API.
      *
-     * @param customerId NVA customer id
      * @return DataCiteMdsConnection private connection for provided customerId
      * @throws NoCredentialsForCustomerRuntimeException if customer has no credentials configured.
      */
-    public DataCiteMdsConnection getAuthenticatedMdsConnection(URI customerId) {
-        HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
+    public DataCiteMdsConnection getAuthenticatedMdsConnection() {
+        HttpClient httpClient = getAuthenticatedHttpClientForDatacite();
         return new DataCiteMdsConnection(httpClient, dataciteMdsHost);
     }
 
     public DataCiteRestConnection getAuthenticatedRestConnection(URI customerId) {
-        HttpClient httpClient = getAuthenticatedHttpClientForDatacite(customerId);
+        HttpClient httpClient = getAuthenticatedHttpClientForDatacite();
         DataCiteMdsClientSecretConfig clientConfigWithCredentials = configurationFactory.getCredentials(customerId);
         return new DataCiteRestConnection(dataciteRestUri, httpClient, clientConfigWithCredentials);
     }
 
-    public HttpClient getAuthenticatedHttpClientForDatacite(URI customerId) {
-        Authenticator nvaCustomerAuthenticator = createNvaCustomerAuthenticator(customerId);
-        return createHttpClientWithAuthenticator(nvaCustomerAuthenticator);
+    public HttpClient getAuthenticatedHttpClientForDatacite() {
+        return createHttpClientWithAuthenticator();
     }
 
-    private HttpClient createHttpClientWithAuthenticator(Authenticator nvaCustomerAuthenticator) {
+    private HttpClient createHttpClientWithAuthenticator() {
         return httpBuilder
             .version(Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(2))
-            .authenticator(nvaCustomerAuthenticator)
             .build();
-    }
-
-    private Authenticator createNvaCustomerAuthenticator(URI customerId) {
-        return new Authenticator() {
-
-            @Override
-            public PasswordAuthentication requestPasswordAuthenticationInstance(String host,
-                                                                                InetAddress addr,
-                                                                                int port,
-                                                                                String protocol,
-                                                                                String prompt,
-                                                                                String scheme,
-                                                                                URL url,
-                                                                                RequestorType reqType) {
-
-                if (isCommunicatingTowardsConfiguredDataCiteApi(host, port)) {
-                    return super.requestPasswordAuthenticationInstance(host,
-                                                                       addr,
-                                                                       port,
-                                                                       protocol,
-                                                                       prompt,
-                                                                       scheme,
-                                                                       url,
-                                                                       reqType);
-                }
-                return DO_NOT_SEND_CREDENTIALS;
-            }
-
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return authenticationFactory.getCredentials(customerId);
-            }
-
-            private boolean isCommunicatingTowardsConfiguredDataCiteApi(String host, int port) {
-                return host.equalsIgnoreCase(dataciteMdsHost.getHost()) && port == dataciteMdsHost.getPort();
-            }
-        };
     }
 }

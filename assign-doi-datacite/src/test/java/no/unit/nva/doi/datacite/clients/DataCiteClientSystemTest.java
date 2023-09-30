@@ -155,6 +155,9 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
         stubCreateDoiResponse(draftDoiDto);
 
         Doi actual = doiClient.createDoi(EXAMPLE_CUSTOMER_ID);
+        verify(1,
+                postRequestedFor(urlEqualTo("/dois"))
+                .withBasicAuth(new BasicCredentials(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)));
         assertThat(actual, is(instanceOf(Doi.class)));
         assertThat(actual.toIdentifier(), is(equalTo(expectedCreatedServerDoi.toIdentifier())));
         assertThat(actual.getUri(), is(equalTo(expectedCreatedServerDoi.getUri())));
@@ -346,7 +349,6 @@ class DataCiteClientSystemTest extends DataciteClientTestBase {
     }
 
     private void stubCreateDoiResponse(DraftDoiDto expectedResponseBody) {
-
         stubFor(post(urlEqualTo(DOIS_PATH_PREFIX))
                 .withBasicAuth(EXAMPLE_MDS_USERNAME, EXAMPLE_MDS_PASSWORD)
                 .willReturn(aResponse()

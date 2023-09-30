@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Base64;
 import no.unit.nva.doi.datacite.models.DataCiteMdsClientSecretConfig;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
@@ -50,12 +51,14 @@ public class DataCiteRestConnection {
         throws IOException, InterruptedException {
 
         String bodyJson = requestBodyContainingTheDoiPrefix();
+        String a = authorizationString();
         HttpRequest postRequest = HttpRequest.newBuilder()
-                                      .uri(requestTargetUri())
-                                      .POST(BodyPublishers.ofString(bodyJson))
-                                      .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
-                                      .headers(AUTHORIZATION_HEADER, authorizationString())
-                                      .build();
+                .uri(requestTargetUri())
+                .POST(BodyPublishers.ofString(bodyJson))
+                .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+                .headers(AUTHORIZATION_HEADER, a)
+                .timeout(Duration.ofMillis(2000))
+                .build();
         return httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -92,7 +95,7 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUri() {
-        return new UriWrapper(dataciteRestUri).addChild(DOIS_PATH).getUri();
+        return UriWrapper.fromUri(dataciteRestUri).addChild(DOIS_PATH).getUri();
     }
 
     private URI requestTargetUriToDoi(String id) {
@@ -100,6 +103,6 @@ public class DataCiteRestConnection {
     }
 
     private URI buildUriToDoi(String id) {
-        return new UriWrapper(dataciteRestUri).addChild(DOIS_PATH).addChild(id).getUri();
+        return UriWrapper.fromUri(dataciteRestUri).addChild(DOIS_PATH).addChild(id).getUri();
     }
 }
