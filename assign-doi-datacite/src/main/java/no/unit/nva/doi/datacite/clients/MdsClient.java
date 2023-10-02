@@ -140,7 +140,7 @@ public class MdsClient extends HttpSender {
     }
 
     private URI createUriForUpdatingMetadata(Doi doi) {
-        return UriWrapper.fromUri(dataciteMdsUri)
+        return UriWrapper.fromHost(dataciteMdsUri)
                    .addChild(DATACITE_PATH_METADATA)
                    .addChild(doi.toIdentifier())
                    .getUri();
@@ -165,7 +165,7 @@ public class MdsClient extends HttpSender {
     }
 
     private URI createUriForAccessingDoi(Doi doi) {
-        return UriWrapper.fromUri(dataciteMdsUri)
+        return UriWrapper.fromHost(dataciteMdsUri)
                    .addChild(DATACITE_PATH_DOI)
                    .addChild(doi.toIdentifier())
                    .getUri();
