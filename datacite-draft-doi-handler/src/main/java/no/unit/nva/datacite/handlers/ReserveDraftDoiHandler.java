@@ -12,8 +12,12 @@ import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest, DoiResponse> {
+
+    private final Logger logger = LoggerFactory.getLogger(ReserveDraftDoiHandler.class);
 
     public static final String BAD_RESPONSE_FROM_DATA_CITE = "Bad response from DataCite";
     private final DoiClient doiClient;
@@ -34,7 +38,12 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
         var customerId = input.getCustomer();
         return attempt(() -> doiClient.createDoi(customerId))
                    .map(doi -> new DoiResponse(doi.getUri()))
-                   .orElseThrow(failure -> new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE));
+                   .orElseThrow(failure -> getBadGatewayException(failure.getException()));
+    }
+
+    private BadGatewayException getBadGatewayException(Exception exception) {
+        logger.error("Creating draft doi failed with: {}", exception);
+        return new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
     }
 
     @Override
