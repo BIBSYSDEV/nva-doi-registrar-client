@@ -3,7 +3,7 @@ package no.unit.nva.doi.datacite.clients.exception;
 import nva.commons.core.JacocoGenerated;
 
 /**
- * Exception thrown where upstream API response is non successful.
+ * Exception thrown where upstream API response is non-successful.
  */
 @JacocoGenerated
 public class UpstreamApiException extends ClientException {
@@ -22,6 +22,7 @@ public class UpstreamApiException extends ClientException {
      *
      * @return http status code
      */
+    @JacocoGenerated
     public int getStatusCode() {
         return statusCode;
     }

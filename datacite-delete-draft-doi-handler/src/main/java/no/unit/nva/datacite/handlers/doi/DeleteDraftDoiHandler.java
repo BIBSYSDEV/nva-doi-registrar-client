@@ -1,17 +1,13 @@
 package no.unit.nva.datacite.handlers.doi;
 
 import static com.amazonaws.util.SdkHttpUtils.urlDecode;
-import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
+import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -20,7 +16,6 @@ import nva.commons.apigateway.exceptions.BadMethodException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.secrets.SecretsReader;
 
 public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
@@ -63,12 +58,7 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
-        return new DataCiteClient(configFactory, connectionFactory);
+        return new DataCiteClientV2();
     }
 
     private void validateRequest(URI customerId, Doi doi) throws BadMethodException, BadGatewayException {

@@ -1,22 +1,17 @@
 package no.unit.nva.datacite.handlers;
 
-import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.DraftDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import no.unit.nva.datacite.model.DoiResponse;
 import no.unit.nva.datacite.model.ReserveDoiRequest;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
+import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.secrets.SecretsReader;
 
 public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest, DoiResponse> {
 
@@ -49,11 +44,6 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
-        return new DataCiteClient(configFactory, connectionFactory);
+        return new DataCiteClientV2();
     }
 }
