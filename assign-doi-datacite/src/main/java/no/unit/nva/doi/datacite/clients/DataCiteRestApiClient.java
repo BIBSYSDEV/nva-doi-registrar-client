@@ -31,12 +31,12 @@ public class DataCiteRestApiClient extends HttpSender {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String DOIS_PATH_PARAMETER = "dois";
-    private final URI dataciteRestApiURI;
+    private final String dataciteRestApiURI;
     private final CustomerConfigExtractor customerConfigExtractor;
 
     private final String doiHost;
 
-    public DataCiteRestApiClient(URI dataciteRestApiURI,
+    public DataCiteRestApiClient(String dataciteRestApiURI,
                                  String doiHost,
                                  CustomerConfigExtractor customerConfigExtractor,
                                  HttpClient httpClient) {

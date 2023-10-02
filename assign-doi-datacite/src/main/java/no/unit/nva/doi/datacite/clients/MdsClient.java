@@ -40,10 +40,10 @@ public class MdsClient extends HttpSender {
 
 
     private final Logger logger = LoggerFactory.getLogger(MdsClient.class);
-    private final URI dataciteMdsUri;
+    private final String dataciteMdsUri;
     private final CustomerConfigExtractor customerConfigExtractor;
 
-    public MdsClient(URI dataciteMdsUri,
+    public MdsClient(String dataciteMdsUri,
                      CustomerConfigExtractor customerConfigExtractor,
                      HttpClient httpClient) {
         super(httpClient);

@@ -11,7 +11,6 @@ import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.paths.UriWrapper;
 
 public class DataCiteClientV2 implements DoiClient {
 
@@ -23,16 +22,16 @@ public class DataCiteClientV2 implements DoiClient {
         this(new CustomerConfigExtractorImpl(new Environment().readEnv("CUSTOMER_SECRETS_SECRET_NAME"),
                                              new Environment().readEnv("CUSTOMER_SECRETS_SECRET_KEY")),
              HttpClient.newBuilder().version(Version.HTTP_2).build(),
-             UriWrapper.fromUri(new Environment().readEnv("DATACITE_REST_HOST")).getUri(),
-             UriWrapper.fromUri(new Environment().readEnv("DATACITE_MDS_HOST")).getUri(),
+             new Environment().readEnv("DATACITE_REST_HOST"),
+             new Environment().readEnv("DATACITE_MDS_HOST"),
              new Environment().readEnv("DOI_HOST"));
     }
 
     public DataCiteClientV2(
         CustomerConfigExtractor customerConfigExtractor,
         HttpClient httpClient,
-        URI dataciteRestApiUri,
-        URI dataciteMdsUri,
+        String dataciteRestApiUri,
+        String dataciteMdsUri,
         String doiHost) {
         this.mdsClient = new MdsClient(dataciteMdsUri,
                                        customerConfigExtractor,

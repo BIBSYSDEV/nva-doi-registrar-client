@@ -16,8 +16,12 @@ import nva.commons.apigateway.exceptions.BadMethodException;
 import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
+
+    private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
 
     public static final String BAD_DATACITE_RESPONSE_MESSAGE = "Bad response from DataCite fetching doi";
     public static final String CUSTOMER_ID = "customerId";
@@ -43,7 +47,12 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         var doi = getDoiFromPath(requestInfo);
         validateRequest(customerId, doi);
         return attempt(() -> deleteDraftDoi(customerId, doi))
-                   .orElseThrow(failure -> new BadGatewayException(ERROR_DELETING_DRAFT_DOI));
+                   .orElseThrow(failure -> handleFailure(failure.getException()));
+    }
+
+    private BadGatewayException handleFailure(Exception exception) {
+        logger.error("Delete draft doi failed with {}", exception);
+        return new BadGatewayException(ERROR_DELETING_DRAFT_DOI);
     }
 
     @Override

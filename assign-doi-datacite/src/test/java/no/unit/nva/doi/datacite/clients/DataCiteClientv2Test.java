@@ -53,7 +53,6 @@ import no.unit.nva.doi.datacite.utils.FakeCustomerExtractorThrowingException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
-import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -121,8 +120,8 @@ public class DataCiteClientv2Test {
         this.client = new DataCiteClientV2(
             customerConfigExtractor,
             WiremockHttpClient.create(),
-            UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
-            UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
+            runtimeInfo.getHttpBaseUrl(),
+            runtimeInfo.getHttpBaseUrl(),
             DOI_HOST
         );
     }
@@ -133,8 +132,8 @@ public class DataCiteClientv2Test {
         client = new DataCiteClientV2(
             new FakeCustomerExtractorThrowingException(),
             WiremockHttpClient.create(),
-            UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
-            UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
+            runtimeInfo.getHttpBaseUrl(),
+            runtimeInfo.getHttpBaseUrl(),
             DOI_HOST
         );
         var customerUri = randomUri();
@@ -159,8 +158,8 @@ public class DataCiteClientv2Test {
         var exceptionMessage = "Something horrible happened";
         when(httpClientMock.send(any(), any())).thenThrow(new IOException(exceptionMessage));
         client = new DataCiteClientV2(customerConfigExtractor, httpClientMock,
-                                      UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
-                                      UriWrapper.fromUri(runtimeInfo.getHttpBaseUrl()).getUri(),
+                                      runtimeInfo.getHttpBaseUrl(),
+                                      runtimeInfo.getHttpBaseUrl(),
                                       DOI_HOST);
         var customerId = createValidCustomer();
         var exception = assertThrows(ClientException.class, () -> client.createDoi(customerId));
