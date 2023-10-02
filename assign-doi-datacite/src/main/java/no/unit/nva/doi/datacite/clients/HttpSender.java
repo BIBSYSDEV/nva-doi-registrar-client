@@ -12,8 +12,9 @@ import org.slf4j.LoggerFactory;
 
 public class HttpSender {
 
-    private final HttpClient httpClient;
     private final Logger logger = LoggerFactory.getLogger(HttpSender.class);
+    private final HttpClient httpClient;
+
 
     public static final String REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE = "Request responded with: ";
 
@@ -24,6 +25,7 @@ public class HttpSender {
     public HttpResponse<String> sendRequest(HttpRequest request, int expectedCode) throws ClientException {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
+        logger.info("Response:" + response.toString());
         if (response.statusCode() != expectedCode) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
