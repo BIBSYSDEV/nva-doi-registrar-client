@@ -2,6 +2,7 @@ package no.unit.nva.doi.datacite.clients;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigExtractor;
@@ -21,7 +22,7 @@ public class DataCiteClientV2 implements DoiClient {
     public DataCiteClientV2() {
         this(new CustomerConfigExtractorImpl(new Environment().readEnv("CUSTOMER_SECRETS_SECRET_NAME"),
                                              new Environment().readEnv("CUSTOMER_SECRETS_SECRET_KEY")),
-             HttpClient.newHttpClient(),
+             HttpClient.newBuilder().version(Version.HTTP_2).build(),
              UriWrapper.fromUri(new Environment().readEnv("DATACITE_REST_HOST")).getUri(),
              UriWrapper.fromUri(new Environment().readEnv("DATACITE_MDS_HOST")).getUri(),
              new Environment().readEnv("DOI_HOST"));
