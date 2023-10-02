@@ -15,6 +15,8 @@ public class HttpSender {
     private final HttpClient httpClient;
     private final Logger logger = LoggerFactory.getLogger(HttpSender.class);
 
+    public static final String REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE = "Request responded with: ";
+
     public HttpSender(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
@@ -23,7 +25,7 @@ public class HttpSender {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
         if (response.statusCode() != expectedCode) {
-            logger.error("Request responded with: " + response.body());
+            logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }
         return response;

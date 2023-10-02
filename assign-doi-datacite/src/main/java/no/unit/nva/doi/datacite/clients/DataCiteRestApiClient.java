@@ -26,6 +26,7 @@ public class DataCiteRestApiClient extends HttpSender {
     public static final String CONTENT_TYPE = "Content-Type";
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String DOIS_PATH_PARAMETER = "dois";
     private final URI dataciteRestApiURI;
     private final CustomerConfigExtractor customerConfigExtractor;
 
@@ -77,7 +78,7 @@ public class DataCiteRestApiClient extends HttpSender {
 
     private URI buildUriToDoi(Doi doi) {
         return UriWrapper.fromUri(dataciteRestApiURI)
-                   .addChild("dois")
+                   .addChild(DOIS_PATH_PARAMETER)
                    .addChild(doi.toIdentifier())
                    .getUri();
     }
@@ -99,6 +100,6 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     private URI doiRequestUri() {
-        return UriWrapper.fromUri(dataciteRestApiURI).addChild("dois").getUri();
+        return UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
     }
 }

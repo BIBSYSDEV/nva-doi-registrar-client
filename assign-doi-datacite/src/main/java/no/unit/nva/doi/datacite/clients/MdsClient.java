@@ -38,6 +38,7 @@ public class MdsClient extends HttpSender {
 
     public static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain;charset=UTF-8";
 
+
     private final Logger logger = LoggerFactory.getLogger(MdsClient.class);
     private final URI dataciteMdsUri;
     private final CustomerConfigExtractor customerConfigExtractor;
@@ -83,11 +84,11 @@ public class MdsClient extends HttpSender {
         var response = attempt(() -> super.getHttpClient().send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
         if (response.statusCode() == HttpStatus.SC_METHOD_NOT_ALLOWED) {
-            logger.error("Request responded with: " + response.body());
+            logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new DeleteDraftDoiException(doi, response.statusCode());
         }
         if (response.statusCode() != HttpStatus.SC_OK) {
-            logger.error("Request responded with: " + response.body());
+            logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }
     }
