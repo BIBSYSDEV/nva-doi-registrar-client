@@ -390,7 +390,7 @@ public class DataCiteClientv2Test {
                     .withBasicAuth(CUSTOMER_USERNAME, CUSTOMER_PASSWORD)
                     .willReturn(aResponse()
                                     .withHeader(HEADER_CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
-                                    .withStatus(HttpStatus.SC_CREATED).withBody(HTTP_RESPONSE_OK)));
+                                    .withStatus(HttpStatus.SC_OK).withBody(HTTP_RESPONSE_OK)));
     }
 
     private String createDoiIdentifierPath(Doi requestedDoi) {

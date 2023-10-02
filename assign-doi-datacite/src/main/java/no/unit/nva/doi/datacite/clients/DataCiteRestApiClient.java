@@ -1,6 +1,5 @@
 package no.unit.nva.doi.datacite.clients;
 
-import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

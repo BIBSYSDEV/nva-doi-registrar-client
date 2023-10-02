@@ -63,7 +63,7 @@ public class MdsClient extends HttpSender {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateLandingPageInput(doi, landingPage);
         var request = createLandingPagePostRequest(customer, doi, landingPage);
-        sendRequest(request,  HttpStatus.SC_CREATED);
+        sendRequest(request,  HttpStatus.SC_OK);
     }
 
     public void deleteMedata(URI customerId, Doi doi) throws ClientException {
