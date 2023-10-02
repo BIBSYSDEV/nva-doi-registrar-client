@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -49,8 +48,8 @@ import no.unit.nva.doi.datacite.customerconfigs.CustomerConfig;
 import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
-import no.unit.nva.doi.datacite.utils.FakeCustomerExtractorThrowingException;
 import no.unit.nva.doi.datacite.utils.FakeCustomerExtractor;
+import no.unit.nva.doi.datacite.utils.FakeCustomerExtractorThrowingException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
@@ -63,7 +62,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import software.amazon.ion.IonException;
 
 @WireMockTest
 public class DataCiteClientv2Test {
