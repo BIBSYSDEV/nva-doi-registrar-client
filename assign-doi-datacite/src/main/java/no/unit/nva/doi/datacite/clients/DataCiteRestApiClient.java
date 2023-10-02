@@ -73,10 +73,6 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     private URI requestTargetUriToDoi(Doi doi) {
-        return attempt(() -> buildUriToDoi(doi)).orElseThrow();
-    }
-
-    private URI buildUriToDoi(Doi doi) {
         return UriWrapper.fromUri(dataciteRestApiURI)
                    .addChild(DOIS_PATH_PARAMETER)
                    .addChild(doi.toIdentifier())

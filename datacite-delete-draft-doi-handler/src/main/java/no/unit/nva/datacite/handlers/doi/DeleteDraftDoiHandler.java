@@ -21,13 +21,12 @@ import org.slf4j.LoggerFactory;
 
 public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
-    private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
-
     public static final String BAD_DATACITE_RESPONSE_MESSAGE = "Bad response from DataCite fetching doi";
     public static final String CUSTOMER_ID = "customerId";
     protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
     protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
     private static final String DOI_STATE_DRAFT = "draft";
+    private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
     private final DoiClient doiClient;
 
     public DeleteDraftDoiHandler(DoiClient doiClient, Environment environment) {
@@ -47,12 +46,7 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         var doi = getDoiFromPath(requestInfo);
         validateRequest(customerId, doi);
         return attempt(() -> deleteDraftDoi(customerId, doi))
-                   .orElseThrow(failure -> handleFailure(failure.getException()));
-    }
-
-    private BadGatewayException handleFailure(Exception exception) {
-        logger.error("Delete draft doi failed with {}", exception);
-        return new BadGatewayException(ERROR_DELETING_DRAFT_DOI);
+                   .orElseThrow(failure -> handleFailure(failure.getException(), ERROR_DELETING_DRAFT_DOI));
     }
 
     @Override
@@ -70,9 +64,15 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         return new DataCiteClientV2();
     }
 
+    private BadGatewayException handleFailure(Exception exception, String message) {
+        logger.error("Delete draft doi failed with {}", exception);
+        return new BadGatewayException(message);
+    }
+
     private void validateRequest(URI customerId, Doi doi) throws BadMethodException, BadGatewayException {
         var doiState = attempt(() -> doiClient.getDoi(customerId, doi))
-                           .orElseThrow(failure -> new BadGatewayException(BAD_DATACITE_RESPONSE_MESSAGE));
+                           .orElseThrow(failure ->
+                                            handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
         if (!DOI_STATE_DRAFT.equalsIgnoreCase(doiState.getState())) {
             throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
         }
