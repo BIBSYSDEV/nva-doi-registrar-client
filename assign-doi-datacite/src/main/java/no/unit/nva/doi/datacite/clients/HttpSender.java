@@ -36,7 +36,7 @@ public class HttpSender {
     }
 
     protected ClientException handleFailure(Failure<HttpResponse<String>> fail) {
-        logger.error("Exception: ", fail.getException());
+        logger.error("Exception : {}", fail.getException());
         return new ClientException(fail.getException());
     }
 }
