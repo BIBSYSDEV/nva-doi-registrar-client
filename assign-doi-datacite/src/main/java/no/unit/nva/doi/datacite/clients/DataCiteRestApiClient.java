@@ -49,6 +49,7 @@ public class DataCiteRestApiClient extends HttpSender {
     public Doi createDoi(URI customerId) throws ClientException {
         logger.info("Got create request");
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
+        logger.info("Got customer");
         var request = createPostDoiRequest(customer);
         logger.info("Done creating doi request");
         var response = sendRequest(request, HttpStatus.SC_CREATED);
