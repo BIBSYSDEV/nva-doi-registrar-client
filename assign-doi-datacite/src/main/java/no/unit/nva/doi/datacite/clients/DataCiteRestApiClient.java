@@ -84,7 +84,7 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     private URI buildUriToDoi(Doi doi) {
-        return UriWrapper.fromHost(dataciteRestApiURI)
+        return UriWrapper.fromUri(dataciteRestApiURI)
                    .addChild(DOIS_PATH_PARAMETER)
                    .addChild(doi.toIdentifier())
                    .getUri();
@@ -115,7 +115,7 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     private URI doiRequestUri() {
-        var uri = UriWrapper.fromHost(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
+        var uri = UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
         logger.info("Created uri: " + uri.toString());
         return uri;
     }

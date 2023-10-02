@@ -22,9 +22,9 @@ public class DataCiteClientV2 implements DoiClient {
         this(new CustomerConfigExtractorImpl(new Environment().readEnv("CUSTOMER_SECRETS_SECRET_NAME"),
                                              new Environment().readEnv("CUSTOMER_SECRETS_SECRET_KEY")),
              HttpClient.newBuilder().version(Version.HTTP_2).build(),
-             new Environment().readEnv("DATACITE_REST_HOST"),
-             new Environment().readEnv("DATACITE_MDS_HOST"),
-             new Environment().readEnv("DOI_HOST"));
+             "https://" + new Environment().readEnv("DATACITE_REST_HOST"),
+             "https://" + new Environment().readEnv("DATACITE_MDS_HOST"),
+             "https://" + new Environment().readEnv("DOI_HOST"));
     }
 
     public DataCiteClientV2(
