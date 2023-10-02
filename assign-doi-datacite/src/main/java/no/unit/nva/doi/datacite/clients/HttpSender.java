@@ -25,7 +25,6 @@ public class HttpSender {
     public HttpResponse<String> sendRequest(HttpRequest request, int expectedCode) throws ClientException {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
-        logger.info("Response:" + response.toString());
         if (response.statusCode() != expectedCode) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());

@@ -14,6 +14,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class DataCiteClientV2 implements DoiClient {
 
+    public static final String HTTPS_PROTOCOL = "https://";
     private final MdsClient mdsClient;
     private final DataCiteRestApiClient dataCiteRestApiClient;
 
@@ -22,9 +23,9 @@ public class DataCiteClientV2 implements DoiClient {
         this(new CustomerConfigExtractorImpl(new Environment().readEnv("CUSTOMER_SECRETS_SECRET_NAME"),
                                              new Environment().readEnv("CUSTOMER_SECRETS_SECRET_KEY")),
              HttpClient.newBuilder().version(Version.HTTP_2).build(),
-             "https://" + new Environment().readEnv("DATACITE_REST_HOST"),
-             "https://" + new Environment().readEnv("DATACITE_MDS_HOST"),
-             "https://" + new Environment().readEnv("DOI_HOST"));
+             HTTPS_PROTOCOL + new Environment().readEnv("DATACITE_REST_HOST"),
+             HTTPS_PROTOCOL + new Environment().readEnv("DATACITE_MDS_HOST"),
+             HTTPS_PROTOCOL + new Environment().readEnv("DOI_HOST"));
     }
 
     public DataCiteClientV2(

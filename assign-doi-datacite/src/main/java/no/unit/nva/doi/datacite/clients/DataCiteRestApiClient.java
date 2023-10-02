@@ -16,12 +16,8 @@ import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.core.paths.UriWrapper;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataCiteRestApiClient extends HttpSender {
-
-    private final Logger logger = LoggerFactory.getLogger(DataCiteRestApiClient.class);
 
     private  static final int TIMEOUT = 2000;
 
@@ -47,11 +43,8 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     public Doi createDoi(URI customerId) throws ClientException {
-        logger.info("Got create request");
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
-        logger.info("Got customer " + customer.getCustomerId().toString());
         var request = createPostDoiRequest(customer);
-        logger.info("Done creating doi request");
         var response = sendRequest(request, HttpStatus.SC_CREATED);
         return convertResponseToDoi(response);
     }
@@ -102,21 +95,15 @@ public class DataCiteRestApiClient extends HttpSender {
     }
 
     private String getBasicAuth(CustomerConfig customerConfig) throws CustomerConfigException {
-        var basicAuth = customerConfig.extractBasicAuthenticationString();
-        logger.info("Using basic auth " + basicAuth);
         return customerConfig.extractBasicAuthenticationString();
     }
 
     private String requestBodyContainingTheDoiPrefix(CustomerConfig customerConfig) {
         DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(customerConfig.getDoiPrefix());
-        var bodyJson = bodyObject.toJson();
-        logger.info("Sending body: " + bodyJson);
         return bodyObject.toJson();
     }
 
     private URI doiRequestUri() {
-        var uri = UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
-        logger.info("Created uri: " + uri.toString());
-        return uri;
+        return UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
     }
 }
