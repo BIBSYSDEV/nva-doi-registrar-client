@@ -75,7 +75,7 @@ public class DataCiteRestApiClient extends HttpSender {
                    .GET()
                    .header(ACCEPT, JSON_API_CONTENT_TYPE)
                    .timeout(Duration.ofMillis(TIMEOUT))
-                   .headers(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .headers(AUTHORIZATION_HEADER, getBasicAuth(customer))
                    .build();
     }
 
@@ -96,17 +96,27 @@ public class DataCiteRestApiClient extends HttpSender {
                    .uri(doiRequestUri())
                    .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
                    .POST(BodyPublishers.ofString(requestBodyContainingTheDoiPrefix(customerConfig)))
-                   .headers(AUTHORIZATION_HEADER, customerConfig.extractBasicAuthenticationString())
+                   .headers(AUTHORIZATION_HEADER, getBasicAuth(customerConfig))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .build();
     }
 
+    private String getBasicAuth(CustomerConfig customerConfig) throws CustomerConfigException {
+        var basicAuth = customerConfig.extractBasicAuthenticationString();
+        logger.info("Using basic auth " + basicAuth);
+        return customerConfig.extractBasicAuthenticationString();
+    }
+
     private String requestBodyContainingTheDoiPrefix(CustomerConfig customerConfig) {
         DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(customerConfig.getDoiPrefix());
+        var bodyJson = bodyObject.toJson();
+        logger.info("Sending body: " + bodyJson);
         return bodyObject.toJson();
     }
 
     private URI doiRequestUri() {
-        return UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
+        var uri = UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
+        logger.info("Created uri: " + uri.toString());
+        return uri;
     }
 }
