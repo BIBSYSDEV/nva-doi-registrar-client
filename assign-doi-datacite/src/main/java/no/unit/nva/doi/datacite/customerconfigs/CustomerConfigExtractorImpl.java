@@ -43,7 +43,7 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
     }
 
     private void readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty() throws CustomerConfigException {
-        if (customerConfigs.isEmpty()){
+        if (customerConfigs.isEmpty()) {
             readCustomerConfigFromSecretsReader();
         }
     }
@@ -56,11 +56,11 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
     private CustomerConfig[] extractCustomerConfigsFromSecretsReader()
         throws CustomerConfigException {
         return attempt(() -> secretsReader.fetchSecret(secretName, secretKey))
-                   .map(CustomerConfigExtractorImpl::convertCustomerConfigStringToDto)
+                   .map(this::convertCustomerConfigStringToDto)
                    .orElseThrow(fail -> new CustomerConfigException(fail.getException()));
     }
 
-    private static CustomerConfig[] convertCustomerConfigStringToDto(String customerConfigsString)
+    private CustomerConfig[] convertCustomerConfigStringToDto(String customerConfigsString)
         throws CustomerConfigException {
         return attempt(() ->
                            JsonUtils.dtoObjectMapper.readValue(customerConfigsString,
