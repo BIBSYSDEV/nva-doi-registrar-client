@@ -57,9 +57,10 @@ import nva.commons.logutils.LogUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @WireMockTest
@@ -90,21 +91,21 @@ public class DataCiteClientv2Test {
 
     private FakeCustomerExtractor customerConfigExtractor;
 
-    static Stream<Arguments> providedBadCustomerConfigs() {
-        return Stream.of(Arguments.of(new CustomerConfig(randomUri(),
+    static Stream<Named<CustomerConfig>> providedBadCustomerConfigs() {
+        return Stream.of(Named.of("No customer details", new CustomerConfig(randomUri(),
                                                          PASSWORD_NOT_SET,
                                                          USERNAME_NOT_SET,
                                                          DOI_PREFIX_NOT_SET)),
-                         Arguments.of(new CustomerConfig(randomUri(),
+                         Named.of("No username or DOI prefix", new CustomerConfig(randomUri(),
                                                          randomString(),
                                                          USERNAME_NOT_SET,
                                                          DOI_PREFIX_NOT_SET)),
-                         Arguments.of(new CustomerConfig(randomUri(),
+                         Named.of("No password or DOI prefix", new CustomerConfig(randomUri(),
                                                          PASSWORD_NOT_SET,
                                                          randomString(),
                                                          DOI_PREFIX_NOT_SET
                          )),
-                         Arguments.of(new CustomerConfig(randomUri(),
+                         Named.of("No password or username", new CustomerConfig(randomUri(),
                                                          PASSWORD_NOT_SET,
                                                          USERNAME_NOT_SET,
                                                          randomString())));
@@ -141,7 +142,8 @@ public class DataCiteClientv2Test {
                      () -> client.createDoi(customerUri));
     }
 
-    @ParameterizedTest(name = "Should throw exception when creating DOI for customer that is not configured")
+    @ParameterizedTest()
+    @DisplayName("Should throw exception when creating DOI for customer that is not configured")
     @MethodSource("providedBadCustomerConfigs")
     void shouldThrowExceptionWhenCreatingDoiForCustomerThatIsNotConfigured(CustomerConfig customer) {
         customerConfigExtractor.setCustomerConfig(customer);
