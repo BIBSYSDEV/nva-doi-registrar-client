@@ -24,7 +24,6 @@ import no.unit.nva.datacite.model.DoiResponse;
 import no.unit.nva.datacite.model.ReserveDoiRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.clients.exception.CreateDoiException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -105,7 +104,7 @@ public class ReserveDraftDoiHandlerTest {
     private DoiClient doiClientThrowingException() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.createDoi(any())).thenAnswer(invocation -> {
-            throw new CreateDoiException(SAMPLE_DOI_PREFIX, SAMPLE_STATUS_CODE, EXPECTED_ERROR_MESSAGE);
+            throw new ClientException("Some exception");
         });
         return doiClient;
     }

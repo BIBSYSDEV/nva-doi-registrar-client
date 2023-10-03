@@ -6,6 +6,7 @@ dependencies {
     implementation libs.nva.secrets
 
     implementation libs.aws.secretsmanager.caching
+    implementation libs.aws.sdk2.secrets
     implementation libs.bundles.logging
 
     testImplementation libs.wiremock

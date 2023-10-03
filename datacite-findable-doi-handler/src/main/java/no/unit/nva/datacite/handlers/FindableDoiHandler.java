@@ -1,23 +1,18 @@
 package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.nonNull;
-import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
 import no.unit.nva.datacite.handlers.model.UpdateDoiRequest;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
+import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.secrets.SecretsReader;
 
 public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiResponse> {
 
@@ -51,14 +46,7 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
-        DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory dataCiteMdsConnectionFactory =
-            new DataCiteConnectionFactory(dataCiteConfigurationFactory);
-
-        return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+        return new DataCiteClientV2();
     }
 
     private Doi getDoi(UpdateDoiRequest input) throws ClientException {

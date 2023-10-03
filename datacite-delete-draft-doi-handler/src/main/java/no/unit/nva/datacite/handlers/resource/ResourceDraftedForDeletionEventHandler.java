@@ -1,22 +1,17 @@
 package no.unit.nva.datacite.handlers.resource;
 
-import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.resource.DeleteDraftDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
 import java.net.URI;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
+import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.secrets.SecretsReader;
 
 
 public class ResourceDraftedForDeletionEventHandler
@@ -113,11 +108,6 @@ public class ResourceDraftedForDeletionEventHandler
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
-        DataCiteConfigurationFactory configFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory connectionFactory = new DataCiteConnectionFactory(configFactory);
-        return new DataCiteClient(configFactory, connectionFactory);
+        return new DataCiteClientV2();
     }
 }

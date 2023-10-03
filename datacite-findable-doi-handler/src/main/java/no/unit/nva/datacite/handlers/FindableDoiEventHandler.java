@@ -1,23 +1,18 @@
 package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.isNull;
-import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretKey;
-import static no.unit.nva.datacite.handlers.FindableDoiAppEnv.getCustomerSecretsSecretName;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.ArrayList;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
+import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConfigurationFactory;
-import no.unit.nva.doi.datacite.connectionfactories.DataCiteConnectionFactory;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.secrets.SecretsReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,14 +76,7 @@ public class FindableDoiEventHandler
 
     @JacocoGenerated
     private static DoiClient defaultDoiClient() {
-
-        DataCiteConfigurationFactory dataCiteConfigurationFactory = new DataCiteConfigurationFactory(
-            new SecretsReader(), getCustomerSecretsSecretName(), getCustomerSecretsSecretKey());
-
-        DataCiteConnectionFactory dataCiteMdsConnectionFactory =
-            new DataCiteConnectionFactory(dataCiteConfigurationFactory);
-
-        return new DataCiteClient(dataCiteConfigurationFactory, dataCiteMdsConnectionFactory);
+        return new DataCiteClientV2();
     }
 
     private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) throws ClientException {

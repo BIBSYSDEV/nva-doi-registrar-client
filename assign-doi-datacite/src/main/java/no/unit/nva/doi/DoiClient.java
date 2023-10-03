@@ -1,7 +1,6 @@
 package no.unit.nva.doi;
 
 import java.net.URI;
-import no.unit.nva.doi.datacite.clients.DataCiteClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
@@ -15,7 +14,7 @@ import no.unit.nva.doi.models.Doi;
  * @see <a href="https://support.datacite.org/docs/landing-pages">Best practices for landing pages</a>
  * @see <a href="https://support.datacite.org/docs/tombstone-pages">Best practices for Tombstone Landing pages</a>
  * @see <a href="https://support.datacite.org/docs/versioning">Best practices about versioning</a>
- * @see DataCiteClient
+ * @see no.unit.nva.doi.datacite.clients.DataCiteClientV2
  */
 public interface DoiClient {
 

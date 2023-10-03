@@ -13,6 +13,7 @@ public class DeleteDraftDoiException extends UpstreamApiException {
         this.doi = doi;
     }
 
+    @JacocoGenerated
     public Doi getDoi() {
         return doi;
     }

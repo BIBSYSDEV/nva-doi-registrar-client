@@ -9,10 +9,6 @@ import nva.commons.core.JacocoGenerated;
 @JacocoGenerated
 public class ClientRuntimeException extends RuntimeException {
 
-    public ClientRuntimeException(String message) {
-        super(message);
-    }
-
     public ClientRuntimeException(ClientException e) {
         super(e);
     }
