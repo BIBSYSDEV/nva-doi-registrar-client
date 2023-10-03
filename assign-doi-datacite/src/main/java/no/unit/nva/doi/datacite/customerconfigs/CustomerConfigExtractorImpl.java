@@ -17,6 +17,8 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
     private final String secretName;
     private final String secretKey;
 
+    private final Map<URI, CustomerConfig> customerConfigs;
+
     @JacocoGenerated
     public CustomerConfigExtractorImpl(String secretName,
                                        String secretKey) {
@@ -29,29 +31,29 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
         this.secretsReader = secretsReader;
         this.secretName = secretName;
         this.secretKey = secretKey;
+        this.customerConfigs = new HashMap<>();
     }
 
     @Override
     public CustomerConfig getCustomerConfig(final URI customerId)
         throws CustomerConfigException {
-        var customerConfigs = readCustomerConfigFromSecretsReader(secretsReader,
-                                                                  secretName,
-                                                                  secretKey);
+        readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty();
         return Optional.ofNullable(customerConfigs.get(customerId))
                    .orElseThrow(CustomerConfigException::new);
     }
 
-    private static Map<URI, CustomerConfig> readCustomerConfigFromSecretsReader(
-        SecretsReader secretsReader,
-        String secretName,
-        String secretKey) throws CustomerConfigException {
-        var customerConfigs = extractCustomerConfigsFromSecretsReader(secretsReader, secretName, secretKey);
-        return createCustomersMap(customerConfigs);
+    private void readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty() throws CustomerConfigException {
+        if (customerConfigs.isEmpty()){
+            readCustomerConfigFromSecretsReader();
+        }
     }
 
-    private static CustomerConfig[] extractCustomerConfigsFromSecretsReader(SecretsReader secretsReader,
-                                                                            String secretName,
-                                                                            String secretKey)
+    private void readCustomerConfigFromSecretsReader() throws CustomerConfigException {
+        var customerConfigs = extractCustomerConfigsFromSecretsReader();
+        createCustomersMap(customerConfigs);
+    }
+
+    private CustomerConfig[] extractCustomerConfigsFromSecretsReader()
         throws CustomerConfigException {
         return attempt(() -> secretsReader.fetchSecret(secretName, secretKey))
                    .map(CustomerConfigExtractorImpl::convertCustomerConfigStringToDto)
@@ -66,11 +68,9 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
                    .orElseThrow(fail -> new CustomerConfigException(fail.getException()));
     }
 
-    private static Map<URI, CustomerConfig> createCustomersMap(final CustomerConfig... customers) {
-        var customerConfigs = new HashMap<URI, CustomerConfig>();
+    private void createCustomersMap(final CustomerConfig... customers) {
         Arrays.stream(customers)
             .filter(customer -> nonNull(customer.getCustomerId()))
             .forEach(customer -> customerConfigs.put(customer.getCustomerId(), customer));
-        return customerConfigs;
     }
 }
