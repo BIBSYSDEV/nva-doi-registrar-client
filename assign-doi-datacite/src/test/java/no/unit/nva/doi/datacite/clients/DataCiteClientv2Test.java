@@ -323,13 +323,13 @@ public class DataCiteClientv2Test {
 
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
-        var custonerId = createValidCustomer();
+        var customerId = createValidCustomer();
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponseForFindableDoi(expectedPathForDeletingDoiInDraftStatus);
 
         var actualException = assertThrows(DeleteDraftDoiException.class,
-                                           () -> client.deleteDraftDoi(custonerId, doi));
+                                           () -> client.deleteDraftDoi(customerId, doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(),
                    containsString(doi.toIdentifier()));

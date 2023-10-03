@@ -33,7 +33,7 @@ public class CustomerConfigsExtractorImplTest {
     }
 
     @Test
-    void shouldThrowExceptionIfSecretReaderDosNotContainSecret() {
+    void shouldThrowExceptionWhenRetrievingCustomerConfigIfSecretReaderDoesNotContainCustomer() {
         var fakeSecretsManagerClient = new FakeSecretsManagerClient();
         this.secretsReader = new SecretsReader(fakeSecretsManagerClient);
         this.customerConfigExtractor = new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
