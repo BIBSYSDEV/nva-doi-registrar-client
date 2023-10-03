@@ -5,12 +5,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Set;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import nva.commons.core.attempt.Failure;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpSender {
+
+    protected static final Set<Integer> EXPECTED_HTTP_CODES = Set.of(HttpStatus.SC_CREATED,
+                                                              HttpStatus.SC_OK,
+                                                              HttpStatus.SC_ACCEPTED,
+                                                              HttpStatus.SC_NO_CONTENT);
 
     private final Logger logger = LoggerFactory.getLogger(HttpSender.class);
     private final HttpClient httpClient;
@@ -22,10 +29,10 @@ public class HttpSender {
         this.httpClient = httpClient;
     }
 
-    public HttpResponse<String> sendRequest(HttpRequest request, int expectedCode) throws ClientException {
+    public HttpResponse<String> sendRequest(HttpRequest request) throws ClientException {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
-        if (response.statusCode() != expectedCode) {
+        if (!EXPECTED_HTTP_CODES.contains(response.statusCode())) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }

@@ -14,7 +14,6 @@ import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.core.paths.UriWrapper;
-import org.apache.http.HttpStatus;
 
 public class DataCiteRestApiClient extends HttpSender {
 
@@ -44,14 +43,14 @@ public class DataCiteRestApiClient extends HttpSender {
     public Doi createDoi(URI customerId) throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         var request = createPostDoiRequest(customer);
-        var response = sendRequest(request, HttpStatus.SC_CREATED);
+        var response = sendRequest(request);
         return convertResponseToDoi(response);
     }
 
     public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         var request = createGetDoiRequest(customer, doi);
-        var response = sendRequest(request, HttpStatus.SC_OK);
+        var response = sendRequest(request);
         return DoiStateDto.fromJson(response.body());
     }
 

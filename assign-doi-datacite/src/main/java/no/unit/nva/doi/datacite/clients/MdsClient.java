@@ -56,21 +56,21 @@ public class MdsClient extends HttpSender {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateUpdateMetadataInput(doi, metadataDataCiteXml);
         var request = createPutMetadataRequest(customer, doi, metadataDataCiteXml);
-        sendRequest(request,  HttpStatus.SC_OK);
+        sendRequest(request);
     }
 
     public void setLandingPage(URI customerId, Doi doi, URI landingPage) throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateLandingPageInput(doi, landingPage);
         var request = createLandingPagePostRequest(customer, doi, landingPage);
-        sendRequest(request,  HttpStatus.SC_OK);
+        sendRequest(request);
     }
 
     public void deleteMedata(URI customerId, Doi doi) throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateDeleteMetadataRequest(doi);
         var request = createDeleteMetadataRequest(customer, doi);
-        sendRequest(request, HttpStatus.SC_OK);
+        sendRequest(request);
     }
 
     public void deleteDraftDoi(URI customerId, Doi doi) throws ClientException {
@@ -87,7 +87,7 @@ public class MdsClient extends HttpSender {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new DeleteDraftDoiException(doi, response.statusCode());
         }
-        if (response.statusCode() != HttpStatus.SC_OK) {
+        if (!EXPECTED_HTTP_CODES.contains(response.statusCode())) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }
