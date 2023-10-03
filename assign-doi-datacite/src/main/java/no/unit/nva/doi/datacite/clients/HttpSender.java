@@ -14,16 +14,13 @@ import org.slf4j.LoggerFactory;
 
 public class HttpSender {
 
-    protected static final Set<Integer> EXPECTED_HTTP_CODES = Set.of(HttpStatus.SC_CREATED,
-                                                              HttpStatus.SC_OK,
-                                                              HttpStatus.SC_ACCEPTED,
-                                                              HttpStatus.SC_NO_CONTENT);
-
+    public static final String REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE = "Request responded with: ";
+    private static final Set<Integer> EXPECTED_HTTP_CODES = Set.of(HttpStatus.SC_CREATED,
+                                                                   HttpStatus.SC_OK,
+                                                                   HttpStatus.SC_ACCEPTED,
+                                                                   HttpStatus.SC_NO_CONTENT);
     private final Logger logger = LoggerFactory.getLogger(HttpSender.class);
     private final HttpClient httpClient;
-
-
-    public static final String REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE = "Request responded with: ";
 
     public HttpSender(HttpClient httpClient) {
         this.httpClient = httpClient;
@@ -32,11 +29,15 @@ public class HttpSender {
     public HttpResponse<String> sendRequest(HttpRequest request) throws ClientException {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
-        if (!EXPECTED_HTTP_CODES.contains(response.statusCode())) {
+        if (isNotSuccessful(response)) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }
         return response;
+    }
+
+    protected static boolean isNotSuccessful(HttpResponse<String> response) {
+        return !EXPECTED_HTTP_CODES.contains(response.statusCode());
     }
 
     protected HttpClient getHttpClient() {

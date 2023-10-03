@@ -65,13 +65,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 @WireMockTest
 public class DataCiteClientv2Test {
 
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
-    public static final String CUSTOMER_PASSWORD = "somePassword";
-    public static final String CUSTOMER_USERNAME = "someUsername";
-    public static final String DOIS_PATH_PREFIX = "/dois";
-    public static final String DOI_PREFIX = "10.1234";
-    protected static final String EXAMPLE_DOI_SUFFIX = "1942810412-sadsfgffds";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
+    private static final String CUSTOMER_PASSWORD = "somePassword";
+    private static final String CUSTOMER_USERNAME = "someUsername";
+    private static final String DOIS_PATH_PREFIX = "/dois";
+    private static final String DOI_PREFIX = "10.1234";
+    private static final String EXAMPLE_DOI_SUFFIX = "1942810412-sadsfgffds";
     private static final String PASSWORD_NOT_SET = null;
     private static final String USERNAME_NOT_SET = null;
     private static final String DOI_PREFIX_NOT_SET = null;
@@ -90,7 +90,7 @@ public class DataCiteClientv2Test {
 
     private FakeCustomerExtractor customerConfigExtractor;
 
-    public static Stream<Arguments> providedBadCustomerConfigs() {
+    static Stream<Arguments> providedBadCustomerConfigs() {
         return Stream.of(Arguments.of(new CustomerConfig(randomUri(),
                                                          PASSWORD_NOT_SET,
                                                          USERNAME_NOT_SET,
@@ -110,7 +110,7 @@ public class DataCiteClientv2Test {
                                                          randomString())));
     }
 
-    protected Doi createDoiWithDemoPrefixAndExampleSuffix() {
+    private Doi createDoiWithDemoPrefixAndExampleSuffix() {
         return createDoi("example.doi.host.org", DOI_PREFIX, EXAMPLE_DOI_SUFFIX);
     }
 
@@ -168,7 +168,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowDoiClientExceptionWhenDataciteRespondsWithException() {
-        var logAppender = LogUtils.getTestingAppenderForRootLogger();
+        final var logAppender = LogUtils.getTestingAppenderForRootLogger();
         var customerUri = createValidCustomer();
         var responseBody = "someResponseBody";
         stubHttpClientException(responseBody);

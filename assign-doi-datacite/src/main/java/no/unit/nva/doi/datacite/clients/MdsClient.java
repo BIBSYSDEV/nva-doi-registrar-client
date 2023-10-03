@@ -4,6 +4,7 @@ import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Objects;
@@ -34,11 +35,8 @@ public class MdsClient extends HttpSender {
         "Argument landingPage cannot be null!";
     public static final String DATACITE_PATH_DOI = "doi";
     public static final String LANDING_PAGE_BODY_FORMAT = "doi=%s\nurl=%s";
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-
     public static final String TEXT_PLAIN_CHARSET_UTF_8 = "text/plain;charset=UTF-8";
-
-
+    private static final String AUTHORIZATION_HEADER = "Authorization";
     private final Logger logger = LoggerFactory.getLogger(MdsClient.class);
     private final String dataciteMdsUri;
     private final CustomerConfigExtractor customerConfigExtractor;
@@ -80,14 +78,18 @@ public class MdsClient extends HttpSender {
         sendDeleteDraftRequest(request, doi);
     }
 
+    private static boolean triedToDeleteFindableDoi(HttpResponse<String> response) {
+        return response.statusCode() == HttpStatus.SC_METHOD_NOT_ALLOWED;
+    }
+
     private void sendDeleteDraftRequest(HttpRequest request, Doi doi) throws ClientException {
         var response = attempt(() -> super.getHttpClient().send(request, BodyHandlers.ofString()))
                            .orElseThrow(this::handleFailure);
-        if (response.statusCode() == HttpStatus.SC_METHOD_NOT_ALLOWED) {
+        if (triedToDeleteFindableDoi(response)) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new DeleteDraftDoiException(doi, response.statusCode());
         }
-        if (!EXPECTED_HTTP_CODES.contains(response.statusCode())) {
+        if (isNotSuccessful(response)) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new ClientException(response.toString());
         }
