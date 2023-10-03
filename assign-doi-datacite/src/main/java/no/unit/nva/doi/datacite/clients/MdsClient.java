@@ -55,14 +55,14 @@ public class MdsClient extends HttpSender {
         throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateUpdateMetadataInput(doi, metadataDataCiteXml);
-        var request = createPutMetadataRequest(customer, doi, metadataDataCiteXml);
+        var request = createPostMetadataRequest(customer, doi, metadataDataCiteXml);
         sendRequest(request);
     }
 
     public void setLandingPage(URI customerId, Doi doi, URI landingPage) throws ClientException {
         var customer = customerConfigExtractor.getCustomerConfig(customerId);
         validateLandingPageInput(doi, landingPage);
-        var request = createLandingPagePostRequest(customer, doi, landingPage);
+        var request = createLandingPagePutRequest(customer, doi, landingPage);
         sendRequest(request);
     }
 
@@ -126,9 +126,9 @@ public class MdsClient extends HttpSender {
         Objects.requireNonNull(metadataDataCiteXml, MISSING_DATACITE_XML_ARGUMENT);
     }
 
-    private HttpRequest createPutMetadataRequest(CustomerConfig customer,
-                                                 Doi doi,
-                                                 String metadataDataCiteXml)
+    private HttpRequest createPostMetadataRequest(CustomerConfig customer,
+                                                  Doi doi,
+                                                  String metadataDataCiteXml)
         throws CustomerConfigException {
         return HttpRequest.newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_CHARSET_UTF_8)
@@ -146,9 +146,9 @@ public class MdsClient extends HttpSender {
                    .getUri();
     }
 
-    private HttpRequest createLandingPagePostRequest(CustomerConfig customer,
-                                                     Doi doi,
-                                                     URI landingPage)
+    private HttpRequest createLandingPagePutRequest(CustomerConfig customer,
+                                                    Doi doi,
+                                                    URI landingPage)
         throws CustomerConfigException {
         return HttpRequest.newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
