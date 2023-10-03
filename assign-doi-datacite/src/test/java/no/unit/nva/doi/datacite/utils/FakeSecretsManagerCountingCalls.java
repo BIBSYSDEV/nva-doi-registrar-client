@@ -9,14 +9,13 @@ public class FakeSecretsManagerCountingCalls extends FakeSecretsManagerClient im
 
     private int numberOfTimesFetchSecretsHasBeenCalled;
 
-    public FakeSecretsManagerCountingCalls(){
+    public FakeSecretsManagerCountingCalls() {
         super();
         numberOfTimesFetchSecretsHasBeenCalled = 0;
     }
 
-
     @Override
-    public GetSecretValueResponse getSecretValue(GetSecretValueRequest getSecretValueRequest){
+    public GetSecretValueResponse getSecretValue(GetSecretValueRequest getSecretValueRequest) {
         numberOfTimesFetchSecretsHasBeenCalled++;
         return super.getSecretValue(getSecretValueRequest);
     }
