@@ -59,7 +59,7 @@ class RegisteredDoiEventHandlerTest extends TestBase {
             verify(doiClient).deleteMetadata(
                 CUSTOMER_ID_IN_INPUT_EVENT,
                 Doi.fromUri(VALID_SAMPLE_DOI));
-            }
+        }
     }
 
     @Test
