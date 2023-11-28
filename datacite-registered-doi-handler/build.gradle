@@ -1,0 +1,32 @@
+dependencies {
+
+    implementation libs.jaxb.api
+
+    implementation project (":doi-commons")
+    implementation (project(":assign-doi-datacite"))
+
+
+    implementation libs.nva.core
+    implementation libs.nva.json
+    implementation libs.nva.doi
+    implementation libs.nva.eventhandlers
+    implementation libs.nva.apigateway
+    implementation libs.nva.identifiers
+    implementation libs.nva.secrets
+    implementation libs.bundles.logging
+    implementation libs.bundles.jackson
+
+
+    runtimeOnly libs.jaxb.runtime
+    compileOnly libs.aws.sdk
+
+    testImplementation project(path: ':test-utils')
+    testImplementation libs.bundles.testing
+    testImplementation libs.nva.logutils
+    testImplementation libs.wiremock
+}
+
+test{
+    environment "ALLOWED_ORIGIN", "*"
+    environment "API_HOST", "api.localhost.nva.unit.no"
+}
