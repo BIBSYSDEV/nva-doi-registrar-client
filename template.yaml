@@ -41,6 +41,9 @@ Parameters:
     Type: String
     Default: ''
     Description: Suffix used for naming resources for feature branches to avoid conflicts.
+  SlackSnsArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/NVA/Monitoring/SlackSnsArn'
 
 Conditions:
   WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
@@ -48,6 +51,8 @@ Conditions:
 Globals:
   Function:
     Timeout: 60
+    Runtime: java17
+    MemorySize: 1408
     Environment:
       Variables:
         API_HOST: !Ref ApiDomain
@@ -57,6 +62,8 @@ Resources:
 
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 90
 
   LambdaRole:
     Type: AWS::IAM::Role
@@ -102,6 +109,7 @@ Resources:
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
                   - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
+                  - !GetAtt DataCiteRegisteredDoiHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
           PolicyDocument:
             Version: '2012-10-17'
@@ -129,8 +137,6 @@ Resources:
     Properties:
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
-      Runtime: java17
-      MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
@@ -159,6 +165,40 @@ Resources:
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
+
+  DataCiteRegisteredDoiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: datacite-registered-doi-handler
+      Handler: no.unit.nva.datacite.handlers.RegisteredDoiEventHandler::handleRequest
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS: !Ref EventBusName
+          AWC_ACCOUNT_ID: !Ref AWS::AccountId
+          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
+          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
+          DATACITE_REST_HOST: !Ref DataCiteRestHost
+          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
+          DOI_HOST: !Ref DoiHost
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBusName
+            Pattern:
+              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail:
+                responsePayload:
+                  topic:
+                    - PublicationService.Doi.UpdateRequest
+                  doi:
+                    - exists: true
+      EventInvokeConfig:
+        DestinationConfig:
+          OnFailure:
+            Type: SQS
+            Destination: !GetAtt DataCiteRegisteredDoiHandlerDLQ.Arn
 
 
   ResourceDraftedForDeletion:
@@ -197,8 +237,6 @@ Resources:
     Properties:
       CodeUri: datacite-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.ReserveDraftDoiHandler::handleRequest
-      Runtime: java17
-      MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
@@ -222,8 +260,6 @@ Resources:
     Properties:
       CodeUri: datacite-findable-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
-      Runtime: java17
-      MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
@@ -248,8 +284,6 @@ Resources:
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.doi.DeleteDraftDoiHandler::handleRequest
-      Runtime: java17
-      MemorySize: 1408
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
@@ -377,5 +411,92 @@ Resources:
   ResourceDraftedForDeletionEventHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
+  DataCiteRegisteredDoiHandlerDLQ:
+    Type: "AWS::SQS::Queue"
 
+  #============================= Alarms =========================================================
 
+  DataCiteFindableDoiHandlerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteFindableDoiHandlerDLQ
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DataCiteFindableDoiHandlerDLQ.QueueName
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+
+  DataCiteDraftDoiHandlerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteDraftDoiHandlerDLQ
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DataCiteDraftDoiHandlerDLQ.QueueName
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+
+  DataCiteDeleteDraftDoiHandlerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteDeleteDraftDoiHandlerDLQ
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.QueueName
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+
+  ResourceDraftedForDeletionEventHandlerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=ResourceDraftedForDeletionEventHandlerDLQ
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.QueueName
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn
+
+  DataCiteRegisteredDoiHandlerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteRegisteredDoiHandlerDLQ
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DataCiteRegisteredDoiHandlerDLQ.QueueName
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SlackSnsArn

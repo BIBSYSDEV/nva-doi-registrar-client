@@ -19,6 +19,7 @@ dependencies {
     runtimeOnly libs.jaxb.runtime
     compileOnly libs.aws.sdk
 
+    testImplementation project(path: ':test-utils')
     testImplementation libs.bundles.testing
     testImplementation libs.nva.logutils
     testImplementation libs.wiremock

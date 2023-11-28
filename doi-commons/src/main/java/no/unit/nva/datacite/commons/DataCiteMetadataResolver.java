@@ -1,4 +1,4 @@
-package no.unit.nva.datacite.handlers;
+package no.unit.nva.datacite.commons;
 
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
@@ -34,13 +34,14 @@ public class DataCiteMetadataResolver {
                    .orElseThrow(this::handleFailure);
     }
 
-    private RuntimeException handleFailure(Failure<String> failure) {
+    private PublicationApiClientException handleFailure(Failure<String> failure) {
         return new PublicationApiClientException(failure.getException());
     }
 
     private String getBodyFromResponse(HttpResponse<String> response) {
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-            throw new PublicationApiClientException(PUBLICATION_API_ERROR_MESSAGE + response.statusCode());
+            throw new PublicationApiClientException(PUBLICATION_API_ERROR_MESSAGE + response.statusCode(),
+                                                    response.statusCode());
         }
         return response.body();
     }

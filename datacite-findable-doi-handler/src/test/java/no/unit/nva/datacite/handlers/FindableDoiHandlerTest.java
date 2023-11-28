@@ -1,10 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.google.common.net.HttpHeaders.ACCEPT;
 import static no.unit.nva.commons.json.JsonUtils.dtoObjectMapper;
+import static no.unit.nva.doi.datacite.clients.DataCiteRestApiClient.ACCEPT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -14,16 +11,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
+import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
+import no.unit.nva.datacite.commons.TestBase;
+import org.apache.hc.core5.http.ContentType;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
 import no.unit.nva.datacite.handlers.model.UpdateDoiRequest;
 import no.unit.nva.doi.DoiClient;
@@ -36,29 +34,27 @@ import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
-import org.apache.hc.core5.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest(httpsEnabled = true)
-public class FindableDoiHandlerTest {
+public class FindableDoiHandlerTest extends TestBase {
 
     private static final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
 
     private static final URI VALID_SAMPLE_DOI = UriWrapper.fromUri("https://doi.org/10.1000/182").getUri();
     private static final URI CUSTOMER_ID_IN_INPUT_EVENT =
         UriWrapper.fromUri("https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934").getUri();
-    private static final URI NULL_CUSTOMER_ID_IN_INPUT_EVENT = null;
     private final Environment environment = mock(Environment.class);
     private final DoiClient doiClient = mock(DoiClient.class);
-    private String baseUrl;
+
     private Context context;
     private ByteArrayOutputStream output;
     private FindableDoiHandler handler;
 
     @BeforeEach
     public void setUp(WireMockRuntimeInfo wireMockRuntimeInfo) {
-        baseUrl = wireMockRuntimeInfo.getHttpBaseUrl();
+        setBaseUrl(wireMockRuntimeInfo.getHttpBaseUrl());
         when(environment.readEnv("API_HOST")).thenReturn(wireMockRuntimeInfo.getHttpsBaseUrl());
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
@@ -68,7 +64,7 @@ public class FindableDoiHandlerTest {
     @Test
     void shouldReturnFindableDoi() throws IOException, ClientException {
         var publicationIdentifier = SortableIdentifier.next().toString();
-        mockDataciteXmlBody(publicationIdentifier);
+        mockDataciteXmlBody(publicationIdentifier, DATACITE_XML_BODY);
         handler.handleRequest(createRequest(publicationIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, DoiResponse.class);
         URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
@@ -85,10 +81,11 @@ public class FindableDoiHandlerTest {
         assertThat(expectedDoi.getUri(), is(equalTo(response.getBodyObject(DoiResponse.class).getDoi())));
     }
 
-    private void mockDataciteXmlBody(String publicationIdentifier) {
-        stubFor(WireMock.get(urlPathEqualTo("/publication/" + publicationIdentifier))
-                    .withHeader("Accept", WireMock.equalTo("application/vnd.datacite.datacite+xml"))
-                    .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_OK).withBody(DATACITE_XML_BODY)));
+    private InputStream createRequest(String publicationId) throws JsonProcessingException {
+        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
+                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
+                   .withBody(createDoiUpdateRequest(publicationId))
+                   .build();
     }
 
     private UpdateDoiRequest createDoiUpdateRequest(String publicationID) {
@@ -96,17 +93,6 @@ public class FindableDoiHandlerTest {
             VALID_SAMPLE_DOI,
             UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
             CUSTOMER_ID_IN_INPUT_EVENT);
-    }
-
-    private String createPublicationId(String publicationIdentifier) {
-        return baseUrl + "/publication/" + publicationIdentifier;
-    }
-
-    private InputStream createRequest(String publicationId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<UpdateDoiRequest>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withBody(createDoiUpdateRequest(publicationId))
-                   .build();
     }
 }
 

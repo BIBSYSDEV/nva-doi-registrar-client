@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
+import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
 import no.unit.nva.datacite.handlers.model.DoiResponse;
 import no.unit.nva.datacite.handlers.model.UpdateDoiRequest;
 import no.unit.nva.doi.DoiClient;

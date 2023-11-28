@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
-import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,14 +22,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Path;
-import no.unit.nva.commons.json.JsonUtils;
+import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
+import no.unit.nva.datacite.commons.PublicationApiClientException;
+import no.unit.nva.datacite.commons.TestBase;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
 import no.unit.nva.doi.models.Doi;
-import no.unit.nva.events.models.AwsEventBridgeDetail;
-import no.unit.nva.events.models.AwsEventBridgeEvent;
 import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
@@ -41,7 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest(httpsEnabled = true)
-public class FindableDoiEventHandlerTest {
+public class FindableDoiEventHandlerTest extends TestBase {
 
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
 
@@ -58,11 +57,9 @@ public class FindableDoiEventHandlerTest {
     private ByteArrayOutputStream outputStream;
     private Context context;
 
-    private String baseUrl;
-
     @BeforeEach
     public void init(WireMockRuntimeInfo wireMockRuntimeInfo) {
-        baseUrl = wireMockRuntimeInfo.getHttpBaseUrl();
+        setBaseUrl(wireMockRuntimeInfo.getHttpBaseUrl());
         var httpClient = WiremockHttpClient.create();
         findableDoiHandler = new FindableDoiEventHandler(doiClient, new DataCiteMetadataResolver(httpClient));
         outputStream = new ByteArrayOutputStream();
@@ -152,15 +149,6 @@ public class FindableDoiEventHandlerTest {
         }
     }
 
-    private static AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> crateAwsEventBridgeEvent(
-        DoiUpdateRequestEvent doiUpdateRequestEvent) {
-        var request = new AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>>();
-        var awsEventBridgeDetail = new AwsEventBridgeDetail<DoiUpdateRequestEvent>();
-        awsEventBridgeDetail.setResponsePayload(doiUpdateRequestEvent);
-        request.setDetail(awsEventBridgeDetail);
-        return request;
-    }
-
     private void mockDataciteXmlBody(String publicationIdentifier) {
         stubFor(WireMock.get(urlPathEqualTo("/publication/" + publicationIdentifier))
                     .withHeader("Accept", WireMock.equalTo("application/vnd.datacite.datacite+xml"))
@@ -171,11 +159,6 @@ public class FindableDoiEventHandlerTest {
         var doiUpdateRequestEvent = createDoiUpdateRequest(publicationIdentifier);
         var awsEventBridgeEvent = crateAwsEventBridgeEvent(doiUpdateRequestEvent);
         return toInputStream(awsEventBridgeEvent);
-    }
-
-    private InputStream toInputStream(AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> request) {
-        return attempt(() -> JsonUtils.dtoObjectMapper.writeValueAsString(request)).map(IoUtils::stringToStream)
-                   .orElseThrow();
     }
 
     private DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID) {
@@ -190,10 +173,6 @@ public class FindableDoiEventHandlerTest {
                                          null,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
                                          CUSTOMER_ID_IN_INPUT_EVENT);
-    }
-
-    private String createPublicationId(String publicationIdentifier) {
-        return baseUrl + "/publication/" + publicationIdentifier;
     }
 
     private void mockNotFoundResponse(String publicationID) {
