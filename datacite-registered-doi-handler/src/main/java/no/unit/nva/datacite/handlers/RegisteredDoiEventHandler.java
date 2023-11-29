@@ -22,12 +22,13 @@ public class RegisteredDoiEventHandler extends DestinationsEventBridgeEventHandl
     private final DoiClient doiClient;
     private final DataCiteMetadataResolver dataCiteMetadataResolver;
     public static final String SHOULD_REMOVE_METADATA_LOG_MESSAGE =
-        "Publication with id {} is 410 Gone, assuming it is deleted and doi should have metadata removed";
+        "Request for publication {} returned 410 Gone. Any Findable DOI associated with this URI will transition to "
+        + "Registered DOI.";
     private static final String RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG =
-        "Received request to unpublish doi (make registered) for DOI {}, publication id {} and customer id {}";
+        "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {})";
 
     private static final String SUCCESSFUL_DOI_REGISTERED =
-        "Unpublish doi (make registered) was successful for DOI {}";
+        "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
 
     @JacocoGenerated
     public RegisteredDoiEventHandler() {
@@ -51,7 +52,7 @@ public class RegisteredDoiEventHandler extends DestinationsEventBridgeEventHandl
             dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
         } catch (PublicationApiClientException e) {
             conditionalDeleteDoi(input, e, doi);
-            logger.info(SUCCESSFUL_DOI_REGISTERED, doi.getUri());
+            logger.info(SUCCESSFUL_DOI_REGISTERED, doi.getUri(),  input.getPublicationId(), input.getCustomerId());
         }
         return null;
     }
