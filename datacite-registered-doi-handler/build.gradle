@@ -16,6 +16,7 @@ dependencies {
     implementation libs.bundles.logging
     implementation libs.bundles.jackson
 
+
     runtimeOnly libs.jaxb.runtime
     compileOnly libs.aws.sdk
 

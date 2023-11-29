@@ -5,3 +5,6 @@ include 'datacite-draft-doi-handler'
 include 'datacite-findable-doi-handler'
 include 'datacite-delete-draft-doi-handler'
 include 'datacite-jaxb'
+include 'datacite-registered-doi-handler'
+include 'test-utils'
+

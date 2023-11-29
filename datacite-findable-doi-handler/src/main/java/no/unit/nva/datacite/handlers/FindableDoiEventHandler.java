@@ -3,6 +3,7 @@ package no.unit.nva.datacite.handlers;
 import static java.util.Objects.isNull;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.util.ArrayList;
+import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
 import no.unit.nva.datacite.commons.DoiUpdateRequestEvent;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;

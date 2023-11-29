@@ -1,0 +1,16 @@
+dependencies {
+    implementation libs.nva.core
+    implementation libs.nva.json
+    implementation libs.nva.identifiers
+    implementation libs.bundles.jackson
+    implementation libs.bundles.testing
+    implementation libs.nva.logutils
+    implementation libs.wiremock
+    implementation libs.nva.eventhandlers
+    implementation project (":doi-commons")
+}
+
+test{
+    environment "ALLOWED_ORIGIN", "*"
+    environment "API_HOST", "api.localhost.nva.unit.no"
+}
