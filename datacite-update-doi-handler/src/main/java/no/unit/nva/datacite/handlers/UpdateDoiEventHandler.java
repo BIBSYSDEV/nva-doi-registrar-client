@@ -61,7 +61,7 @@ public class UpdateDoiEventHandler
         var doi = getDoiFromEventOrDraftDoi(input);
 
         try {
-            String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
+            var dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
             makePublicationFindable(input, doi, dataCiteXmlMetadata);
 
             return null;
