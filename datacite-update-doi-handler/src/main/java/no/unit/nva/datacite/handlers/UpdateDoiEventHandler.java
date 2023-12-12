@@ -26,10 +26,11 @@ public class UpdateDoiEventHandler
     public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
     private static final String RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG =
         "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
-    private static final String SUCCESSFULLY_MADE_DOI_FINDABLE = "Successfully handled request for Doi {}";
+    private static final String SUCCESSFULLY_MADE_DOI_FINDABLE =
+        "Successfully handled request for Doi {}";
     public static final String SHOULD_REMOVE_METADATA_LOG_MESSAGE =
-        "Request for publication {} returned 410 Gone. Any Findable DOI associated with this URI will transition to "
-        + "Registered DOI.";
+        "Request for publication {} returned 410 Gone. Any Findable DOI associated with this URI "
+        + "will transition to Registered DOI.";
     private static final String RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG =
         "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {})";
     private static final String SUCCESSFUL_DOI_REGISTERED =
@@ -43,7 +44,8 @@ public class UpdateDoiEventHandler
         this(defaultDoiClient(), new DataCiteMetadataResolver());
     }
 
-    public UpdateDoiEventHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver) {
+    public UpdateDoiEventHandler(DoiClient doiClient,
+                                 DataCiteMetadataResolver dataCiteMetadataResolver) {
         super(DoiUpdateRequestEvent.class);
         this.doiClient = doiClient;
         this.dataCiteMetadataResolver = dataCiteMetadataResolver;
@@ -51,8 +53,8 @@ public class UpdateDoiEventHandler
 
     @Override
     protected Void processInputPayload(DoiUpdateRequestEvent input,
-                                       AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
-                                       Context context) {
+                   AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+                   Context context) {
 
         validateInput(input);
 
@@ -89,11 +91,19 @@ public class UpdateDoiEventHandler
             throw e;
         }
 
-        logger.info(SUCCESSFUL_DOI_REGISTERED, doi.getUri(), input.getPublicationId(), input.getCustomerId());
+        logger.info(SUCCESSFUL_DOI_REGISTERED,
+                    doi.getUri(),
+                    input.getPublicationId(),
+                    input.getCustomerId());
     }
 
-    private void makePublicationFindable(DoiUpdateRequestEvent input, Doi doi, String dataCiteXmlMetadata) throws ClientException {
-        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG, doi.getUri(), input.getPublicationId(),
+    private void makePublicationFindable(
+        DoiUpdateRequestEvent input,
+        Doi doi,
+        String dataCiteXmlMetadata) throws ClientException {
+        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG,
+                    doi.getUri(),
+                    input.getPublicationId(),
                     input.getCustomerId());
 
         doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
