@@ -3,7 +3,7 @@ package no.unit.nva.datacite.handlers;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static no.unit.nva.datacite.handlers.FindableDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
+import static no.unit.nva.datacite.handlers.UpdateDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest(httpsEnabled = true)
-public class FindableDoiEventHandlerTest extends TestBase {
+public class UpdateDoiEventHandlerTest extends TestBase {
 
     public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
 
@@ -53,7 +54,7 @@ public class FindableDoiEventHandlerTest extends TestBase {
     private static final URI VALID_SAMPLE_DOI = UriWrapper.fromUri("https://doi.org/10.1000/182").getUri();
     private static final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
     private final DoiClient doiClient = mock(DoiClient.class);
-    private FindableDoiEventHandler findableDoiHandler;
+    private UpdateDoiEventHandler updateDoiHandler;
     private ByteArrayOutputStream outputStream;
     private Context context;
 
@@ -61,7 +62,7 @@ public class FindableDoiEventHandlerTest extends TestBase {
     public void init(WireMockRuntimeInfo wireMockRuntimeInfo) {
         setBaseUrl(wireMockRuntimeInfo.getHttpBaseUrl());
         var httpClient = WiremockHttpClient.create();
-        findableDoiHandler = new FindableDoiEventHandler(doiClient, new DataCiteMetadataResolver(httpClient));
+        updateDoiHandler = new UpdateDoiEventHandler(doiClient, new DataCiteMetadataResolver(httpClient));
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
     }
@@ -71,9 +72,9 @@ public class FindableDoiEventHandlerTest extends TestBase {
         try (InputStream inputStream = IoUtils.inputStreamFromResources(
             "doi_publication_event_empty_customer_id_and_publication_id.json")) {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                              () -> findableDoiHandler.handleRequest(inputStream,
-                                                                                                     outputStream,
-                                                                                                     context));
+                                                              () -> updateDoiHandler.handleRequest(inputStream,
+                                                                                                   outputStream,
+                                                                                                   context));
 
             assertThat(exception.getMessage(),
                        containsString(MANDATORY_FIELD_ERROR_PREFIX + PUBLICATION_ID_CUSTOMER_ID));
@@ -86,9 +87,9 @@ public class FindableDoiEventHandlerTest extends TestBase {
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier)) {
             mockNotFoundResponse(publicationIdentifier);
             assertThrows(PublicationApiClientException.class,
-                         () -> findableDoiHandler.handleRequest(inputStream,
-                                                                outputStream,
-                                                                context));
+                         () -> updateDoiHandler.handleRequest(inputStream,
+                                                              outputStream,
+                                                              context));
         }
     }
 
@@ -100,9 +101,9 @@ public class FindableDoiEventHandlerTest extends TestBase {
             mockDataciteXmlBody(publicationIdentifier);
             doThrow(new ClientException()).when(doiClient).updateMetadata(any(), any(), any());
             assertThrows(ClientRuntimeException.class,
-                         () -> findableDoiHandler.handleRequest(inputStream,
-                                                                outputStream,
-                                                                context));
+                         () -> updateDoiHandler.handleRequest(inputStream,
+                                                              outputStream,
+                                                              context));
         }
     }
 
@@ -112,7 +113,7 @@ public class FindableDoiEventHandlerTest extends TestBase {
         var publicationIdentifier = SortableIdentifier.next().toString();
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier)) {
             mockDataciteXmlBody(publicationIdentifier);
-            findableDoiHandler.handleRequest(inputStream, outputStream, context);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
 
             URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
             Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
@@ -130,11 +131,11 @@ public class FindableDoiEventHandlerTest extends TestBase {
 
     @Test
     void handleRequestSuccessfullyIsLogged() {
-        TestAppender testingAppender = LogUtils.getTestingAppender(FindableDoiEventHandler.class);
+        TestAppender testingAppender = LogUtils.getTestingAppender(UpdateDoiEventHandler.class);
         var publicationIdentifier = SortableIdentifier.next().toString();
         var inputStream = createDoiRequestInputStream(publicationIdentifier);
         mockDataciteXmlBody(publicationIdentifier);
-        findableDoiHandler.handleRequest(inputStream, outputStream, context);
+        updateDoiHandler.handleRequest(inputStream, outputStream, context);
         assertThat(testingAppender.getMessages(), containsString(SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI));
     }
 
@@ -145,7 +146,51 @@ public class FindableDoiEventHandlerTest extends TestBase {
         var awsEventBridgeEvent = crateAwsEventBridgeEvent(doiUpdateRequestNotContaininDoi);
         try (var inputStream = toInputStream(awsEventBridgeEvent)) {
             assertThrows(IllegalArgumentException.class,
-                         () -> findableDoiHandler.handleRequest(inputStream, outputStream, context));
+                         () -> updateDoiHandler.handleRequest(inputStream, outputStream, context));
+        }
+    }
+
+
+    @Test
+    void shouldDeleteDoiMetadataIfGone()
+        throws ClientException, IOException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+            mockDataciteXmlGone(publicationIdentifier);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
+
+            verify(doiClient).deleteMetadata(
+                CUSTOMER_ID_IN_INPUT_EVENT,
+                Doi.fromUri(VALID_SAMPLE_DOI));
+        }
+    }
+
+    @Test
+    void shouldThrowIfUnknownError() throws IOException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+            mockDataciteXmlError(publicationIdentifier);
+
+            assertThrows(PublicationApiClientException.class, () -> {
+                updateDoiHandler.handleRequest(inputStream, outputStream, context);
+            });
+        }
+    }
+
+    @Test
+    void shouldNotDeleteDoiMetadataIf200OK()
+        throws ClientException, IOException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+            mockDataciteXmlBody(publicationIdentifier, DATACITE_XML_BODY);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
+
+            verify(doiClient, never()).deleteMetadata(
+                CUSTOMER_ID_IN_INPUT_EVENT,
+                Doi.fromUri(VALID_SAMPLE_DOI));
         }
     }
 

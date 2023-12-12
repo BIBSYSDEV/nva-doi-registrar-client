@@ -109,7 +109,6 @@ Resources:
                   - !GetAtt DataCiteFindableDoiHandlerDLQ.Arn
                   - !GetAtt DataCiteDeleteDraftDoiHandlerDLQ.Arn
                   - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
-                  - !GetAtt DataCiteRegisteredDoiHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
           PolicyDocument:
             Version: '2012-10-17'
@@ -132,11 +131,11 @@ Resources:
                 Resource:
                   Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${CustomerSecretsSecretName}*
 
-  DataCiteFindableDoiHandlerFunction:
+  DataCiteUpdateDoiHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: datacite-findable-doi-handler
-      Handler: no.unit.nva.datacite.handlers.FindableDoiEventHandler::handleRequest
+      CodeUri: datacite-update-doi-handler
+      Handler: no.unit.nva.datacite.handlers.UpdateDoiEventHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       Environment:
         Variables:
@@ -165,41 +164,6 @@ Resources:
           OnFailure:
             Type: SQS
             Destination: !GetAtt DataCiteDraftDoiHandlerDLQ.Arn
-
-  DataCiteRegisteredDoiHandlerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: datacite-registered-doi-handler
-      Handler: no.unit.nva.datacite.handlers.RegisteredDoiEventHandler::handleRequest
-      Role: !GetAtt LambdaRole.Arn
-      Environment:
-        Variables:
-          EVENT_BUS: !Ref EventBusName
-          AWC_ACCOUNT_ID: !Ref AWS::AccountId
-          CUSTOMER_SECRETS_SECRET_NAME: !Ref CustomerSecretsSecretName
-          CUSTOMER_SECRETS_SECRET_KEY: !Ref CustomerSecretsSecretKey
-          DATACITE_REST_HOST: !Ref DataCiteRestHost
-          DATACITE_MDS_HOST: !Ref DataCiteMdsHost
-          DOI_HOST: !Ref DoiHost
-      Events:
-        EventBridgeEvent:
-          Type: EventBridgeRule
-          Properties:
-            EventBusName: !Ref EventBusName
-            Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
-              detail:
-                responsePayload:
-                  topic:
-                    - PublicationService.Doi.UpdateRequest
-                  doi:
-                    - exists: true
-      EventInvokeConfig:
-        DestinationConfig:
-          OnFailure:
-            Type: SQS
-            Destination: !GetAtt DataCiteRegisteredDoiHandlerDLQ.Arn
-
 
   ResourceDraftedForDeletion:
     Type: AWS::Serverless::Function
@@ -258,7 +222,7 @@ Resources:
   DataCiteFindableDoiHandler:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: datacite-findable-doi-handler
+      CodeUri: datacite-update-doi-handler
       Handler: no.unit.nva.datacite.handlers.FindableDoiHandler::handleRequest
       Role: !GetAtt LambdaRole.Arn
       Environment:
@@ -343,9 +307,6 @@ Resources:
   ResourceDraftedForDeletionEventHandlerDLQ:
     Type: "AWS::SQS::Queue"
 
-  DataCiteRegisteredDoiHandlerDLQ:
-    Type: "AWS::SQS::Queue"
-
   #============================= Alarms =========================================================
 
   DataCiteFindableDoiHandlerDLQAlarm:
@@ -409,23 +370,6 @@ Resources:
       Dimensions:
         - Name: QueueName
           Value: !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.QueueName
-      Period: 300
-      EvaluationPeriods: 1
-      Threshold: 1
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      AlarmActions:
-        - !Ref SlackSnsArn
-
-  DataCiteRegisteredDoiHandlerDLQAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteRegisteredDoiHandlerDLQ
-      MetricName: ApproximateNumberOfMessagesVisible
-      Namespace: AWS/SQS
-      Statistic: Sum
-      Dimensions:
-        - Name: QueueName
-          Value: !GetAtt DataCiteRegisteredDoiHandlerDLQ.QueueName
       Period: 300
       EvaluationPeriods: 1
       Threshold: 1
