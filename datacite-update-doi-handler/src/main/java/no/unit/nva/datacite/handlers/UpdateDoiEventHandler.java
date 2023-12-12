@@ -72,8 +72,13 @@ public class UpdateDoiEventHandler
         return null;
     }
 
-    private void makePublicationRegistered(DoiUpdateRequestEvent input, PublicationApiClientException e, Doi doi) {
-        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG, doi.getUri(), input.getPublicationId(),
+    private void makePublicationRegistered(
+        DoiUpdateRequestEvent input,
+        PublicationApiClientException e,
+        Doi doi) {
+        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
+                    doi.getUri(),
+                    input.getPublicationId(),
                     input.getCustomerId());
 
         if (e.getStatus().getStatusCode() == GONE.getStatusCode()) {
