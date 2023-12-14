@@ -68,13 +68,13 @@ public class UpdateDoiEventHandler
         } catch (ClientException e) {
             throw new ClientRuntimeException(e);
         } catch (PublicationApiClientException e) {
-            makePublicationRegistered(input, e, doi);
+            makeDoiRegisteredIfPublicationGone(input, e, doi);
         }
 
         return null;
     }
 
-    private void makePublicationRegistered(
+    private void makeDoiRegisteredIfPublicationGone(
         DoiUpdateRequestEvent input,
         PublicationApiClientException e,
         Doi doi) {
