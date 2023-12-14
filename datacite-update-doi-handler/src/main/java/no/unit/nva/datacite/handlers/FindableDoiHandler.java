@@ -56,7 +56,7 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
     }
 
     private DoiResponse makeDoiFindable(UpdateDoiRequest input, Doi doi) throws ClientException {
-        String dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
+        var dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
         doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
         doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
         return new DoiResponse(doi.getUri());
