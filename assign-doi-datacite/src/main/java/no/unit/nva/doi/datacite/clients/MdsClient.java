@@ -78,6 +78,25 @@ public class MdsClient extends HttpSender {
         sendDeleteDraftRequest(request, doi);
     }
 
+    public String getMetadata(URI customerId, Doi doi) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+        validateDeleteMetadataRequest(doi);
+        var request = createGetMetadataRequest(customer, doi);
+        var response = sendRequest(request);
+        return response.body();
+    }
+
+    private HttpRequest createGetMetadataRequest(CustomerConfig customer, Doi doi)
+        throws CustomerConfigException {
+        return HttpRequest.newBuilder()
+                   .GET()
+                   .header(HttpHeaders.ACCEPT, APPLICATION_XML_CHARSET_UTF_8)
+                   .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .uri(createUriForAccessingMetadata(doi))
+                   .timeout(Duration.ofMillis(TIMEOUT))
+                   .build();
+    }
+
     private static boolean triedToDeleteFindableDoi(HttpResponse<String> response) {
         return response.statusCode() == HttpStatus.SC_METHOD_NOT_ALLOWED;
     }
@@ -99,7 +118,7 @@ public class MdsClient extends HttpSender {
         throws CustomerConfigException {
         return HttpRequest.newBuilder()
                    .DELETE()
-                   .uri(createUriForUpdatingMetadata(doi))
+                   .uri(createUriForAccessingMetadata(doi))
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .build();
@@ -135,13 +154,13 @@ public class MdsClient extends HttpSender {
         return HttpRequest.newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_CHARSET_UTF_8)
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
-                   .uri(createUriForUpdatingMetadata(doi))
+                   .uri(createUriForAccessingMetadata(doi))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .POST(HttpRequest.BodyPublishers.ofString(metadataDataCiteXml))
                    .build();
     }
 
-    private URI createUriForUpdatingMetadata(Doi doi) {
+    private URI createUriForAccessingMetadata(Doi doi) {
         return UriWrapper.fromUri(dataciteMdsUri)
                    .addChild(DATACITE_PATH_METADATA)
                    .addChild(doi.toIdentifier())

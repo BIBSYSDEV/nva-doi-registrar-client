@@ -8,11 +8,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -155,14 +157,39 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     void shouldDeleteDoiMetadataIfGone()
         throws ClientException, IOException {
         var publicationIdentifier = SortableIdentifier.next().toString();
+        var doi = Doi.fromUri(VALID_SAMPLE_DOI);
+        when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_BODY);
+
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
-                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
             mockDataciteXmlGone(publicationIdentifier);
             updateDoiHandler.handleRequest(inputStream, outputStream, context);
 
             verify(doiClient).deleteMetadata(
                 CUSTOMER_ID_IN_INPUT_EVENT,
-                Doi.fromUri(VALID_SAMPLE_DOI));
+                doi
+                );
+        }
+    }
+
+    @Test
+    void shouldDeleteDoiMetadataIfGoneWithDuplicateUri()
+        throws ClientException, IOException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        var doi = Doi.fromUri(VALID_SAMPLE_DOI);
+        var mainUri = UriWrapper.fromUri("https://example.no/publication/123").getUri();
+        when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_BODY);
+
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, mainUri)) {
+            mockDataciteXmlGone(publicationIdentifier);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
+
+            verify(doiClient).updateMetadata(
+                eq(CUSTOMER_ID_IN_INPUT_EVENT),
+                eq(doi),
+                argThat(s -> s.contains(mainUri.toString()))
+            );
         }
     }
 
@@ -170,7 +197,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     void shouldThrowIfUnknownError() throws IOException {
         var publicationIdentifier = SortableIdentifier.next().toString();
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
-                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
             mockDataciteXmlError(publicationIdentifier);
 
             assertThrows(PublicationApiClientException.class, () -> {
@@ -184,7 +211,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         throws ClientException, IOException {
         var publicationIdentifier = SortableIdentifier.next().toString();
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
-                                                           CUSTOMER_ID_IN_INPUT_EVENT)) {
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
             mockDataciteXmlBody(publicationIdentifier, DATACITE_XML_BODY);
             updateDoiHandler.handleRequest(inputStream, outputStream, context);
 
@@ -210,14 +237,16 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
                                          VALID_SAMPLE_DOI,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
-                                         CUSTOMER_ID_IN_INPUT_EVENT);
+                                         CUSTOMER_ID_IN_INPUT_EVENT,
+                                         null);
     }
 
     private DoiUpdateRequestEvent createDoiUpdateRequestNotContainingDoi(String publicationID) {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
                                          null,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),
-                                         CUSTOMER_ID_IN_INPUT_EVENT);
+                                         CUSTOMER_ID_IN_INPUT_EVENT,
+                                         null);
     }
 
     private void mockNotFoundResponse(String publicationID) {

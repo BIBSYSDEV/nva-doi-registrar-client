@@ -6,18 +6,16 @@ mockito = { strictly = '4.2.0' }
 junit = { strictly = '5.8.2' }
 awsSdk = { strictly = '1.12.369' }
 awsSdk2 = { strictly = '2.19.15' }
-jaxbApi = { strictly = '2.3.1' }
-jaxbRuntime = { strictly = '2.3.2' }
+jakartaBindApi = { strictly = '4.0.1' }
+jaxbRuntime = { strictly = '4.0.4' }
 commonsLang = { strictly = '3.12.0' }
 secretsCaching = { strictly = '1.0.1' }
 zalando = { prefer = '0.26.0' }
 wiremock = { strictly = "2.32.0" }
 log4j = { strictly = '2.17.2' }
 slf4j = { strictly = '1.8.0-beta4' }
-sunJaxb = { strictly = '3.0.2' }
-javaXmlBind = { strictly = '2.3.1' }
-jakartaXmlBind = { strictly = '3.0.1' }
-javaxActivation = { stictly = '1.2.0' }
+sunJaxb = { strictly = '4.0.4' }
+javaxActivation = { stictly = '2.1.2' }
 
 [libraries]
 nva-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nvaCommons' }
@@ -61,16 +59,13 @@ log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.re
 
 xsd2java-xjc = { group = 'com.sun.xml.bind', name = 'jaxb-xjc', version.ref = 'sunJaxb' }
 xsd2java-impl = { group = 'com.sun.xml.bind', name = 'jaxb-impl', version.ref = 'sunJaxb' }
-xsd2java-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'javaXmlBind' }
-xsd2java-jakarta = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version.ref = 'jakartaXmlBind' }
-xsd2java-activation = { group = 'javax.activation', name = 'javax.activation-api', version.ref = 'javaxActivation' }
-
-jaxb-api = { group = 'javax.xml.bind', name = 'jaxb-api', version.ref = 'jaxbApi' }
+xsd2java-activation = { group = 'jakarta.activation', name = 'jakarta.activation-api', version.ref = 'javaxActivation' }
+jakarta-bind-api = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version.ref = 'jakartaBindApi' }
 jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxbRuntime' }
 
 [bundles]
 testing = ['junit-jupiter-engine', 'hamcrest', 'mockito-core', 'nva-testutils', 'junit-jupiter-params']
 jackson = ['jackson-core', 'jackson-datatype-jdk8', 'jackson-datatype-jsr310', 'jackson-databind', 'jackson-annotations', 'jackson-problem']
 logging = ['log4j-core', 'log4j-api', 'slf4j']
-xsd2java = ["xsd2java-xjc", "xsd2java-impl", "xsd2java-api", "xsd2java-activation", "xsd2java-jakarta"]
+xsd2java = ["xsd2java-xjc", "xsd2java-impl", "jakarta-bind-api", "xsd2java-activation"]
 

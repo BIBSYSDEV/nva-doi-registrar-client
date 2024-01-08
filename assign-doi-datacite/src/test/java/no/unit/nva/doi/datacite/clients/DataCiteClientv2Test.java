@@ -293,6 +293,17 @@ public class DataCiteClientv2Test {
     }
 
     @Test
+    void shouldGetMetadata() throws ClientException {
+        var customerId = createValidCustomer();
+        var doi = createDoiWithDemoPrefixAndExampleSuffix();
+        var expectedPathForGetMetadata = createMetadataDoiIdentifierPath(doi);
+        stubGetMetadataResponse(expectedPathForGetMetadata);
+
+        var metadata = client.getMetadata(customerId, doi);
+        assertThat(metadata, containsString("http://datacite.org/schema/kernel-4"));
+    }
+
+    @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToDeleteDraftDoiWithoutSupplyingADoi() {
         var customerId = createValidCustomer();
         Doi notValidDoi = null;
@@ -375,6 +386,16 @@ public class DataCiteClientv2Test {
                     .willReturn(aResponse()
                                     .withStatus(HttpStatus.SC_OK)
                                     .withBody(HTTP_RESPONSE_OK)));
+    }
+
+    private void stubGetMetadataResponse(String expectedPathGetMetadata) {
+        stubFor(get(urlEqualTo(expectedPathGetMetadata))
+                    .withBasicAuth(CUSTOMER_USERNAME, CUSTOMER_PASSWORD)
+                    .willReturn(aResponse()
+                                    .withStatus(HttpStatus.SC_OK)
+                                    .withBody(getValidMetadataPayload())
+                                    .withHeader(CONTENT_TYPE,
+                                        APPLICATION_XML_CHARSET_UTF_8)));
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {

@@ -15,7 +15,7 @@ dependencies {
 
 
 task xsd2java() {
-    def schemaVersion = '4.3'
+    def schemaVersion = '4.4'
     doLast {
         jaxbTargetDir.mkdirs()
         ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJC2Task', classpath: configurations.jaxb.asPath)

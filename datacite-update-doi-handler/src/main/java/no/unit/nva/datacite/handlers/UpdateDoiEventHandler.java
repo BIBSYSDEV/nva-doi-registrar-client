@@ -3,6 +3,9 @@ package no.unit.nva.datacite.handlers;
 import static java.util.Objects.isNull;
 import static org.zalando.problem.Status.GONE;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.xml.bind.JAXB;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
@@ -17,6 +20,10 @@ import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
+import org.datacide.schema.kernel_4.RelatedIdentifierType;
+import org.datacide.schema.kernel_4.RelationType;
+import org.datacide.schema.kernel_4.Resource;
+import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +92,14 @@ public class UpdateDoiEventHandler
 
         if (e.getStatus().getStatusCode() == GONE.getStatusCode()) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId());
-            deleteMetadata(input.getCustomerId(), doi);
+
+            var resource = getMetadata(input, doi);
+
+            if (input.getDuplicateOf() != null) {
+                addDuplicateIdentifier(resource, input.getDuplicateOf().toString());
+            }
+
+            deleteMetadata(input.getCustomerId(), doi, toString(resource));
         } else {
             logger.error("Unknown error for publication id {}", input.getPublicationId(), e);
             throw e;
@@ -95,6 +109,36 @@ public class UpdateDoiEventHandler
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId());
+    }
+
+    private static String toString(Resource resource) {
+        StringWriter sw = new StringWriter();
+        JAXB.marshal(resource, sw);
+        return sw.toString();
+    }
+
+    private Resource getMetadata(DoiUpdateRequestEvent input, Doi doi) {
+        String xmlString;
+        try {
+            xmlString = doiClient.getMetadata(input.getCustomerId(), doi);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
+
+        return JAXB.unmarshal(new StringReader(xmlString), Resource.class);
+    }
+
+    private static void addDuplicateIdentifier(Resource resource, String duplicateOf) {
+        var relatedIdentifier = new RelatedIdentifiers.RelatedIdentifier();
+        relatedIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
+        relatedIdentifier.setValue(duplicateOf);
+        relatedIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
+        relatedIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
+
+        if (resource.getRelatedIdentifiers() == null) {
+            resource.setRelatedIdentifiers(new RelatedIdentifiers());
+        }
+        resource.getRelatedIdentifiers().getRelatedIdentifier().add(relatedIdentifier);
     }
 
     private void makePublicationFindable(
@@ -111,8 +155,9 @@ public class UpdateDoiEventHandler
         logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
     }
 
-    private void deleteMetadata(URI customerId, Doi doi) {
+    private void deleteMetadata(URI customerId, Doi doi, String updatedMetadata) {
         try {
+            doiClient.updateMetadata(customerId, doi, updatedMetadata);
             doiClient.deleteMetadata(customerId, doi);
         } catch (ClientException ex) {
             throw new RuntimeException(ex);

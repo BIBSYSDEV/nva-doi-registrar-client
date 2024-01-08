@@ -83,4 +83,6 @@ public interface DoiClient {
     void deleteDraftDoi(URI customerId, Doi doi) throws ClientException;
 
     DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException;
+
+    String getMetadata(URI customerId, Doi doi) throws ClientException;
 }

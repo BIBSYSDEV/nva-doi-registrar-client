@@ -22,17 +22,22 @@ public class DoiUpdateRequestEvent {
     @JsonProperty("customerId")
     private final URI customerId;
 
+    @JsonProperty("duplicateOf")
+    private final URI duplicateOf;
+
     @JacocoGenerated
     @JsonCreator
     public DoiUpdateRequestEvent(
         @JsonProperty(TOPIC) String type,
         @JsonProperty("doi") URI doi,
         @JsonProperty("publicationId") URI publicationId,
-        @JsonProperty("customerId") URI customerId) {
+        @JsonProperty("customerId") URI customerId,
+        @JsonProperty("duplicateOf") URI duplicateOf) {
         this.topic = type;
         this.doi = doi;
         this.publicationId = publicationId;
         this.customerId = customerId;
+        this.duplicateOf = duplicateOf;
     }
 
     @JacocoGenerated
@@ -41,7 +46,8 @@ public class DoiUpdateRequestEvent {
         return Objects.hash(getTopic(),
                             getDoi(),
                             getPublicationId(),
-                            getCustomerId());
+                            getCustomerId(),
+                            getDuplicateOf());
     }
 
     @JacocoGenerated
@@ -50,14 +56,14 @@ public class DoiUpdateRequestEvent {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof DoiUpdateRequestEvent)) {
+        if (!(o instanceof DoiUpdateRequestEvent that)) {
             return false;
         }
-        DoiUpdateRequestEvent that = (DoiUpdateRequestEvent) o;
         return Objects.equals(getTopic(), that.getTopic())
                && Objects.equals(getDoi(), that.getDoi())
                && Objects.equals(getCustomerId(), that.getCustomerId())
-               && Objects.equals(getPublicationId(), that.getPublicationId());
+               && Objects.equals(getPublicationId(), that.getPublicationId())
+               && Objects.equals(getDuplicateOf(), that.getDuplicateOf());
     }
 
     @JacocoGenerated
@@ -79,5 +85,9 @@ public class DoiUpdateRequestEvent {
     @JacocoGenerated
     public URI getCustomerId() {
         return customerId;
+    }
+
+    public URI getDuplicateOf() {
+        return duplicateOf;
     }
 }
