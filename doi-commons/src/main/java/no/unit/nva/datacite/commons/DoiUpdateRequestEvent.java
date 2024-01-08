@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import nva.commons.core.JacocoGenerated;
 
 public class DoiUpdateRequestEvent {
@@ -87,7 +88,8 @@ public class DoiUpdateRequestEvent {
         return customerId;
     }
 
-    public URI getDuplicateOf() {
-        return duplicateOf;
+    @JacocoGenerated
+    public Optional<URI> getDuplicateOf() {
+        return Optional.ofNullable(duplicateOf);
     }
 }

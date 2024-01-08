@@ -90,12 +90,12 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId());
 
-        if (e.getStatus().getStatusCode() == GONE.getStatusCode()) {
+        if (e.getStatus() == GONE) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId());
 
             var resource = getMetadata(input, doi);
 
-            if (input.getDuplicateOf() != null) {
+            if (input.getDuplicateOf().isPresent()) {
                 addDuplicateIdentifier(resource, input.getDuplicateOf().toString());
             }
 
@@ -112,20 +112,18 @@ public class UpdateDoiEventHandler
     }
 
     private static String toString(Resource resource) {
-        StringWriter sw = new StringWriter();
+        var sw = new StringWriter();
         JAXB.marshal(resource, sw);
         return sw.toString();
     }
 
     private Resource getMetadata(DoiUpdateRequestEvent input, Doi doi) {
-        String xmlString;
         try {
-            xmlString = doiClient.getMetadata(input.getCustomerId(), doi);
+            var xmlString = doiClient.getMetadata(input.getCustomerId(), doi);
+            return JAXB.unmarshal(new StringReader(xmlString), Resource.class);
         } catch (ClientException e) {
             throw new RuntimeException(e);
         }
-
-        return JAXB.unmarshal(new StringReader(xmlString), Resource.class);
     }
 
     private static void addDuplicateIdentifier(Resource resource, String duplicateOf) {
@@ -135,7 +133,7 @@ public class UpdateDoiEventHandler
         relatedIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
         relatedIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
 
-        if (resource.getRelatedIdentifiers() == null) {
+        if (isNull(resource.getRelatedIdentifiers())) {
             resource.setRelatedIdentifiers(new RelatedIdentifiers());
         }
         resource.getRelatedIdentifiers().getRelatedIdentifier().add(relatedIdentifier);
