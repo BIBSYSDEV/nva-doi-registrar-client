@@ -48,7 +48,8 @@ public class TestBase {
         return baseUrl + PUBLICATION_PATH + publicationIdentifier;
     }
 
-    protected InputStream createDoiRequestInputStream(String publicationIdentifier, URI doi, URI customerId, URI duplicateOf) {
+    protected InputStream createDoiRequestInputStream(String publicationIdentifier, URI doi, URI customerId,
+                                                      URI duplicateOf) {
         var doiUpdateRequestEvent = createDoiUpdateRequest(publicationIdentifier, doi, customerId, duplicateOf);
         var awsEventBridgeEvent = crateAwsEventBridgeEvent(doiUpdateRequestEvent);
         return toInputStream(awsEventBridgeEvent);
@@ -68,7 +69,8 @@ public class TestBase {
         return request;
     }
 
-    protected DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID, URI doi, URI customerId, URI duplicateOf) {
+    protected DoiUpdateRequestEvent createDoiUpdateRequest(String publicationID, URI doi, URI customerId,
+                                                           URI duplicateOf) {
         return new DoiUpdateRequestEvent("PublicationService.Doi.UpdateRequest",
                                          doi,
                                          UriWrapper.fromUri(createPublicationId(publicationID)).getUri(),

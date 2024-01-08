@@ -152,7 +152,6 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         }
     }
 
-
     @Test
     void shouldDeleteDoiMetadataIfGone()
         throws ClientException, IOException {
@@ -168,7 +167,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
             verify(doiClient).deleteMetadata(
                 CUSTOMER_ID_IN_INPUT_EVENT,
                 doi
-                );
+            );
         }
     }
 
