@@ -151,9 +151,8 @@ public class UpdateDoiEventHandler
     }
 
     private static boolean isIdentical(RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
-        return existingIdentifier.getValue().equals(newIdentifier.getValue()) &&
-               existingIdentifier.getRelatedIdentifierType()
-                   .equals(newIdentifier.getRelatedIdentifierType());
+        return existingIdentifier.getValue().equals(newIdentifier.getValue())
+               && existingIdentifier.getRelatedIdentifierType().equals(newIdentifier.getRelatedIdentifierType());
     }
 
     private void makePublicationFindable(

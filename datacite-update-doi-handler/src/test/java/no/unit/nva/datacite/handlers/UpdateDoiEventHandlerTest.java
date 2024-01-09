@@ -290,6 +290,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     private static Resource toResource(String s) {
         return JAXB.unmarshal(new StringReader(s), Resource.class);
     }
+
     private static String toString(Resource resource) {
         var sw = new StringWriter();
         JAXB.marshal(resource, sw);
