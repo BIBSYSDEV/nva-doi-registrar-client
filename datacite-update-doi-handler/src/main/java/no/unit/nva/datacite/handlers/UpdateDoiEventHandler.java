@@ -93,7 +93,7 @@ public class UpdateDoiEventHandler
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId(),
-                    input.getDuplicateOf());
+                    input.getDuplicateOf().orElse(null));
 
         if (isDeletedPublication(e) || isDeletedDuplicatePublication(e)) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), e.getStatus());
