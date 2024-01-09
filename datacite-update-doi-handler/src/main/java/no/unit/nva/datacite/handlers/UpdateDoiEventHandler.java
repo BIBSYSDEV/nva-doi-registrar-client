@@ -24,6 +24,7 @@ import org.datacide.schema.kernel_4.RelatedIdentifierType;
 import org.datacide.schema.kernel_4.RelationType;
 import org.datacide.schema.kernel_4.Resource;
 import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers;
+import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers.RelatedIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +61,8 @@ public class UpdateDoiEventHandler
 
     @Override
     protected Void processInputPayload(DoiUpdateRequestEvent input,
-                   AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
-                   Context context) {
+                                       AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+                                       Context context) {
 
         validateInput(input);
 
@@ -96,7 +97,7 @@ public class UpdateDoiEventHandler
             var resource = getMetadata(input, doi);
 
             if (input.getDuplicateOf().isPresent()) {
-                addDuplicateIdentifier(resource, input.getDuplicateOf().toString());
+                addDuplicateIdentifier(resource, input.getDuplicateOf().get());
             }
 
             deleteMetadata(input.getCustomerId(), doi, toString(resource));
@@ -126,17 +127,33 @@ public class UpdateDoiEventHandler
         }
     }
 
-    private static void addDuplicateIdentifier(Resource resource, String duplicateOf) {
-        var relatedIdentifier = new RelatedIdentifiers.RelatedIdentifier();
-        relatedIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
-        relatedIdentifier.setValue(duplicateOf);
-        relatedIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
-        relatedIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
+    private static void addDuplicateIdentifier(Resource resource, URI duplicateOf) {
+        var newIdentifier = new RelatedIdentifiers.RelatedIdentifier();
+        newIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
+        newIdentifier.setValue(duplicateOf.toString());
+        newIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
+        newIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
 
         if (isNull(resource.getRelatedIdentifiers())) {
             resource.setRelatedIdentifiers(new RelatedIdentifiers());
+        } else {
+            if (isRelatedIdentifierPresent(resource, newIdentifier)) {
+                return;  // If an identical identifier is found, don't add the new one
+            }
         }
-        resource.getRelatedIdentifiers().getRelatedIdentifier().add(relatedIdentifier);
+
+        resource.getRelatedIdentifiers().getRelatedIdentifier().add(newIdentifier);
+    }
+
+    private static boolean isRelatedIdentifierPresent(Resource resource, RelatedIdentifier newIdentifier) {
+        return resource.getRelatedIdentifiers().getRelatedIdentifier().stream()
+                   .anyMatch(existingIdentifier -> isIdentical(newIdentifier, existingIdentifier));
+    }
+
+    private static boolean isIdentical(RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
+        return existingIdentifier.getValue().equals(newIdentifier.getValue()) &&
+               existingIdentifier.getRelatedIdentifierType()
+                   .equals(newIdentifier.getRelatedIdentifierType());
     }
 
     private void makePublicationFindable(
