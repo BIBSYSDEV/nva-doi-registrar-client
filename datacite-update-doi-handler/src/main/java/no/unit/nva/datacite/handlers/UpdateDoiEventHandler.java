@@ -3,6 +3,9 @@ package no.unit.nva.datacite.handlers;
 import static java.util.Objects.isNull;
 import static org.zalando.problem.Status.GONE;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.xml.bind.JAXB;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
@@ -17,6 +20,11 @@ import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
+import org.datacide.schema.kernel_4.RelatedIdentifierType;
+import org.datacide.schema.kernel_4.RelationType;
+import org.datacide.schema.kernel_4.Resource;
+import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers;
+import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers.RelatedIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +61,8 @@ public class UpdateDoiEventHandler
 
     @Override
     protected Void processInputPayload(DoiUpdateRequestEvent input,
-                   AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
-                   Context context) {
+                                       AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+                                       Context context) {
 
         validateInput(input);
 
@@ -83,9 +91,16 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId());
 
-        if (e.getStatus().getStatusCode() == GONE.getStatusCode()) {
+        if (e.getStatus() == GONE) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId());
-            deleteMetadata(input.getCustomerId(), doi);
+
+            var resource = getMetadata(input, doi);
+
+            if (input.getDuplicateOf().isPresent()) {
+                addDuplicateIdentifier(resource, input.getDuplicateOf().get());
+            }
+
+            deleteMetadata(input.getCustomerId(), doi, toString(resource));
         } else {
             logger.error("Unknown error for publication id {}", input.getPublicationId(), e);
             throw e;
@@ -95,6 +110,49 @@ public class UpdateDoiEventHandler
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId());
+    }
+
+    private static String toString(Resource resource) {
+        var sw = new StringWriter();
+        JAXB.marshal(resource, sw);
+        return sw.toString();
+    }
+
+    private Resource getMetadata(DoiUpdateRequestEvent input, Doi doi) {
+        try {
+            var xmlString = doiClient.getMetadata(input.getCustomerId(), doi);
+            return JAXB.unmarshal(new StringReader(xmlString), Resource.class);
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void addDuplicateIdentifier(Resource resource, URI duplicateOf) {
+        var newIdentifier = new RelatedIdentifiers.RelatedIdentifier();
+        newIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
+        newIdentifier.setValue(duplicateOf.toString());
+        newIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
+        newIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
+
+        if (isNull(resource.getRelatedIdentifiers())) {
+            resource.setRelatedIdentifiers(new RelatedIdentifiers());
+        } else {
+            if (isRelatedIdentifierPresent(resource, newIdentifier)) {
+                return;  // If an identical identifier is found, don't add the new one
+            }
+        }
+
+        resource.getRelatedIdentifiers().getRelatedIdentifier().add(newIdentifier);
+    }
+
+    private static boolean isRelatedIdentifierPresent(Resource resource, RelatedIdentifier newIdentifier) {
+        return resource.getRelatedIdentifiers().getRelatedIdentifier().stream()
+                   .anyMatch(existingIdentifier -> isIdentical(newIdentifier, existingIdentifier));
+    }
+
+    private static boolean isIdentical(RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
+        return existingIdentifier.getValue().equals(newIdentifier.getValue())
+               && existingIdentifier.getRelatedIdentifierType().equals(newIdentifier.getRelatedIdentifierType());
     }
 
     private void makePublicationFindable(
@@ -111,8 +169,9 @@ public class UpdateDoiEventHandler
         logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
     }
 
-    private void deleteMetadata(URI customerId, Doi doi) {
+    private void deleteMetadata(URI customerId, Doi doi, String updatedMetadata) {
         try {
+            doiClient.updateMetadata(customerId, doi, updatedMetadata);
             doiClient.deleteMetadata(customerId, doi);
         } catch (ClientException ex) {
             throw new RuntimeException(ex);

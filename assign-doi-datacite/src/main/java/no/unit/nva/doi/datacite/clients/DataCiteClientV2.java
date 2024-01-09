@@ -72,4 +72,9 @@ public class DataCiteClientV2 implements DoiClient {
     public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
         return dataCiteRestApiClient.getDoi(customerId, doi);
     }
+
+    @Override
+    public String getMetadata(URI customerId, Doi doi) throws ClientException {
+        return mdsClient.getMetadata(customerId, doi);
+    }
 }

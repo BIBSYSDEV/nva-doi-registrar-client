@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<resource xmlns="http://datacite.org/schema/kernel-4">
+  <identifier identifierType="URL">
+    https://api.nva.unit.no/publication/0185ca7cfd73-c8e82544-b59a-4ce3-92c1-a097f566fbd2
+  </identifier>
+  <creators>
+    <creator>
+      <creatorName>P. Weber</creatorName>
+    </creator>
+    <creator>
+      <creatorName>H. Lovell</creatorName>
+    </creator>
+    <creator>
+      <creatorName>L. M. Andreassen</creatorName>
+    </creator>
+    <creator>
+      <creatorName>C. M. Boston</creatorName>
+    </creator>
+  </creators>
+  <titles>
+    <title>Glacier outlines Langfjordjøkelen</title>
+  </titles>
+  <publisher>https://api.nva.unit.no/customer/4ba5f697-2056-4292-b0a3-f81ccf21ea22</publisher>
+  <publicationYear>2020</publicationYear>
+  <resourceType resourceTypeGeneral="Text">DataSet</resourceType>
+  <relatedIdentifiers>
+    <relatedIdentifier resourceTypeGeneral="Text" relatedIdentifierType="URL" relationType="IsIdenticalTo">https://example.no/publication/123</relatedIdentifier>
+  </relatedIdentifiers>
+</resource>
