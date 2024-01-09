@@ -2,6 +2,7 @@ package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.isNull;
 import static org.zalando.problem.Status.GONE;
+import static org.zalando.problem.Status.MOVED_PERMANENTLY;
 import com.amazonaws.services.lambda.runtime.Context;
 import jakarta.xml.bind.JAXB;
 import java.io.StringReader;
@@ -91,7 +92,7 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId());
 
-        if (e.getStatus() == GONE) {
+        if (e.getStatus() == GONE || e.getStatus() == MOVED_PERMANENTLY) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId());
 
             var resource = getMetadata(input, doi);

@@ -187,7 +187,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
 
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
                                                            CUSTOMER_ID_IN_INPUT_EVENT, mainUri)) {
-            mockDataciteXmlGone(publicationIdentifier);
+            mockDataciteXmlPermanentlyMoved(publicationIdentifier, mainUri.toString());
             updateDoiHandler.handleRequest(inputStream, outputStream, context);
 
             verify(doiClient).updateMetadata(
@@ -209,7 +209,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
 
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
                                                            CUSTOMER_ID_IN_INPUT_EVENT, mainUri)) {
-            mockDataciteXmlGone(publicationIdentifier);
+            mockDataciteXmlPermanentlyMoved(publicationIdentifier, mainUri.toString());
             updateDoiHandler.handleRequest(inputStream, outputStream, context);
 
             verify(doiClient).updateMetadata(
