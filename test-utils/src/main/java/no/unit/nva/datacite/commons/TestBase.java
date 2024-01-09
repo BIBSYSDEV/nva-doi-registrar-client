@@ -38,6 +38,13 @@ public class TestBase {
                     .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_GONE)));
     }
 
+    protected void mockDataciteXmlPermanentlyMoved(String publicationIdentifier, String duplicateOf) {
+        stubFor(WireMock.get(urlPathEqualTo(PUBLICATION_PATH + publicationIdentifier))
+                    .withHeader(ACCEPT_HEADER, WireMock.equalTo(APPLICATION_VND_DATACITE_DATACITE_XML))
+                    .willReturn(aResponse().withStatus(HttpURLConnection.HTTP_MOVED_PERM)
+                                    .withHeader("Location", duplicateOf)));
+    }
+
     protected void mockDataciteXmlError(String publicationIdentifier) {
         stubFor(WireMock.get(urlPathEqualTo(PUBLICATION_PATH + publicationIdentifier))
                     .withHeader(ACCEPT_HEADER, WireMock.equalTo(APPLICATION_VND_DATACITE_DATACITE_XML))
