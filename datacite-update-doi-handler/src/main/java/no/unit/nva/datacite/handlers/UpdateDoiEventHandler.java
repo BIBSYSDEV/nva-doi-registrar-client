@@ -38,13 +38,15 @@ public class UpdateDoiEventHandler
     private static final String SUCCESSFULLY_MADE_DOI_FINDABLE =
         "Successfully handled request for Doi {}";
     public static final String SHOULD_REMOVE_METADATA_LOG_MESSAGE =
-        "Request for publication {} returned 410 Gone. Any Findable DOI associated with this URI "
+        "Request for publication {} returned {}. Any Findable DOI associated with this URI "
         + "will transition to Registered DOI.";
     private static final String RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG =
-        "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {})";
+        "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {} , "
+        + "and duplicateOf \"{}\")";
     private static final String SUCCESSFUL_DOI_REGISTERED =
         "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
     private static final Logger logger = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
+    public static final String ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE = "Adding duplicate identifier to resource {}";
     private final DoiClient doiClient;
     private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
@@ -90,15 +92,18 @@ public class UpdateDoiEventHandler
         logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
                     doi.getUri(),
                     input.getPublicationId(),
-                    input.getCustomerId());
+                    input.getCustomerId(),
+                    input.getDuplicateOf().orElse(null));
 
-        if (e.getStatus() == GONE || e.getStatus() == MOVED_PERMANENTLY) {
-            logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId());
+        if (isDeletedPublication(e) || isDeletedDuplicatePublication(e)) {
+            logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), e.getStatus());
 
             var resource = getMetadata(input, doi);
 
             if (input.getDuplicateOf().isPresent()) {
-                addDuplicateIdentifier(resource, input.getDuplicateOf().get());
+                var duplicateOf = input.getDuplicateOf().get();
+                logger.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
+                addDuplicateIdentifier(resource, duplicateOf);
             }
 
             deleteMetadata(input.getCustomerId(), doi, toString(resource));
@@ -111,6 +116,14 @@ public class UpdateDoiEventHandler
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId());
+    }
+
+    private static boolean isDeletedDuplicatePublication(PublicationApiClientException e) {
+        return e.getStatus() == MOVED_PERMANENTLY;
+    }
+
+    private static boolean isDeletedPublication(PublicationApiClientException e) {
+        return e.getStatus() == GONE;
     }
 
     private static String toString(Resource resource) {
