@@ -51,7 +51,7 @@ Conditions:
 Globals:
   Function:
     Timeout: 60
-    Runtime: java17
+    Runtime: java21
     MemorySize: 1408
     Environment:
       Variables:
@@ -170,7 +170,6 @@ Resources:
     Properties:
       CodeUri: datacite-delete-draft-doi-handler
       Handler: no.unit.nva.datacite.handlers.resource.ResourceDraftedForDeletionEventHandler::handleRequest
-      Runtime: java17
       MemorySize: 512
       Role: !GetAtt LambdaRole.Arn
       Environment:
