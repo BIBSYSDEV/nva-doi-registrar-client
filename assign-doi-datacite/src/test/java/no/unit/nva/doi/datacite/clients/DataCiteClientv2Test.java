@@ -53,6 +53,7 @@ import no.unit.nva.doi.datacite.utils.FakeCustomerExtractorThrowingException;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
+import nva.commons.core.useragent.UserAgent;
 import nva.commons.logutils.LogUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -87,6 +88,10 @@ public class DataCiteClientv2Test {
     private static final String doiPath = FORWARD_SLASH + MdsClient.DATACITE_PATH_DOI;
 
     private static final URI EXAMPLE_LANDING_PAGE = URI.create("https://example.net/nva/publication/203124124");
+    private static final String EXPECTED_USER_AGENT_REST = "DataCiteRestApiClient-api.localhost.nva.aws.unit.no/1.0 "
+            + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client; mailto:support@sikt.no)";
+    private static final String EXPECTED_USER_AGENT_MDS = "MdsClient-api.localhost.nva.aws.unit.no/1.0 "
+            + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client; mailto:support@sikt.no)";
     private DataCiteClientV2 client;
 
     private FakeCustomerExtractor customerConfigExtractor;
@@ -189,7 +194,8 @@ public class DataCiteClientv2Test {
         verify(1,
                postRequestedFor(urlEqualTo("/dois"))
                    .withBasicAuth(new BasicCredentials(CUSTOMER_USERNAME, CUSTOMER_PASSWORD))
-                   .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(JSON_API_CONTENT_TYPE)));
+                   .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(JSON_API_CONTENT_TYPE))
+                   .withHeader(UserAgent.USER_AGENT, WireMock.equalTo(EXPECTED_USER_AGENT_REST)));
         assertThat(actual, is(instanceOf(Doi.class)));
         var expectedCreatedServerDoi = createDoi("example.doi.host.org", DOI_PREFIX, randomSuffix);
         assertThat(actual.toIdentifier(), is(equalTo(expectedCreatedServerDoi.toIdentifier())));
@@ -424,7 +430,8 @@ public class DataCiteClientv2Test {
         verify(postRequestedFor(urlEqualTo(expectedPath))
                    .withBasicAuth(getExpectedAuthenticatedCredentials())
                    .withRequestBody(WireMock.equalTo(getValidMetadataPayload()))
-                   .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8)));
+                   .withHeader(HEADER_CONTENT_TYPE, WireMock.equalTo(APPLICATION_XML_CHARSET_UTF_8))
+                   .withHeader(UserAgent.USER_AGENT, WireMock.equalTo(EXPECTED_USER_AGENT_MDS)));
     }
 
     private BasicCredentials getExpectedAuthenticatedCredentials() {

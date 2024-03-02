@@ -14,6 +14,7 @@ import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.core.paths.UriWrapper;
+import nva.commons.core.useragent.UserAgent;
 
 public class DataCiteRestApiClient extends HttpSender {
 
@@ -65,6 +66,7 @@ public class DataCiteRestApiClient extends HttpSender {
                    .uri(requestTargetUriToDoi(doi))
                    .GET()
                    .header(ACCEPT, JSON_API_CONTENT_TYPE)
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .headers(AUTHORIZATION_HEADER, getBasicAuth(customer))
                    .build();
@@ -82,6 +84,7 @@ public class DataCiteRestApiClient extends HttpSender {
         return HttpRequest.newBuilder()
                    .uri(doiRequestUri())
                    .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .POST(BodyPublishers.ofString(requestBodyContainingTheDoiPrefix(customerConfig)))
                    .headers(AUTHORIZATION_HEADER, getBasicAuth(customerConfig))
                    .timeout(Duration.ofMillis(TIMEOUT))

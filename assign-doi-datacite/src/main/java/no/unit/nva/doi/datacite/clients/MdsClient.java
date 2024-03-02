@@ -15,6 +15,7 @@ import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigException;
 import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigExtractor;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.core.paths.UriWrapper;
+import nva.commons.core.useragent.UserAgent;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -92,6 +93,7 @@ public class MdsClient extends HttpSender {
                    .GET()
                    .header(HttpHeaders.ACCEPT, APPLICATION_XML_CHARSET_UTF_8)
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(MdsClient.class))
                    .uri(createUriForAccessingMetadata(doi))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .build();
@@ -120,6 +122,7 @@ public class MdsClient extends HttpSender {
                    .DELETE()
                    .uri(createUriForAccessingMetadata(doi))
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .build();
     }
@@ -133,6 +136,7 @@ public class MdsClient extends HttpSender {
         return HttpRequest.newBuilder()
                    .DELETE()
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .uri(createUriForAccessingDoi(doi))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .build();
@@ -154,6 +158,7 @@ public class MdsClient extends HttpSender {
         return HttpRequest.newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_CHARSET_UTF_8)
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .uri(createUriForAccessingMetadata(doi))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .POST(HttpRequest.BodyPublishers.ofString(metadataDataCiteXml))
@@ -174,6 +179,7 @@ public class MdsClient extends HttpSender {
         return HttpRequest.newBuilder()
                    .header(HttpHeaders.CONTENT_TYPE, TEXT_PLAIN_CHARSET_UTF_8)
                    .header(AUTHORIZATION_HEADER, customer.extractBasicAuthenticationString())
+                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(this.getClass()))
                    .timeout(Duration.ofMillis(TIMEOUT))
                    .uri(createUriForAccessingDoi(doi))
                    .PUT(HttpRequest.BodyPublishers.ofString(
