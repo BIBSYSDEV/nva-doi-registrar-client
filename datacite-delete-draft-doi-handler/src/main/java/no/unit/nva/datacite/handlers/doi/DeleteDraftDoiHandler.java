@@ -1,7 +1,8 @@
 package no.unit.nva.datacite.handlers.doi;
 
-import static com.amazonaws.util.SdkHttpUtils.urlDecode;
 import static nva.commons.core.attempt.Try.attempt;
+import static software.amazon.awssdk.utils.http.SdkHttpUtils.urlDecode;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import java.net.URI;
