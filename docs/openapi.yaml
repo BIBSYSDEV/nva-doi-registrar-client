@@ -13,6 +13,7 @@ paths:
   /draft:
     post:
       summary: Reserve Doi
+      operationId: createDoiDraft
       requestBody:
         required: true
         content:
@@ -44,6 +45,7 @@ paths:
   /draft/{doiPrefix}/{doiSuffix}:
     delete:
       summary: Delete Draft Doi
+      operationId: deleteDoiDraft
       parameters:
         - in: path
           name: doiPrefix
@@ -91,6 +93,7 @@ paths:
   /findable:
     post:
       summary: Make Doi findable
+      operationId: setDoiFindable
       requestBody:
         required: true
         content:
