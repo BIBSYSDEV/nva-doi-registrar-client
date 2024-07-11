@@ -1,6 +1,6 @@
 [versions]
 hamcrest = { strictly = '2.2' }
-nvaCommons = { strictly = '1.39.3' }
+nvaCommons = { strictly = '1.40.6' }
 jackson = { strictly = '2.16.1' }
 mockito = { strictly = '4.2.0' }
 junit = { strictly = '5.8.2' }
@@ -8,7 +8,6 @@ awsSdk = { strictly = '1.12.369' }
 awsSdk2 = { strictly = '2.24.12' }
 jakartaBindApi = { strictly = '4.0.1' }
 jaxbRuntime = { strictly = '4.0.4' }
-commonsLang = { strictly = '3.12.0' }
 secretsCaching = { strictly = '1.0.1' }
 zalando = { prefer = '0.26.0' }
 wiremock = { strictly = "3.4.1" }
@@ -42,7 +41,6 @@ aws-sdk2-secrets = { group = 'software.amazon.awssdk', name = 'secretsmanager', 
 
 aws-sdk2-httpClientApi = { group = 'software.amazon.awssdk', name = 'http-client-spi', version.ref = 'awsSdk2' }
 
-commons-lang3 = { group = 'org.apache.commons', name = 'commons-lang3', version.ref = "commonsLang" }
 aws-secretsmanager-caching = { group = 'com.amazonaws.secretsmanager', name = 'aws-secretsmanager-caching-java', version.ref = 'secretsCaching' }
 problem = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
 

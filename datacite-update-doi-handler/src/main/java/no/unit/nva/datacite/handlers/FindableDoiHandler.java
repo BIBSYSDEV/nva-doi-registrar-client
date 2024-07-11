@@ -13,6 +13,7 @@ import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.JacocoGenerated;
 
 public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiResponse> {
@@ -31,6 +32,12 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
         super(UpdateDoiRequest.class);
         this.doiClient = doiClient;
         this.dataCiteMetadataResolver = dataCiteMetadataResolver;
+    }
+
+    @Override
+    protected void validateRequest(UpdateDoiRequest updateDoiRequest, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
+        //Do nothing
     }
 
     @Override

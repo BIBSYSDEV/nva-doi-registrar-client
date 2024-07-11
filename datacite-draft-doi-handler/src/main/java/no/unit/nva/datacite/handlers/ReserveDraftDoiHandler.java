@@ -9,6 +9,7 @@ import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
@@ -30,6 +31,12 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
     @JacocoGenerated
     public ReserveDraftDoiHandler() {
         this(defaultDoiClient(), new Environment());
+    }
+
+    @Override
+    protected void validateRequest(ReserveDoiRequest reserveDoiRequest, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
+        //Do nothing
     }
 
     @Override
