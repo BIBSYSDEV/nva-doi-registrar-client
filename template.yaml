@@ -44,6 +44,10 @@ Parameters:
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/NVA/Monitoring/SlackSnsArn'
+  AllowedOrigins:
+    Type: String
+    Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
+    Default: '*'
 
 Conditions:
   WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
@@ -209,7 +213,7 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
-          ALLOWED_ORIGIN: '*'
+          ALLOWED_ORIGIN: !Ref AllowedOrigins
       Events:
         GetEvent:
           Type: Api
@@ -233,7 +237,7 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
-          ALLOWED_ORIGIN: '*'
+          ALLOWED_ORIGIN: !Ref AllowedOrigins
       Events:
         GetEvent:
           Type: Api
@@ -257,7 +261,7 @@ Resources:
           DATACITE_REST_HOST: !Ref DataCiteRestHost
           DATACITE_MDS_HOST: !Ref DataCiteMdsHost
           DOI_HOST: !Ref DoiHost
-          ALLOWED_ORIGIN: '*'
+          ALLOWED_ORIGIN: !Ref AllowedOrigins
       Events:
         GetEvent:
           Type: Api
