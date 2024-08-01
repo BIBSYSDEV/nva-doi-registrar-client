@@ -315,7 +315,8 @@ Resources:
   DataCiteFindableDoiHandlerDLQAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteFindableDoiHandlerDLQ
+      AlarmName: Doi-registrar creating findable doi failed
+      AlarmDescription: If this alarm is triggered, then check sqs messages on DataCiteFindableDoiHandlerDLQ. Creating findable DOI has failed.
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       Statistic: Sum
@@ -332,7 +333,8 @@ Resources:
   DataCiteDraftDoiHandlerDLQAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteDraftDoiHandlerDLQ
+      AlarmName: Doi-registrar creating draft doi failed
+      AlarmDescription: If this alarm is triggered, then check sqs messages on DataCiteDraftDoiHandlerDLQ. Creating draft DOI has failed.
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       Statistic: Sum
@@ -349,7 +351,8 @@ Resources:
   DataCiteDeleteDraftDoiHandlerDLQAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=DataCiteDeleteDraftDoiHandlerDLQ
+      AlarmName: Doi-registrar deleting draft doi failed
+      AlarmDescription: If this alarm is triggered, then check sqs messages on DataCiteDeleteDraftDoiHandlerDLQ. Deleting draft DOI has failed.
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       Statistic: Sum
