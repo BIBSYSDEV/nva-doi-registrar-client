@@ -369,7 +369,8 @@ Resources:
   ResourceDraftedForDeletionEventHandlerDLQAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: AWS/SQS ApproximateNumberOfMessagesVisible QueueName=ResourceDraftedForDeletionEventHandlerDLQ
+      AlarmName: Doi-registrar delete draft resource event error
+      AlarmDescription: If this alarm is triggered, then check sqs messages on ResourceDraftedForDeletionEventHandlerDLQ.
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       Statistic: Sum
