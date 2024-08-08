@@ -1,6 +1,6 @@
 [versions]
 hamcrest = { strictly = '2.2' }
-nvaCommons = { strictly = '1.40.6' }
+nvaCommons = { strictly = '1.40.8' }
 jackson = { strictly = '2.16.1' }
 mockito = { strictly = '4.2.0' }
 junit = { strictly = '5.8.2' }
