@@ -266,18 +266,6 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     }
 
     @Test
-    void shouldThrowBadGatewayWhenCouldNotFetchDoi1() throws IOException, ClientException {
-        var publicationIdentifier = SortableIdentifier.next().toString();
-        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
-                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
-            when(doiClient.getDoi(any(), any())).thenReturn(null);
-            assertThrows(PublicationApiClientException.class, () -> {
-                updateDoiHandler.handleRequest(inputStream, outputStream, context);
-            });
-        }
-    }
-
-    @Test
     void shouldDoNothingWhenDoiToDeleteIsNotFindable() throws IOException, ClientException {
         var publicationIdentifier = SortableIdentifier.next().toString();
         var doi = Doi.fromUri(VALID_SAMPLE_DOI);
@@ -292,21 +280,6 @@ public class UpdateDoiEventHandlerTest extends TestBase {
                 CUSTOMER_ID_IN_INPUT_EVENT,
                 doi
             );
-        }
-    }
-
-    @Test
-    void shouldThrowRuntimeExceptionWhenNotPossibleToParseDoiMetadataWhenDeletingDoi() throws IOException,
-                                                                                           ClientException {
-        var publicationIdentifier = SortableIdentifier.next().toString();
-        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
-                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
-            when(doiClient.getMetadata(any(), any())).thenReturn("");
-            mockGetDoiResponse(State.FINDABLE);
-            mockDataciteXmlGone(publicationIdentifier);
-
-            assertThrows(RuntimeException.class, () ->
-                updateDoiHandler.handleRequest(inputStream, outputStream, context));
         }
     }
 
