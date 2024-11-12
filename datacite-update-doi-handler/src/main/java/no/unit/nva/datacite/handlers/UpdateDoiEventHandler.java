@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.isNull;
+import static nva.commons.core.attempt.Try.attempt;
 import static org.zalando.problem.Status.GONE;
 import static org.zalando.problem.Status.MOVED_PERMANENTLY;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -16,6 +17,7 @@ import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
@@ -94,28 +96,49 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId(),
                     input.getDuplicateOf().orElse(null));
+        var response = attempt(() -> doiClient.getDoi(input.getCustomerId(), doi)).toOptional();
+        if (response.isPresent()) {
+            handleDoi(response.get(), input, doi, e) ;
+        } else {
+            throwException(e, input);
+        }
+    }
 
-        if (isDeletedPublication(e) || isDeletedDuplicatePublication(e)) {
-            logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), e.getStatus());
+    private void throwException(PublicationApiClientException exception, DoiUpdateRequestEvent input) {
+        logger.error("Unknown error for publication id {}", input.getPublicationId(), exception);
+        throw exception;
+    }
+
+    private void handleDoi(DoiStateDto doiStateDto, DoiUpdateRequestEvent input, Doi doi,
+                           PublicationApiClientException e) {
+        switch (doiStateDto.getState()) {
+            case FINDABLE -> handleFindableDoi(input, doi, e);
+            case DRAFT, REGISTERED -> {
+                //TODO: Handle this case
+            }
+            case null, default -> throwException(e, input);
+        }
+        logger.info(SUCCESSFUL_DOI_REGISTERED,
+                    doi.getUri(),
+                    input.getPublicationId(),
+                    input.getCustomerId());
+
+    }
+
+    private void handleFindableDoi(DoiUpdateRequestEvent input, Doi doi, PublicationApiClientException exception) {
+        if (isDeletedPublication(exception) || isDeletedDuplicatePublication(exception)) {
+            logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
 
             var resource = getMetadata(input, doi);
 
             if (input.getDuplicateOf().isPresent()) {
-                var duplicateOf = input.getDuplicateOf().get();
+                var duplicateOf = input.getDuplicateOf().orElseThrow();
                 logger.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
                 addDuplicateIdentifier(resource, duplicateOf);
             }
 
             deleteMetadata(input.getCustomerId(), doi, toString(resource));
-        } else {
-            logger.error("Unknown error for publication id {}", input.getPublicationId(), e);
-            throw e;
         }
-
-        logger.info(SUCCESSFUL_DOI_REGISTERED,
-                    doi.getUri(),
-                    input.getPublicationId(),
-                    input.getCustomerId());
     }
 
     private static boolean isDeletedDuplicatePublication(PublicationApiClientException e) {
@@ -133,12 +156,13 @@ public class UpdateDoiEventHandler
     }
 
     private Resource getMetadata(DoiUpdateRequestEvent input, Doi doi) {
-        try {
-            var xmlString = doiClient.getMetadata(input.getCustomerId(), doi);
-            return JAXB.unmarshal(new StringReader(xmlString), Resource.class);
-        } catch (ClientException e) {
-            throw new RuntimeException(e);
-        }
+        return attempt(() -> doiClient.getMetadata(input.getCustomerId(), doi))
+                   .map(UpdateDoiEventHandler::unmarshall)
+                   .orElseThrow();
+    }
+
+    private static Resource unmarshall(String value) {
+        return JAXB.unmarshal(new StringReader(value), Resource.class);
     }
 
     private static void addDuplicateIdentifier(Resource resource, URI duplicateOf) {

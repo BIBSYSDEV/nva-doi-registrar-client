@@ -48,6 +48,7 @@ import no.unit.nva.doi.datacite.customerconfigs.CustomerConfig;
 import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
 import no.unit.nva.doi.datacite.restclient.models.DraftDoiDto;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import no.unit.nva.doi.datacite.utils.FakeCustomerExtractor;
 import no.unit.nva.doi.datacite.utils.FakeCustomerExtractorThrowingException;
 import no.unit.nva.doi.models.Doi;
@@ -212,7 +213,7 @@ public class DataCiteClientv2Test {
         DoiStateDto actual = client.getDoi(customerUri, requestedDoi);
         assertThat(actual, is(instanceOf(DoiStateDto.class)));
         assertThat(actual.getDoi(), is(equalTo(requestedDoi.toIdentifier())));
-        assertThat(actual.getState(), is(equalTo(DRAFT)));
+        assertThat(actual.getState(), is(equalTo(State.DRAFT)));
     }
 
     @Test

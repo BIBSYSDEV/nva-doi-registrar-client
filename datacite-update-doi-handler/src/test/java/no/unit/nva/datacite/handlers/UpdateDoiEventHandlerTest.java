@@ -35,6 +35,8 @@ import no.unit.nva.datacite.commons.TestBase;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.ClientRuntimeException;
+import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -164,7 +166,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         var publicationIdentifier = SortableIdentifier.next().toString();
         var doi = Doi.fromUri(VALID_SAMPLE_DOI);
         when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_BODY);
-
+        mockGetDoiResponse(State.FINDABLE);
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
                                                            CUSTOMER_ID_IN_INPUT_EVENT, null)) {
             mockDataciteXmlGone(publicationIdentifier);
@@ -184,7 +186,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         var doi = Doi.fromUri(VALID_SAMPLE_DOI);
         var mainUri = UriWrapper.fromUri("https://example.no/publication/123").getUri();
         when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_BODY);
-
+        mockGetDoiResponse(State.FINDABLE);
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
                                                            CUSTOMER_ID_IN_INPUT_EVENT, mainUri)) {
             mockDataciteXmlPermanentlyMoved(publicationIdentifier, mainUri.toString());
@@ -205,6 +207,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         var publicationIdentifier = SortableIdentifier.next().toString();
         var doi = Doi.fromUri(VALID_SAMPLE_DOI);
         var mainUri = UriWrapper.fromUri("https://example.no/publication/123").getUri();
+        mockGetDoiResponse(State.FINDABLE);
         when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_WITH_DUPLICATE_BODY);
 
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
@@ -221,6 +224,10 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         }
     }
 
+    private void mockGetDoiResponse(State state) throws ClientException {
+        when(doiClient.getDoi(any(), any())).thenReturn(new DoiStateDto(VALID_SAMPLE_DOI.toString(), state));
+    }
+
     @Test
     void shouldThrowIfUnknownError() throws IOException {
         var publicationIdentifier = SortableIdentifier.next().toString();
@@ -231,6 +238,75 @@ public class UpdateDoiEventHandlerTest extends TestBase {
             assertThrows(PublicationApiClientException.class, () -> {
                 updateDoiHandler.handleRequest(inputStream, outputStream, context);
             });
+        }
+    }
+
+    @Test
+    void shouldThrowBadGatewayWhenUnknownDoiState() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            mockGetDoiResponse(null);
+            assertThrows(PublicationApiClientException.class, () -> {
+                updateDoiHandler.handleRequest(inputStream, outputStream, context);
+            });
+        }
+    }
+
+    @Test
+    void shouldThrowBadGatewayWhenCouldNotFetchDoi() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            when(doiClient.getDoi(any(), any())).thenThrow(new ClientException());
+            assertThrows(PublicationApiClientException.class, () -> {
+                updateDoiHandler.handleRequest(inputStream, outputStream, context);
+            });
+        }
+    }
+
+    @Test
+    void shouldThrowBadGatewayWhenCouldNotFetchDoi1() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            when(doiClient.getDoi(any(), any())).thenReturn(null);
+            assertThrows(PublicationApiClientException.class, () -> {
+                updateDoiHandler.handleRequest(inputStream, outputStream, context);
+            });
+        }
+    }
+
+    @Test
+    void shouldDoNothingWhenDoiToDeleteIsNotFindable() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        var doi = Doi.fromUri(VALID_SAMPLE_DOI);
+        when(doiClient.getMetadata(any(), any())).thenReturn(DATACITE_XML_BODY);
+        mockGetDoiResponse(State.REGISTERED);
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            mockDataciteXmlGone(publicationIdentifier);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
+
+            verify(doiClient, never()).deleteMetadata(
+                CUSTOMER_ID_IN_INPUT_EVENT,
+                doi
+            );
+        }
+    }
+
+    @Test
+    void shouldThrowRuntimeExceptionWhenNotPossibleToParseDoiMetadataWhenDeletingDoi() throws IOException,
+                                                                                           ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            when(doiClient.getMetadata(any(), any())).thenReturn("");
+            mockGetDoiResponse(State.FINDABLE);
+            mockDataciteXmlGone(publicationIdentifier);
+
+            assertThrows(RuntimeException.class, () ->
+                updateDoiHandler.handleRequest(inputStream, outputStream, context));
         }
     }
 

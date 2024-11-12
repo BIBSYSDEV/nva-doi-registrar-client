@@ -9,6 +9,7 @@ import java.net.URI;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
@@ -80,7 +81,7 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         var doiState = attempt(() -> doiClient.getDoi(customerId, doi))
                            .orElseThrow(failure ->
                                             handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
-        if (!DOI_STATE_DRAFT.equalsIgnoreCase(doiState.getState())) {
+        if (!State.DRAFT.equals(doiState.getState())) {
             throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
         }
     }

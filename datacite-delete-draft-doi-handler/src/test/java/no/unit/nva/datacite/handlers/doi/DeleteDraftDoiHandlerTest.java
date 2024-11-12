@@ -27,6 +27,7 @@ import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.clients.exception.DeleteDraftDoiException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
@@ -39,8 +40,6 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 public class DeleteDraftDoiHandlerTest {
 
-    public static final String DRAFT_STATE = "draft";
-    public static final String PUBLISHED_STATE = "PUBLISHED";
     private final Environment environment = mock(Environment.class);
     private Context context;
     private ByteArrayOutputStream output;
@@ -56,7 +55,7 @@ public class DeleteDraftDoiHandlerTest {
     public void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
         var doi = randomDoi();
         var request = createRequest(doi);
-        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, DRAFT_STATE), environment);
+        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.DRAFT), environment);
         handler.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_ACCEPTED)));
@@ -76,7 +75,7 @@ public class DeleteDraftDoiHandlerTest {
     public void shouldReturnBadGatewayWhenDoiIsNotADraft()
         throws IOException, ClientException {
         var doi = randomDoi();
-        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, PUBLISHED_STATE), environment);
+        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.FINDABLE), environment);
         handler.handleRequest(createRequest(doi), output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_METHOD)));
@@ -103,13 +102,13 @@ public class DeleteDraftDoiHandlerTest {
     private DoiClient doiClientThrowingExceptionWhenDeleting(URI doi) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(), any()))
-            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), "draft"));
+            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), State.DRAFT));
         doThrow(new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY))
             .when(doiClient).deleteDraftDoi(any(), any());
         return doiClient;
     }
 
-    private DoiClient doiClientReturningDoi(URI doi, String state) throws ClientException {
+    private DoiClient doiClientReturningDoi(URI doi, State state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(), any()))
             .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), state));
