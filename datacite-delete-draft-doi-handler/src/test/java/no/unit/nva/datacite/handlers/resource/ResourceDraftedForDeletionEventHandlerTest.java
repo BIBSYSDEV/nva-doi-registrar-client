@@ -15,6 +15,7 @@ import java.io.IOException;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ public class ResourceDraftedForDeletionEventHandlerTest {
 
     @BeforeEach
     public void setUp() throws ClientException {
-        doiClient = doiClientReturningDoi(ResourceDraftedForDeletionEventHandler.DRAFT);
+        doiClient = doiClientReturningDoi(State.DRAFT);
         handler = new ResourceDraftedForDeletionEventHandler(doiClient);
         outputStream = new ByteArrayOutputStream();
         context = mock(Context.class);
@@ -77,7 +78,7 @@ public class ResourceDraftedForDeletionEventHandlerTest {
 
     @Test
     public void handleRequestThrowsExceptionWhenDoiIsNotInDraftState() throws ClientException, IOException {
-        doiClient = doiClientReturningDoi(NOT_DRAFT);
+        doiClient = doiClientReturningDoi(State.FINDABLE);
         handler = new ResourceDraftedForDeletionEventHandler(doiClient);
 
         try (var inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
@@ -90,20 +91,20 @@ public class ResourceDraftedForDeletionEventHandlerTest {
     private DoiClient doiClientReturningError() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(), any()))
-            .thenAnswer(invocation -> doiState(ResourceDraftedForDeletionEventHandler.DRAFT));
+            .thenAnswer(invocation -> doiState(State.DRAFT));
         doThrow(new RuntimeException(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI))
             .when(doiClient).deleteDraftDoi(any(), any());
         return doiClient;
     }
 
-    private DoiClient doiClientReturningDoi(String state) throws ClientException {
+    private DoiClient doiClientReturningDoi(State state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
         when(doiClient.getDoi(any(), any()))
             .thenAnswer(invocation -> doiState(state));
         return doiClient;
     }
 
-    private DoiStateDto doiState(String state) {
+    private DoiStateDto doiState(State state) {
         return new DoiStateDto(ResourceDraftedForDeletionEventHandlerTest.DOI_IDENTIFIER, state);
     }
 }

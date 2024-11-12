@@ -7,6 +7,7 @@ import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.DoiStateDto;
+import no.unit.nva.doi.datacite.restclient.models.State;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
@@ -78,7 +79,7 @@ public class ResourceDraftedForDeletionEventHandler
             throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
         }
 
-        if (!DRAFT.equalsIgnoreCase(doiState.getState())) {
+        if (!State.DRAFT.equals(doiState.getState())) {
             throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
         }
     }

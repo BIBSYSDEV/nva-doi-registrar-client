@@ -13,9 +13,9 @@ public class DoiStateDto {
     public static final String DOI = "doi";
 
     private final String doi;
-    private final String state;
+    private final State state;
 
-    public DoiStateDto(String doi, String state) {
+    public DoiStateDto(String doi, State state) {
         this.doi = doi;
         this.state = state;
     }
@@ -26,7 +26,7 @@ public class DoiStateDto {
     }
 
     @JacocoGenerated
-    public String getState() {
+    public State getState() {
         return state;
     }
 
@@ -41,8 +41,8 @@ public class DoiStateDto {
         JsonNode attributes = tree.path(DATA_FIELD).path(ATTRIBUTES_FIELD);
 
         String doi = attributes.path(DOI).textValue();
-        String state = attributes.path(STATE).textValue();
+        var state = attributes.path(STATE).textValue();
 
-        return new DoiStateDto(doi, state);
+        return new DoiStateDto(doi, State.fromValue(state));
     }
 }
