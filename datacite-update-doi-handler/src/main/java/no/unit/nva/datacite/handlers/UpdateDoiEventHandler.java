@@ -49,6 +49,8 @@ public class UpdateDoiEventHandler
         "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
     private static final Logger logger = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
     public static final String ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE = "Adding duplicate identifier to resource {}";
+    public static final String DELETING_DRAFT_DOI_MESSAGE = "Deleting draft DOI {} for customer {} when unpublished publication {}";
+    public static final String DOI_ALREADY_REGISTERED_MESSAGE = "Doi is already registered {} at customer {} and publication {}";
     private final DoiClient doiClient;
     private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
@@ -113,9 +115,8 @@ public class UpdateDoiEventHandler
                            PublicationApiClientException e) {
         switch (doiStateDto.getState()) {
             case FINDABLE -> handleFindableDoi(input, doi, e);
-            case DRAFT, REGISTERED -> {
-                //TODO: Handle this case
-            }
+            case DRAFT -> handleDraftDoi(input, doi);
+            case REGISTERED -> handleRegisteredDoi(input, doi);
             case null, default -> throwException(e, input);
         }
         logger.info(SUCCESSFUL_DOI_REGISTERED,
@@ -123,6 +124,19 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId());
 
+    }
+
+    private void handleRegisteredDoi(DoiUpdateRequestEvent requestEvent, Doi doi) {
+        logger.info(DOI_ALREADY_REGISTERED_MESSAGE, doi, requestEvent.getCustomerId(), requestEvent.getPublicationId());
+    }
+
+    private void handleDraftDoi(DoiUpdateRequestEvent updateRequestEvent, Doi doi) {
+        try {
+            logger.info(DELETING_DRAFT_DOI_MESSAGE, doi.getUri(), updateRequestEvent.getCustomerId(), updateRequestEvent.getPublicationId());
+            doiClient.deleteDraftDoi(updateRequestEvent.getCustomerId(), doi);
+        } catch (ClientException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void handleFindableDoi(DoiUpdateRequestEvent input, Doi doi, PublicationApiClientException exception) {

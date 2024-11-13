@@ -298,6 +298,20 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         }
     }
 
+    @Test
+    void shouldDeleteDraftDoiWhenPublicationIsGoneAndHasDraftDoi() throws IOException, ClientException {
+        var publicationIdentifier = SortableIdentifier.next().toString();
+        var doi = Doi.fromUri(VALID_SAMPLE_DOI);
+        mockGetDoiResponse(State.DRAFT);
+        try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
+                                                           CUSTOMER_ID_IN_INPUT_EVENT, null)) {
+            mockDataciteXmlGone(publicationIdentifier);
+            updateDoiHandler.handleRequest(inputStream, outputStream, context);
+
+            verify(doiClient).deleteDraftDoi(CUSTOMER_ID_IN_INPUT_EVENT, doi);
+        }
+    }
+
     private void mockDataciteXmlBody(String publicationIdentifier) {
         stubFor(WireMock.get(urlPathEqualTo("/publication/" + publicationIdentifier))
                     .withHeader("Accept", WireMock.equalTo("application/vnd.datacite.datacite+xml"))
