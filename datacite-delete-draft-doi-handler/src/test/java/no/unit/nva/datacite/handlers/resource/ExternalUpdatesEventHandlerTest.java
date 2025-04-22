@@ -29,6 +29,8 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;
+import nva.commons.core.StringUtils;
+import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,6 +108,22 @@ public class ExternalUpdatesEventHandlerTest {
         assertThrows(
             EventHandlingException.class,
             () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+    }
+
+    @Test
+    void shouldSilentlyIgnoreExternalEventIfResourceHasNoDoi() throws ClientException {
+        var s3Uri = randomUri();
+        var messageBody = generateMessageBody(s3Uri);
+        var customerId = UriWrapper.fromUri("https://apihost/customer")
+                             .addChild(SortableIdentifier.next().toString())
+                             .getUri();
+        var eventReference = IoUtils.stringFromResources(Path.of("eventReferenceWithoutDoi.json"));
+        var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
+
+        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+
+        verify(doiClient, times(0)).getDoi(eq(customerId), any());
+        verify(doiClient, times(0)).deleteDraftDoi(eq(customerId), any());
     }
 
     @Test

@@ -1,0 +1,10 @@
+{
+  "action": "REMOVE",
+  "oldData": {
+    "publisher": {
+      "id":"https://localhost/customer/blabla"
+    },
+    "doi": null
+  },
+  "newData": null
+}

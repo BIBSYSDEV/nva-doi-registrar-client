@@ -1,5 +1,6 @@
 package no.unit.nva.datacite.handlers.resource;
 
+import static java.util.Objects.nonNull;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -83,16 +84,18 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
         }
 
         var customerId = updateEvent.oldData().publisher().id();
-        var doi = Doi.fromUri(updateEvent.oldData().doi());
-        try {
-            var doiState = doiClient.getDoi(customerId, doi);
-            if (State.DRAFT.equals(doiState.getState())) {
-                doiClient.deleteDraftDoi(customerId, doi);
-            } else {
-                logger.info("DOI {} is not in draft state, skipping deletion", doi);
+        if (nonNull(updateEvent.oldData().doi())) {
+            var doi = Doi.fromUri(updateEvent.oldData().doi());
+            try {
+                var doiState = doiClient.getDoi(customerId, doi);
+                if (State.DRAFT.equals(doiState.getState())) {
+                    doiClient.deleteDraftDoi(customerId, doi);
+                } else {
+                    logger.info("DOI {} is not in draft state, skipping deletion", doi);
+                }
+            } catch (ClientException e) {
+                throw new EventHandlingException("Failed to look up doi", e);
             }
-        } catch (ClientException e) {
-            throw new EventHandlingException("Failed to look up doi", e);
         }
     }
 
