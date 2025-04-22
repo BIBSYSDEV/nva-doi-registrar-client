@@ -1,4 +1,5 @@
 [versions]
+awsLambdaEvents = { strictly = '3.13.0' }
 hamcrest = { strictly = '3.0' }
 nvaCommons = { strictly = '1.40.20' }
 jackson = { strictly = '2.17.2' }
@@ -25,6 +26,7 @@ nva-secrets = { group = 'com.github.bibsysdev', name = 'secrets', version.ref = 
 nva-doi = { group = 'com.github.bibsysdev', name = 'doi', version.ref = 'nvaCommons' }
 nva-logutils = { group = 'com.github.bibsysdev', name = 'logutils', version.ref = 'nvaCommons' }
 nva-apigateway = { group = 'com.github.bibsysdev', name = 'apigateway', version.ref = 'nvaCommons' }
+nva-s3 = { group = 'com.github.bibsysdev', name = 's3', version.ref = 'nvaCommons' }
 
 jackson-core = { group = 'com.fasterxml.jackson.core', name = 'jackson-core', version.ref = 'jackson' }
 jackson-datatype-jdk8 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jdk8', version.ref = 'jackson' }
@@ -40,6 +42,9 @@ aws-sdk-secrets = { group = 'com.amazonaws', name = 'aws-java-sdk-secretsmanager
 aws-sdk2-secrets = { group = 'software.amazon.awssdk', name = 'secretsmanager', version.ref = 'awsSdk2' }
 
 aws-sdk2-httpClientApi = { group = 'software.amazon.awssdk', name = 'http-client-spi', version.ref = 'awsSdk2' }
+aws-sdk2-s3 = { group = 'software.amazon.awssdk', name = 's3', version.ref = 'awsSdk2' }
+aws-sdk2-sqs = { group = 'software.amazon.awssdk', name = 'sqs', version.ref = 'awsSdk2' }
+aws-lambda-events = { group = 'com.amazonaws', name = 'aws-lambda-java-events', version.ref = 'awsLambdaEvents' }
 
 aws-secretsmanager-caching = { group = 'com.amazonaws.secretsmanager', name = 'aws-secretsmanager-caching-java', version.ref = 'secretsCaching' }
 problem = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
