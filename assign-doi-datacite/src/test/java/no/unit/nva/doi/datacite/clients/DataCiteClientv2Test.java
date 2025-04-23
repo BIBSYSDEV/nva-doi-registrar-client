@@ -90,31 +90,33 @@ public class DataCiteClientv2Test {
 
     private static final URI EXAMPLE_LANDING_PAGE = URI.create("https://example.net/nva/publication/203124124");
     private static final String EXPECTED_USER_AGENT_REST = "DataCiteRestApiClient-api.localhost.nva.aws.unit.no/1.0 "
-            + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client; mailto:support@sikt.no)";
+                                                           + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client;"
+                                                           + " mailto:support@sikt.no)";
     private static final String EXPECTED_USER_AGENT_MDS = "MdsClient-api.localhost.nva.aws.unit.no/1.0 "
-            + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client; mailto:support@sikt.no)";
+                                                          + "(https://github.com/BIBSYSDEV/nva-doi-registrar-client; "
+                                                          + "mailto:support@sikt.no)";
     private DataCiteClientV2 client;
 
     private FakeCustomerExtractor customerConfigExtractor;
 
     static Stream<Named<CustomerConfig>> providedBadCustomerConfigs() {
         return Stream.of(Named.of("No customer details", new CustomerConfig(randomUri(),
-                                                         PASSWORD_NOT_SET,
-                                                         USERNAME_NOT_SET,
-                                                         DOI_PREFIX_NOT_SET)),
+                                                                            PASSWORD_NOT_SET,
+                                                                            USERNAME_NOT_SET,
+                                                                            DOI_PREFIX_NOT_SET)),
                          Named.of("No username or DOI prefix", new CustomerConfig(randomUri(),
-                                                         randomString(),
-                                                         USERNAME_NOT_SET,
-                                                         DOI_PREFIX_NOT_SET)),
+                                                                                  randomString(),
+                                                                                  USERNAME_NOT_SET,
+                                                                                  DOI_PREFIX_NOT_SET)),
                          Named.of("No password or DOI prefix", new CustomerConfig(randomUri(),
-                                                         PASSWORD_NOT_SET,
-                                                         randomString(),
-                                                         DOI_PREFIX_NOT_SET
+                                                                                  PASSWORD_NOT_SET,
+                                                                                  randomString(),
+                                                                                  DOI_PREFIX_NOT_SET
                          )),
                          Named.of("No password or username", new CustomerConfig(randomUri(),
-                                                         PASSWORD_NOT_SET,
-                                                         USERNAME_NOT_SET,
-                                                         randomString())));
+                                                                                PASSWORD_NOT_SET,
+                                                                                USERNAME_NOT_SET,
+                                                                                randomString())));
     }
 
     private Doi createDoiWithDemoPrefixAndExampleSuffix() {
@@ -171,7 +173,9 @@ public class DataCiteClientv2Test {
                                       DOI_HOST);
         var customerId = createValidCustomer();
         var exception = assertThrows(ClientException.class, () -> client.createDoi(customerId));
-        assertThat(exception.getMessage(), containsString(exceptionMessage));
+        var expectedMessage = String.format("Request http://localhost:%d/dois POST failed.", runtimeInfo.getHttpPort());
+        assertThat(exception.getMessage(), is(equalTo(expectedMessage)));
+        assertThat(exception.getCause().getMessage(), containsString(exceptionMessage));
     }
 
     @Test
@@ -402,7 +406,7 @@ public class DataCiteClientv2Test {
                                     .withStatus(HttpStatus.SC_OK)
                                     .withBody(getValidMetadataPayload())
                                     .withHeader(CONTENT_TYPE,
-                                        APPLICATION_XML_CHARSET_UTF_8)));
+                                                APPLICATION_XML_CHARSET_UTF_8)));
     }
 
     private void verifySetLandingResponse(Doi requestedDoi) {

@@ -28,10 +28,11 @@ public class HttpSender {
 
     public HttpResponse<String> sendRequest(HttpRequest request) throws ClientException {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
-                           .orElseThrow(this::handleFailure);
+                           .orElseThrow(failure -> handleFailure(request, failure));
         if (isNotSuccessful(response)) {
-            logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
-            throw new ClientException(response.toString());
+            var message = String.format("External API responded with %s on request %s", response, request);
+            logger.error(message);
+            throw new ClientException(message);
         }
         return response;
     }
@@ -44,8 +45,9 @@ public class HttpSender {
         return httpClient;
     }
 
-    protected ClientException handleFailure(Failure<HttpResponse<String>> fail) {
-        logger.error("Exception : {}", fail.getException());
-        return new ClientException(fail.getException());
+    protected ClientException handleFailure(HttpRequest request, Failure<HttpResponse<String>> fail) {
+        var message = String.format("Request %s failed.", request);
+        logger.error(message);
+        return new ClientException(message, fail.getException());
     }
 }
