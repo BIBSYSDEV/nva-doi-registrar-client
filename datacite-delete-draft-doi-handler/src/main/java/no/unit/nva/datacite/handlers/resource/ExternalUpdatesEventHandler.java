@@ -66,23 +66,13 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
     }
 
     private void processPayload(EventReference eventReference) {
-        if (!RESOURCE_DELETED_TOPIC.equals(eventReference.getTopic())) {
-            logger.error(
-                "Got external update event with message on unknown topic {}", eventReference.getTopic());
-            throw new EventHandlingException(
-                "Received external update event with message on unknown topic!");
-        }
+        verifyTopic(eventReference);
+        var updateEvent = getEventBodyFromS3(eventReference);
+        verifyAction(updateEvent);
+        deleteDraftDoiIfPresent(updateEvent);
+    }
 
-        var event = s3Driver.readEvent(eventReference.getUri());
-        var updateEvent =
-            attempt(() -> JsonUtils.dtoObjectMapper.readValue(event, UpdateEvent.class))
-                .orElseThrow(this::logAndThrow);
-
-        if (!REMOVE_ACTION.equals(updateEvent.action())) {
-            logger.error("Received unknown action in s3 event: {}", updateEvent.action());
-            throw new EventHandlingException("Unknown action in s3 event data. Expected REMOVE!");
-        }
-
+    private void deleteDraftDoiIfPresent(UpdateEvent updateEvent) {
         var customerId = updateEvent.oldData().publisher().id();
         if (nonNull(updateEvent.oldData().doi())) {
             var doi = Doi.fromUri(updateEvent.oldData().doi());
@@ -90,12 +80,34 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
                 var doiState = doiClient.getDoi(customerId, doi);
                 if (State.DRAFT.equals(doiState.getState())) {
                     doiClient.deleteDraftDoi(customerId, doi);
-                } else {
-                    logger.info("DOI {} is not in draft state, skipping deletion", doi);
+                    logger.info("Deleted draft DOI {} as resource {} was deleted.", doi,
+                                updateEvent.oldData().identifier());
                 }
             } catch (ClientException e) {
                 throw new EventHandlingException("Failed to look up doi", e);
             }
+        }
+    }
+
+    private static void verifyAction(UpdateEvent updateEvent) {
+        if (!REMOVE_ACTION.equals(updateEvent.action())) {
+            logger.error("Received unknown action in s3 event: {}", updateEvent.action());
+            throw new EventHandlingException("Unknown action in s3 event data. Expected REMOVE!");
+        }
+    }
+
+    private UpdateEvent getEventBodyFromS3(EventReference eventReference) {
+        var event = s3Driver.readEvent(eventReference.getUri());
+        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(event, UpdateEvent.class))
+                   .orElseThrow(this::logAndThrow);
+    }
+
+    private static void verifyTopic(EventReference eventReference) {
+        if (!RESOURCE_DELETED_TOPIC.equals(eventReference.getTopic())) {
+            logger.error(
+                "Got external update event with message on unknown topic {}", eventReference.getTopic());
+            throw new EventHandlingException(
+                "Received external update event with message on unknown topic!");
         }
     }
 
@@ -106,7 +118,6 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
     }
 
     private static EventReference parseEventReference(SQSMessage sqs) {
-        logger.info("Processing sqsEvent: {}", sqs.getBody());
         try {
             var event = JsonUtils.dtoObjectMapper.readValue(sqs.getBody(), SQS_VALUE_TYPE_REF);
 

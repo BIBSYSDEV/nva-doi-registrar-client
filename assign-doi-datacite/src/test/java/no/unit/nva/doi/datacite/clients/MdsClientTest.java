@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 @WireMockTest
 public class MdsClientTest {
 
-    public static final String DOI_HOST = "doi.org";
-    public static final String DOI_PREFIX = "1";
-    public static final String DOI_SUFFIX = "2";
-    public static final String CUSTOMER_PASSWORD = "password";
-    public static final String CUSTOMER_USERNAME = "username";
-    public static final String CUSTOMER_DOI_PREFIX = "doiPrefix";
+    private static final String DOI_HOST = "doi.org";
+    private static final String DOI_PREFIX = "1";
+    private static final String DOI_SUFFIX = "2";
+    private static final String CUSTOMER_PASSWORD = "password";
+    private static final String CUSTOMER_USERNAME = "username";
+
     private MdsClient client;
     private FakeCustomerExtractor customerConfigExtractor;
 
