@@ -7,4 +7,4 @@ include 'datacite-delete-draft-doi-handler'
 include 'datacite-jaxb'
 include 'datacite-registered-doi-handler'
 include 'test-utils'
-
+include 'external-events'

@@ -1,6 +1,5 @@
-package no.unit.nva.datacite.handlers.resource;
+package no.unit.nva.datacite.events;
 
-import static no.unit.nva.doi.datacite.restclient.models.State.DRAFT;
 import static no.unit.nva.testutils.RandomDataGenerator.randomDoi;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static nva.commons.core.ioutils.IoUtils.stringFromResources;
@@ -34,6 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentMatchers;
 
 public class ExternalUpdatesEventHandlerTest {
 
@@ -52,15 +53,22 @@ public class ExternalUpdatesEventHandlerTest {
     @Test
     void shouldReturnWithoutIssuesIfNoMessagesInEvent() {
 
-        var handler = new ExternalUpdatesEventHandler(environment, new FakeS3Client(), doiClient);
+        var handler = new ExternalUpdatesEventHandler(environment, new FakeS3Client(), new DoiManager(doiClient));
 
         assertDoesNotThrow(() -> handler.handleRequest(new SQSEvent(), new FakeContext()));
     }
 
-    @Test
-    void shouldFailOnUnknownActionInS3Event() {
-        var eventReference = stringFromResources(Path.of("s3EventReferenceWithUnexpectedAction.json"));
-        invokeHandlerWithEventReferenceAndAssertThrows(eventReference);
+    @ParameterizedTest
+    @ValueSource(strings = {"INSERT", "MODIFY"})
+    void shouldSilentlyIgnoreUnhandledActionsInS3Event(String action) {
+        var eventReference = String.format(
+            stringFromResources(Path.of("s3EventReferenceWithUnexpectedAction.json")),
+            action);
+        var s3Uri = randomUri();
+        var messageBody = generateMessageBody(s3Uri);
+        var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
+
+        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
     }
 
     @Test
@@ -70,9 +78,13 @@ public class ExternalUpdatesEventHandlerTest {
     }
 
     @Test
-    void shouldFailOnMessageFromUnknownTopic() {
+    void shouldSilentlyIgnoreEventWithUnknownTopic() {
         var messageBody = stringFromResources(Path.of("sqsMessageWithUnexpectedTopic.json"));
-        invokeHandlerWithMessageBodyAndAssertThrows(messageBody);
+        var s3Uri = randomUri();
+        var eventReference = "ignored";
+        var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
+
+        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
     }
 
     @Test
@@ -107,8 +119,8 @@ public class ExternalUpdatesEventHandlerTest {
         var doi = randomDoi();
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
-        var draftDoi = new DoiStateDto(doi.toString(), DRAFT);
-        doReturn(draftDoi).when(doiClient).getDoi(eq(customerId), eq(Doi.fromUri(doi)));
+        var draftDoi = new DoiStateDto(doi.toString(), State.DRAFT);
+        doReturn(draftDoi).when(doiClient).getDoi(eq(customerId), ArgumentMatchers.eq(Doi.fromUri(doi)));
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
@@ -127,7 +139,7 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
         var actualDoiState = new DoiStateDto(doi.toString(), state);
-        doReturn(actualDoiState).when(doiClient).getDoi(eq(customerId), eq(Doi.fromUri(doi)));
+        doReturn(actualDoiState).when(doiClient).getDoi(eq(customerId), ArgumentMatchers.eq(Doi.fromUri(doi)));
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
@@ -171,7 +183,7 @@ public class ExternalUpdatesEventHandlerTest {
                 Map.of(
                     filename,
                     new ByteArrayInputStream(eventReference.getBytes(StandardCharsets.UTF_8))));
-        var handler = new ExternalUpdatesEventHandler(environment, s3Client, doiClient);
+        var handler = new ExternalUpdatesEventHandler(environment, s3Client, new DoiManager(doiClient));
 
         var sqsMessage = new SQSMessage();
         sqsMessage.setBody(invalidMessageBody);

@@ -495,8 +495,8 @@ Resources:
   ExternalUpdatesEventHandler:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: datacite-delete-draft-doi-handler
-      Handler: no.unit.nva.datacite.handlers.resource.ExternalUpdatesEventHandler::handleRequest
+      CodeUri: external-events
+      Handler: no.unit.nva.datacite.events.ExternalUpdatesEventHandler::handleRequest
       Timeout: 900
       Policies:
         - !Ref ReadDataCiteCredentialsManagedPolicy
@@ -515,3 +515,4 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt ExternalUpdatesQueue.Arn
+            BatchSize: 1
