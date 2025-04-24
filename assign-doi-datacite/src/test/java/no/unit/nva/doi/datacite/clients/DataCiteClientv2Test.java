@@ -19,6 +19,9 @@ import static no.unit.nva.doi.datacite.clients.MdsClient.MISSING_DATACITE_XML_AR
 import static no.unit.nva.doi.datacite.clients.MdsClient.MISSING_DOI_IDENTIFIER_ARGUMENT;
 import static no.unit.nva.doi.datacite.clients.MdsClient.MISSING_LANDING_PAGE_ARGUMENT;
 import static no.unit.nva.doi.datacite.clients.MdsClient.TEXT_PLAIN_CHARSET_UTF_8;
+import static no.unit.nva.doi.datacite.clients.TestDataFactory.CUSTOMER_PASSWORD;
+import static no.unit.nva.doi.datacite.clients.TestDataFactory.CUSTOMER_USERNAME;
+import static no.unit.nva.doi.datacite.clients.TestDataFactory.createValidCustomer;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -70,8 +73,6 @@ public class DataCiteClientv2Test {
 
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
-    private static final String CUSTOMER_PASSWORD = "somePassword";
-    private static final String CUSTOMER_USERNAME = "someUsername";
     private static final String DOIS_PATH_PREFIX = "/dois";
     private static final String DOI_PREFIX = "10.1234";
     private static final String EXAMPLE_DOI_SUFFIX = "1942810412-sadsfgffds";
@@ -81,7 +82,6 @@ public class DataCiteClientv2Test {
     private static final String DOI_HOST = "example.doi.host.org";
     private static final String GET_DOI_RESPONSE_JSON = "getDoiResponse.json";
     private static final String EXAMPLE_DOI_FROM_FILE = "10.23/456789";
-    private static final String DRAFT = "draft";
     private static final char FORWARD_SLASH = '/';
     private static final String HTTP_RESPONSE_OK = "OK";
 
@@ -171,7 +171,7 @@ public class DataCiteClientv2Test {
                                       runtimeInfo.getHttpBaseUrl(),
                                       runtimeInfo.getHttpBaseUrl(),
                                       DOI_HOST);
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var exception = assertThrows(ClientException.class, () -> client.createDoi(customerId));
         var expectedMessage = String.format("Request http://localhost:%d/dois POST failed.", runtimeInfo.getHttpPort());
         assertThat(exception.getMessage(), is(equalTo(expectedMessage)));
@@ -181,7 +181,7 @@ public class DataCiteClientv2Test {
     @Test
     void shouldThrowDoiClientExceptionWhenDataciteRespondsWithException() {
         final var logAppender = LogUtils.getTestingAppenderForRootLogger();
-        var customerUri = createValidCustomer();
+        var customerUri = createValidCustomer(customerConfigExtractor);
         var responseBody = "someResponseBody";
         stubHttpClientException(responseBody);
         var exception = assertThrows(ClientException.class, () -> client.createDoi(customerUri));
@@ -191,7 +191,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldReturnDoiWhenSuccessfullyCreatedPostDoiRequest() throws ClientException {
-        var customerUri = createValidCustomer();
+        var customerUri = createValidCustomer(customerConfigExtractor);
         var randomSuffix = UUID.randomUUID().toString();
         var draftDoiDto = DraftDoiDto.create(DOI_PREFIX, randomSuffix);
         stubSuccessfulResponse(draftDoiDto);
@@ -209,7 +209,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldReturnDoiWhenClientRespondsWithSuccess() throws ClientException {
-        var customerUri = createValidCustomer();
+        var customerUri = createValidCustomer(customerConfigExtractor);
         String getDoiResponseJson = IoUtils.stringFromResources(Path.of(GET_DOI_RESPONSE_JSON));
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         stubGetDoiResponse(getDoiResponseJson, requestedDoi);
@@ -222,7 +222,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowExceptionWhenUpdatingDoiWithoutSendingDoi() {
-        var customerUri = createValidCustomer();
+        var customerUri = createValidCustomer(customerConfigExtractor);
         Doi notADoi = null;
         var xml = randomString();
         var exception = assertThrows(NullPointerException.class,
@@ -232,7 +232,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowExceptionWhenUpdatingDoiWithoutSendingXml() {
-        var customerUri = createValidCustomer();
+        var customerUri = createValidCustomer(customerConfigExtractor);
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         String notValidXml = null;
         var exception = assertThrows(NullPointerException.class,
@@ -242,7 +242,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldUpdateMetadataSuccessfullyWhenSupplyingCorrectInputAndClientIsWorking() throws ClientException {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForUpdatingMetadata = createMetadataDoiIdentifierPath(doi);
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
@@ -252,7 +252,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingTosSetLandingPageToNull() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         URI notValidLandingPage = null;
         var exception = assertThrows(NullPointerException.class,
@@ -262,7 +262,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToSetLandingPageWithoutDoi() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var landingPage = randomUri();
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
@@ -272,7 +272,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldSetLandingPageWhenInputParametersAreValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
 
         stubSetLandingPageResponse(doi);
@@ -284,7 +284,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToDeleteMetadataForEmptyDoi() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
                                      () -> client.deleteMetadata(customerId, notValidDoi));
@@ -293,7 +293,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldDeleteMetadataWhenInputParametersIsValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         var expectedPathForDeletingMetadata = createMetadataDoiIdentifierPath(doi);
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
@@ -305,7 +305,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldGetMetadata() throws ClientException {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         var expectedPathForGetMetadata = createMetadataDoiIdentifierPath(doi);
         stubGetMetadataResponse(expectedPathForGetMetadata);
@@ -316,7 +316,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToDeleteDraftDoiWithoutSupplyingADoi() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
                                      () -> client.deleteDraftDoi(customerId, notValidDoi));
@@ -325,7 +325,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldDeleteDraftDoiWhenInputParametersAreValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
@@ -337,7 +337,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowExceptionIfDeleteDraftDoiRequestRespondsWithErrorCode() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         studDeleteDraftApiResponseThatFails(expectedPathForDeletingDoiInDraftStatus);
@@ -347,7 +347,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponseForFindableDoi(expectedPathForDeletingDoiInDraftStatus);
@@ -492,13 +492,4 @@ public class DataCiteClientv2Test {
                                     .withBody(expectedBody)));
     }
 
-    private URI createValidCustomer() {
-        var customerId = randomUri();
-        var customerConfig = new CustomerConfig(customerId,
-                                                CUSTOMER_PASSWORD,
-                                                CUSTOMER_USERNAME,
-                                                DOI_PREFIX);
-        customerConfigExtractor.setCustomerConfig(customerConfig);
-        return customerId;
-    }
 }

@@ -29,8 +29,6 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.stubs.FakeContext;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.Environment;
-import nva.commons.core.StringUtils;
-import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,54 +58,27 @@ public class ExternalUpdatesEventHandlerTest {
     }
 
     @Test
-    void shouldFailOnMessageFromUnknownTopic() {
-        var s3Uri = randomUri();
-        var messageBody = stringFromResources(Path.of("sqsMessageWithUnexpectedTopic.json"));
-        var eventReference = "ignoreMe";
-        var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
-
-        assertThrows(
-            EventHandlingException.class,
-            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
-    }
-
-    @Test
     void shouldFailOnUnknownActionInS3Event() {
-        var s3Uri = randomUri();
-        var messageBody = generateMessageBody(s3Uri);
         var eventReference = stringFromResources(Path.of("s3EventReferenceWithUnexpectedAction.json"));
-        var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
-
-        assertThrows(
-            EventHandlingException.class,
-            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+        invokeHandlerWithEventReferenceAndAssertThrows(eventReference);
     }
 
     @Test
     void shouldFailWhenNotAbleToParseS3EventData() {
-        var s3Uri = randomUri();
-        var messageBody = generateMessageBody(s3Uri);
-        var unparsableS3EventReference =
-            stringFromResources(Path.of("unparsableS3EventReference.json"));
-        var fixture =
-            prepareForTesting(s3Uri, unparsableS3EventReference, messageBody);
+        var eventReference = stringFromResources(Path.of("unparsableS3EventReference.json"));
+        invokeHandlerWithEventReferenceAndAssertThrows(eventReference);
+    }
 
-        assertThrows(
-            EventHandlingException.class,
-            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+    @Test
+    void shouldFailOnMessageFromUnknownTopic() {
+        var messageBody = stringFromResources(Path.of("sqsMessageWithUnexpectedTopic.json"));
+        invokeHandlerWithMessageBodyAndAssertThrows(messageBody);
     }
 
     @Test
     void shouldFailWhenNotAbleToParseEventReference() {
-        var s3Uri = randomUri();
         var invalidMessageBody = stringFromResources(Path.of("unparsableSqsMessageBody.json"));
-        var eventReference = "ignoreMe";
-        var fixture =
-            prepareForTesting(s3Uri, eventReference, invalidMessageBody);
-
-        assertThrows(
-            EventHandlingException.class,
-            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+        invokeHandlerWithMessageBodyAndAssertThrows(invalidMessageBody);
     }
 
     @Test
@@ -117,7 +88,7 @@ public class ExternalUpdatesEventHandlerTest {
         var customerId = UriWrapper.fromUri("https://apihost/customer")
                              .addChild(SortableIdentifier.next().toString())
                              .getUri();
-        var eventReference = IoUtils.stringFromResources(Path.of("eventReferenceWithoutDoi.json"));
+        var eventReference = stringFromResources(Path.of("eventReferenceWithoutDoi.json"));
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
@@ -161,6 +132,26 @@ public class ExternalUpdatesEventHandlerTest {
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
         verify(doiClient, times(0)).deleteDraftDoi(eq(customerId), any());
+    }
+
+    private void invokeHandlerWithEventReferenceAndAssertThrows(String eventReference) {
+        var s3Uri = randomUri();
+        var messageBody = generateMessageBody(s3Uri);
+        invokeAndAssertThrows(eventReference, s3Uri, messageBody);
+    }
+
+    private void invokeHandlerWithMessageBodyAndAssertThrows(String messageBody) {
+        var s3Uri = randomUri();
+        invokeAndAssertThrows("ignoredEventReference", s3Uri, messageBody);
+    }
+
+    private void invokeAndAssertThrows(String eventReference, URI s3Uri, String messageBody) {
+        var fixture =
+            prepareForTesting(s3Uri, eventReference, messageBody);
+
+        assertThrows(
+            EventHandlingException.class,
+            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
     }
 
     private String generateEventReference(URI customerId, URI doi) {

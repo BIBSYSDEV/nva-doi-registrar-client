@@ -1,6 +1,7 @@
 package no.unit.nva.doi.datacite.clients;
 
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+import static no.unit.nva.doi.datacite.clients.TestDataFactory.DOI_PREFIX;
+import static no.unit.nva.doi.datacite.clients.TestDataFactory.createValidCustomer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -12,10 +13,8 @@ import static org.mockito.Mockito.when;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
-import no.unit.nva.doi.datacite.customerconfigs.CustomerConfig;
 import no.unit.nva.doi.datacite.utils.FakeCustomerExtractor;
 import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.WiremockHttpClient;
@@ -26,10 +25,7 @@ import org.junit.jupiter.api.Test;
 public class MdsClientTest {
 
     private static final String DOI_HOST = "doi.org";
-    private static final String DOI_PREFIX = "1";
     private static final String DOI_SUFFIX = "2";
-    private static final String CUSTOMER_PASSWORD = "password";
-    private static final String CUSTOMER_USERNAME = "username";
 
     private MdsClient client;
     private FakeCustomerExtractor customerConfigExtractor;
@@ -47,7 +43,7 @@ public class MdsClientTest {
         var httpClientMock = mock(HttpClient.class);
         var exceptionMessage = "Something horrible happened";
         when(httpClientMock.send(any(), any())).thenThrow(new IOException(exceptionMessage));
-        var customerId = createValidCustomer();
+        var customerId = createValidCustomer(customerConfigExtractor);
         var doi = Doi.fromPrefixAndSuffix(DOI_HOST, DOI_PREFIX, DOI_SUFFIX);
 
         client = new MdsClient(runtimeInfo.getHttpBaseUrl(), customerConfigExtractor, httpClientMock);
@@ -62,13 +58,4 @@ public class MdsClientTest {
         assertThat(exception.getCause().getMessage(), containsString(exceptionMessage));
     }
 
-    private URI createValidCustomer() {
-        var customerId = randomUri();
-        var customerConfig = new CustomerConfig(customerId,
-                                                CUSTOMER_PASSWORD,
-                                                CUSTOMER_USERNAME,
-                                                DOI_PREFIX);
-        customerConfigExtractor.setCustomerConfig(customerConfig);
-        return customerId;
-    }
 }

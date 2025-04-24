@@ -112,9 +112,10 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
     }
 
     private RuntimeException logAndThrow(Failure<UpdateEvent> updateEventFailure) {
-        logger.error("Unable to parse s3 event reference", updateEventFailure.getException());
+        final Throwable cause = updateEventFailure.getException();
+        logger.error("Unable to parse s3 event reference", cause);
         throw new EventHandlingException(
-            "Failed to parse s3 event reference!", updateEventFailure.getException());
+            "Failed to parse s3 event reference!", cause);
     }
 
     private static EventReference parseEventReference(SQSMessage sqs) {
