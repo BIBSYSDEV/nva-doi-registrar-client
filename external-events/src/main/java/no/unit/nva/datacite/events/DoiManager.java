@@ -14,7 +14,7 @@ public class DoiManager {
         this.doiClient = doiClient;
     }
 
-    void deleteDoiIfOnlyDrafted(URI customerId, Doi doi) throws ClientException {
+    public void deleteDoiIfOnlyDrafted(URI customerId, Doi doi) throws ClientException {
         var doiState = doiClient.getDoi(customerId, doi);
         if (State.DRAFT.equals(doiState.getState())) {
             doiClient.deleteDraftDoi(customerId, doi);
