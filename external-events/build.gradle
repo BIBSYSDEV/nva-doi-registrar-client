@@ -1,0 +1,39 @@
+dependencies {
+    implementation project(":assign-doi-datacite")
+    implementation project(":doi-commons")
+
+    implementation libs.nva.core
+    implementation libs.nva.json
+    implementation libs.nva.doi
+    implementation libs.nva.identifiers
+    implementation libs.nva.eventhandlers
+    implementation libs.nva.apigateway
+    implementation libs.nva.secrets
+    implementation libs.nva.s3
+    implementation libs.bundles.logging
+    implementation libs.bundles.jackson
+    implementation libs.aws.sdk2.httpClientApi
+    implementation libs.aws.lambda.events
+    implementation libs.aws.sdk2.s3
+    implementation libs.aws.sdk2.sqs
+
+    runtimeOnly libs.jaxb.runtime
+
+    testImplementation libs.bundles.testing
+    testImplementation libs.wiremock
+
+    compileOnly(libs.aws.sdk.apigateway) {
+        because "PMD complains for the com/amazonaws/regions/Regions class"
+    }
+
+    compileOnly(libs.aws.sdk.secrets) {
+        because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
+    }
+
+}
+
+
+test {
+    environment "ALLOWED_ORIGIN", "*"
+    environment "DATACITE_REST_HOST", "someHost"
+}

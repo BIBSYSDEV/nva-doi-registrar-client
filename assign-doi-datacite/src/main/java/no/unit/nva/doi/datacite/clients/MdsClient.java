@@ -105,7 +105,7 @@ public class MdsClient extends HttpSender {
 
     private void sendDeleteDraftRequest(HttpRequest request, Doi doi) throws ClientException {
         var response = attempt(() -> super.getHttpClient().send(request, BodyHandlers.ofString()))
-                           .orElseThrow(this::handleFailure);
+                           .orElseThrow(failure -> handleFailure(request, failure));
         if (triedToDeleteFindableDoi(response)) {
             logger.error(REQUEST_RESPONDED_WITH_RESPONSE_MESSAGE + response.body());
             throw new DeleteDraftDoiException(doi, response.statusCode());

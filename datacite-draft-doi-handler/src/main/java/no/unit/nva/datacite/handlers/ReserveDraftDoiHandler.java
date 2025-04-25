@@ -3,6 +3,7 @@ package no.unit.nva.datacite.handlers;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import no.unit.nva.datacite.model.DoiResponse;
 import no.unit.nva.datacite.model.ReserveDoiRequest;
 import no.unit.nva.doi.DoiClient;
@@ -45,11 +46,12 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
         var customerId = input.getCustomer();
         return attempt(() -> doiClient.createDoi(customerId))
                    .map(doi -> new DoiResponse(doi.getUri()))
-                   .orElseThrow(failure -> getBadGatewayException(failure.getException()));
+                   .orElseThrow(failure -> logAndThrow(customerId, failure.getException()));
     }
 
-    private BadGatewayException getBadGatewayException(Exception exception) {
-        logger.error("Creating draft doi failed with: {}", exception);
+    private BadGatewayException logAndThrow(URI customerId, Exception exception) {
+        var message = String.format("Creating draft doi for customer '%s' failed.", customerId);
+        logger.error(message, exception);
         return new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
     }
 
