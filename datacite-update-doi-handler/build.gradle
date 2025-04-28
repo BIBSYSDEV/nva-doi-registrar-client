@@ -28,5 +28,6 @@ dependencies {
 
 test{
     environment "ALLOWED_ORIGIN", "*"
-    environment "API_HOST", "api.localhost.nva.unit.no"
+    environment "API_HOST", "localhost"
+    environment "COGNITO_AUTHORIZER_URLS", "http://localhost:3000"
 }

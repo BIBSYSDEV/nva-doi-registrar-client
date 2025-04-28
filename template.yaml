@@ -10,6 +10,9 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Description: Reference to Cognito UserPool for the stage
     Default: CognitoAuthorizerArn
+  CognitoAuthorizerUrls:
+    Type: AWS::SSM::Parameter::Value<CommaDelimitedList>
+    Default: CognitoAuthorizerUrls
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
@@ -63,6 +66,7 @@ Globals:
     Environment:
       Variables:
         API_HOST: !Ref ApiDomain
+        COGNITO_AUTHORIZER_URLS: !Join [",", !Ref CognitoAuthorizerUrls]
 
 
 Resources:

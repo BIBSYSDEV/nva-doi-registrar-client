@@ -44,6 +44,8 @@ public class ReserveDraftDoiHandlerTest {
     public static final int SAMPLE_STATUS_CODE = 500;
 
     public static final String SAMPLE_DOI_PREFIX = "10.1234";
+    private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
+    private static final String API_HOST = "API_HOST";
     private final Environment environment = mock(Environment.class);
     private Context context;
     private AtomicReference<URI> inputBuffer;
@@ -54,6 +56,8 @@ public class ReserveDraftDoiHandlerTest {
     public void setUp() {
         context = mock(Context.class);
         when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        when(environment.readEnv(API_HOST)).thenReturn("localhost");
+        when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
         output = new ByteArrayOutputStream();
         inputBuffer = new AtomicReference<>();
     }
