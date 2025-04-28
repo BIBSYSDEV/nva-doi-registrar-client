@@ -58,7 +58,8 @@ public class FindableDoiHandlerTest extends TestBase {
         when(environment.readEnv("API_HOST")).thenReturn(wireMockRuntimeInfo.getHttpsBaseUrl());
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
-        handler = new FindableDoiHandler(doiClient, new DataCiteMetadataResolver(WiremockHttpClient.create()));
+        handler = new FindableDoiHandler(doiClient, new DataCiteMetadataResolver(WiremockHttpClient.create()),
+                                         new Environment());
     }
 
     @Test

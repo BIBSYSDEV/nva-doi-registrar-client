@@ -14,6 +14,7 @@ import no.unit.nva.doi.models.Doi;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 
 public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiResponse> {
@@ -25,11 +26,12 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
 
     @JacocoGenerated
     public FindableDoiHandler() {
-        this(defaultDoiClient(), new DataCiteMetadataResolver());
+        this(defaultDoiClient(), new DataCiteMetadataResolver(), new Environment());
     }
 
-    public FindableDoiHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver) {
-        super(UpdateDoiRequest.class);
+    public FindableDoiHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver,
+                              Environment environment) {
+        super(UpdateDoiRequest.class, environment);
         this.doiClient = doiClient;
         this.dataCiteMetadataResolver = dataCiteMetadataResolver;
     }

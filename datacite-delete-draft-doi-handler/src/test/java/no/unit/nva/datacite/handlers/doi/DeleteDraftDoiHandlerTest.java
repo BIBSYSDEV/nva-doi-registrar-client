@@ -40,6 +40,8 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 public class DeleteDraftDoiHandlerTest {
 
+    private static final String API_HOST = "API_HOST";
+    private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
     private final Environment environment = mock(Environment.class);
     private Context context;
     private ByteArrayOutputStream output;
@@ -48,6 +50,8 @@ public class DeleteDraftDoiHandlerTest {
     public void setUp() {
         context = mock(Context.class);
         when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        when(environment.readEnv(API_HOST)).thenReturn("localhost");
+        when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
         output = new ByteArrayOutputStream();
     }
 
