@@ -6,8 +6,3 @@ plugins {
 allprojects {
     apply plugin: 'nva.doiregistrar.service.java-conventions'
 }
-
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '8.6'
-}
