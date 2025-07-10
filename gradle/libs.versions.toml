@@ -1,21 +1,21 @@
 [versions]
-awsLambdaEvents = { strictly = '3.15.0' }
+awsLambdaEvents = { strictly = '3.16.0' }
+awsSdk = { strictly = '1.12.787' }
+awsSdk2 = { strictly = '2.31.77' }
 hamcrest = { strictly = '3.0' }
-nvaCommons = { strictly = '2.2.4' }
-jackson = { strictly = '2.18.3' }
-mockito = { strictly = '5.13.0' }
-junit = { strictly = '5.12.0' }
-awsSdk = { strictly = '1.12.772' }
-awsSdk2 = { strictly = '2.31.28' }
+jackson = { strictly = '2.19.1' }
 jakartaBindApi = { strictly = '4.0.1' }
-jaxbRuntime = { strictly = '4.0.4' }
-secretsCaching = { strictly = '1.0.1' }
-zalando = { prefer = '0.27.1' }
-wiremock = { strictly = "3.9.1" }
-log4j = { strictly = '2.24.3' }
-slf4j = { require = '2.0.17' }
-sunJaxb = { strictly = '4.0.4' }
 javaxActivation = { stictly = '2.1.2' }
+jaxbRuntime = { strictly = '4.0.4' }
+jupiter = { strictly = '5.13.3' }
+log4j = { strictly = '2.25.0' }
+mockito = { strictly = '5.18.0' }
+nvaCommons = { strictly = '2.2.9' }
+secretsCaching = { strictly = '1.0.1' }
+slf4j = { strictly = '2.0.17' }
+sunJaxb = { strictly = '4.0.4' }
+wiremock = { strictly = '3.13.1' }
+zalandoProblem = { strictly = '0.27.1' }
 
 [libraries]
 nva-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nvaCommons' }
@@ -33,7 +33,7 @@ jackson-datatype-jdk8 = { group = 'com.fasterxml.jackson.datatype', name = 'jack
 jackson-datatype-jsr310 = { group = 'com.fasterxml.jackson.datatype', name = 'jackson-datatype-jsr310', version.ref = 'jackson' }
 jackson-databind = { group = 'com.fasterxml.jackson.core', name = 'jackson-databind', version.ref = 'jackson' }
 jackson-annotations = { group = 'com.fasterxml.jackson.core', name = 'jackson-annotations', version.ref = 'jackson' }
-jackson-problem = { group = 'org.zalando', name = 'jackson-datatype-problem', version.ref = 'zalando' }
+jackson-problem = { group = 'org.zalando', name = 'jackson-datatype-problem', version.ref = 'zalandoProblem' }
 
 
 aws-sdk = { group = 'com.amazonaws', name = 'aws-java-sdk', version.ref = 'awsSdk' }
@@ -47,12 +47,12 @@ aws-sdk2-sqs = { group = 'software.amazon.awssdk', name = 'sqs', version.ref = '
 aws-lambda-events = { group = 'com.amazonaws', name = 'aws-lambda-java-events', version.ref = 'awsLambdaEvents' }
 
 aws-secretsmanager-caching = { group = 'com.amazonaws.secretsmanager', name = 'aws-secretsmanager-caching-java', version.ref = 'secretsCaching' }
-problem = { group = 'org.zalando', name = 'problem', version.ref = 'zalando' }
+problem = { group = 'org.zalando', name = 'problem', version.ref = 'zalandoProblem' }
 
 hamcrest = { group = 'org.hamcrest', name = 'hamcrest', version.ref = 'hamcrest' }
 mockito-core = { group = 'org.mockito', name = 'mockito-core', version.ref = 'mockito' }
-junit-jupiter-engine = { group = 'org.junit.jupiter', name = 'junit-jupiter-engine', version.ref = 'junit' }
-junit-jupiter-params = { group = 'org.junit.jupiter', name = 'junit-jupiter-params', version.ref = 'junit' }
+junit-jupiter-engine = { group = 'org.junit.jupiter', name = 'junit-jupiter-engine', version.ref = 'jupiter' }
+junit-jupiter-params = { group = 'org.junit.jupiter', name = 'junit-jupiter-params', version.ref = 'jupiter' }
 nva-testutils = { group = 'com.github.bibsysdev', name = 'nvatestutils', version.ref = 'nvaCommons' }
 wiremock = { group = 'org.wiremock', name = 'wiremock-jetty12', version.ref = 'wiremock' }
 

@@ -12,7 +12,6 @@ import no.unit.nva.stubs.FakeSecretsManagerClient;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.secrets.SecretsReader;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
