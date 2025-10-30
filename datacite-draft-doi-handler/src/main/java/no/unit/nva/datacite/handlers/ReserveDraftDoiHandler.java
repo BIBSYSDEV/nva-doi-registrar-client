@@ -8,10 +8,12 @@ import no.unit.nva.datacite.model.DoiResponse;
 import no.unit.nva.datacite.model.ReserveDoiRequest;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
+import no.unit.nva.doi.datacite.customerconfigs.CustomerConfigException;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
@@ -42,17 +44,19 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
 
     @Override
     protected DoiResponse processInput(ReserveDoiRequest input, RequestInfo requestInfo, Context context)
-        throws BadGatewayException {
+        throws ApiGatewayException {
         var customerId = input.getCustomer();
         return attempt(() -> doiClient.createDoi(customerId))
                    .map(doi -> new DoiResponse(doi.getUri()))
                    .orElseThrow(failure -> logAndThrow(customerId, failure.getException()));
     }
 
-    private BadGatewayException logAndThrow(URI customerId, Exception exception) {
+    private ApiGatewayException logAndThrow(URI customerId, Exception exception) {
         var message = String.format("Creating draft doi for customer '%s' failed.", customerId);
         logger.error(message, exception);
-        return new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
+        return exception instanceof CustomerConfigException customerConfigException
+                ? new BadRequestException("Request could not be processed: DOI customer relation is missing")
+                : new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
     }
 
     @Override
