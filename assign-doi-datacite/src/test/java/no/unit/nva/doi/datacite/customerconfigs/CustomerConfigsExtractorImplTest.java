@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import no.unit.nva.doi.datacite.utils.FakeSecretsManagerCountingCalls;
+import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.FakeSecretsManagerClient;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
@@ -65,6 +66,17 @@ public class CustomerConfigsExtractorImplTest {
                                                   "user1.repository",
                                                   "10.5072");
         var actualCustomer = customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
+        assertThat(actualCustomer, is(equalTo(expectedCustomer)));
+    }
+
+    @Test
+    void shouldReturnCustomerConfigWhenInputIsDoiAndCustomerExists() throws CustomerConfigException {
+        var doiPrefix = "10.5072";
+        var expectedCustomer = new CustomerConfig(UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
+                "randompasswd1",
+                "user1.repository",
+                doiPrefix);
+        var actualCustomer = customerConfigExtractor.getCustomerConfig(Doi.fromDoiIdentifier(doiPrefix + "/123"));
         assertThat(actualCustomer, is(equalTo(expectedCustomer)));
     }
 

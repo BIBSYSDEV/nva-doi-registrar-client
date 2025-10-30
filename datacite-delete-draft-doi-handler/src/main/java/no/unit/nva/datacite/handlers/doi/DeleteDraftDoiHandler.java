@@ -1,11 +1,9 @@
 package no.unit.nva.datacite.handlers.doi;
 
 import static nva.commons.core.attempt.Try.attempt;
-import static software.amazon.awssdk.utils.http.SdkHttpUtils.urlDecode;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.DataCiteClientV2;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
@@ -28,7 +26,6 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
     public static final String CUSTOMER_ID = "customerId";
     protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
     protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
-    private static final String DOI_STATE_DRAFT = "draft";
     private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
     private final DoiClient doiClient;
 
@@ -47,13 +44,21 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         //Do nothing
     }
 
+    private void validateRequest(Doi doi) throws BadMethodException, BadGatewayException {
+        var doiState = attempt(() -> doiClient.getDoi(doi))
+                .orElseThrow(failure ->
+                        handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
+        if (!State.DRAFT.equals(doiState.getState())) {
+            throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
+        }
+    }
+
     @Override
     protected Void processInput(Void input, RequestInfo requestInfo, Context context)
         throws BadGatewayException, BadMethodException, BadRequestException {
-        var customerId = URI.create(urlDecode(requestInfo.getQueryParameter(CUSTOMER_ID)));
         var doi = getDoiFromPath(requestInfo);
-        validateRequest(customerId, doi);
-        return attempt(() -> deleteDraftDoi(customerId, doi))
+        validateRequest(doi);
+        return attempt(() -> deleteDraftDoi(doi))
                    .orElseThrow(failure -> handleFailure(failure.getException(), ERROR_DELETING_DRAFT_DOI));
     }
 
@@ -77,18 +82,9 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         return new BadGatewayException(message);
     }
 
-    private void validateRequest(URI customerId, Doi doi) throws BadMethodException, BadGatewayException {
-        var doiState = attempt(() -> doiClient.getDoi(customerId, doi))
-                           .orElseThrow(failure ->
-                                            handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
-        if (!State.DRAFT.equals(doiState.getState())) {
-            throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
-        }
-    }
-
-    private Void deleteDraftDoi(URI customerId, Doi draftDoi) {
+    private Void deleteDraftDoi(Doi draftDoi) {
         try {
-            doiClient.deleteDraftDoi(customerId, draftDoi);
+            doiClient.deleteDraftDoi(draftDoi);
         } catch (ClientException e) {
             throw new RuntimeException(e);
         }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import no.unit.nva.commons.json.JsonUtils;
+import no.unit.nva.doi.models.Doi;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.secrets.SecretsReader;
 
@@ -17,7 +18,7 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
     private final String secretName;
     private final String secretKey;
 
-    private final Map<URI, CustomerConfig> customerConfigs;
+    private final Map<String, CustomerConfig> customerConfigs;
 
     @JacocoGenerated
     public CustomerConfigExtractorImpl(String secretName,
@@ -35,11 +36,19 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
     }
 
     @Override
-    public CustomerConfig getCustomerConfig(final URI customerId)
+    public CustomerConfig getCustomerConfig(final Doi doi)
         throws CustomerConfigException {
+        var doiPrefix = doi.getPrefix();
         readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty();
-        return Optional.ofNullable(customerConfigs.get(customerId))
+        return Optional.ofNullable(customerConfigs.get(doiPrefix))
                    .orElseThrow(CustomerConfigException::new);
+    }
+
+    @Override
+    public CustomerConfig getCustomerConfig(URI customerId) throws CustomerConfigException {
+        readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty();
+        return Optional.ofNullable(customerConfigs.get(customerId.toString()))
+                .orElseThrow(CustomerConfigException::new);
     }
 
     private void readCustomerConfigFromSecretsReaderIfCustomerConfigsIsEmpty() throws CustomerConfigException {
@@ -70,7 +79,10 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
 
     private void createCustomersMap(final CustomerConfig... customers) {
         Arrays.stream(customers)
-            .filter(customer -> nonNull(customer.getCustomerId()))
-            .forEach(customer -> customerConfigs.put(customer.getCustomerId(), customer));
+            .filter(customer -> nonNull(customer.getDoiPrefix()))
+            .forEach(customer -> {
+                customerConfigs.put(customer.getCustomerId().toString(), customer);
+                customerConfigs.put(customer.getDoiPrefix(), customer);
+            });
     }
 }

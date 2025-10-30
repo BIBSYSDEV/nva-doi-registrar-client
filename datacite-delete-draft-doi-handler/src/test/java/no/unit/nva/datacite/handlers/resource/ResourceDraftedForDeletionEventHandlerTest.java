@@ -24,9 +24,7 @@ public class ResourceDraftedForDeletionEventHandlerTest {
 
     public static final String DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON = "delete_draft_publication_without_doi.json";
     public static final String DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON = "delete_draft_publication_with_doi.json";
-
     public static final String DOI_IDENTIFIER = "10.23/456789";
-    public static final String NOT_DRAFT = "findable";
 
     private DoiClient doiClient;
     private ResourceDraftedForDeletionEventHandler handler;
@@ -90,16 +88,16 @@ public class ResourceDraftedForDeletionEventHandlerTest {
 
     private DoiClient doiClientReturningError() throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any()))
+        when(doiClient.getDoi(any()))
             .thenAnswer(invocation -> doiState(State.DRAFT));
         doThrow(new RuntimeException(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI))
-            .when(doiClient).deleteDraftDoi(any(), any());
+            .when(doiClient).deleteDraftDoi(any());
         return doiClient;
     }
 
     private DoiClient doiClientReturningDoi(State state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any()))
+        when(doiClient.getDoi(any()))
             .thenAnswer(invocation -> doiState(state));
         return doiClient;
     }

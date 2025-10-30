@@ -19,8 +19,6 @@ import nva.commons.core.JacocoGenerated;
 
 public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiResponse> {
 
-    public static final String CUSTOMER_ID_IS_MISSING_ERROR_MESSAGE = "Customer ID is missing";
-    public static final String PUBLICATION_ID_IS_MISSING_ERROR_MESSAGE = "Publication ID is missing";
     private final DoiClient doiClient;
     private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
@@ -66,8 +64,8 @@ public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiR
 
     private DoiResponse makeDoiFindable(UpdateDoiRequest input, Doi doi) throws ClientException {
         var dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
-        doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
-        doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
+        doiClient.updateMetadata(doi, dataCiteXmlMetadata);
+        doiClient.setLandingPage(doi, input.getPublicationId());
         return new DoiResponse(doi.getUri());
     }
 }

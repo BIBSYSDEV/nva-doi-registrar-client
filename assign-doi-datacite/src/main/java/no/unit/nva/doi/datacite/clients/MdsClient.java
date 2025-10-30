@@ -50,37 +50,37 @@ public class MdsClient extends HttpSender {
         this.customerConfigExtractor = customerConfigExtractor;
     }
 
-    public void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml)
+    public void updateMetadata(Doi doi, String metadataDataCiteXml)
         throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         validateUpdateMetadataInput(doi, metadataDataCiteXml);
         var request = createPostMetadataRequest(customer, doi, metadataDataCiteXml);
         sendRequest(request);
     }
 
-    public void setLandingPage(URI customerId, Doi doi, URI landingPage) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    public void setLandingPage(Doi doi, URI landingPage) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         validateLandingPageInput(doi, landingPage);
         var request = createLandingPagePutRequest(customer, doi, landingPage);
         sendRequest(request);
     }
 
-    public void deleteMedata(URI customerId, Doi doi) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    public void deleteMedata(Doi doi) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         validateDeleteMetadataRequest(doi);
         var request = createDeleteMetadataRequest(customer, doi);
         sendRequest(request);
     }
 
-    public void deleteDraftDoi(URI customerId, Doi doi) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    public void deleteDraftDoi(Doi doi) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         validateDeleteDraftDoiRequest(doi);
         var request = createDeleteDraftDoiRequest(customer, doi);
         sendDeleteDraftRequest(request, doi);
     }
 
-    public String getMetadata(URI customerId, Doi doi) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    public String getMetadata(Doi doi) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         validateDeleteMetadataRequest(doi);
         var request = createGetMetadataRequest(customer, doi);
         var response = sendRequest(request);

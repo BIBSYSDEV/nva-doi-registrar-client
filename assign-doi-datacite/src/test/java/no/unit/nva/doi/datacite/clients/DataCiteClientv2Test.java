@@ -209,12 +209,12 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldReturnDoiWhenClientRespondsWithSuccess() throws ClientException {
-        var customerUri = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         String getDoiResponseJson = IoUtils.stringFromResources(Path.of(GET_DOI_RESPONSE_JSON));
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         stubGetDoiResponse(getDoiResponseJson, requestedDoi);
 
-        DoiStateDto actual = client.getDoi(customerUri, requestedDoi);
+        DoiStateDto actual = client.getDoi(requestedDoi);
         assertThat(actual, is(instanceOf(DoiStateDto.class)));
         assertThat(actual.getDoi(), is(equalTo(requestedDoi.toIdentifier())));
         assertThat(actual.getState(), is(equalTo(State.DRAFT)));
@@ -222,138 +222,138 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowExceptionWhenUpdatingDoiWithoutSendingDoi() {
-        var customerUri = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         Doi notADoi = null;
         var xml = randomString();
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.updateMetadata(customerUri, notADoi, xml));
+                                     () -> client.updateMetadata(notADoi, xml));
         assertThat(exception.getMessage(), containsString(MISSING_DOI_IDENTIFIER_ARGUMENT));
     }
 
     @Test
     void shouldThrowExceptionWhenUpdatingDoiWithoutSendingXml() {
-        var customerUri = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         String notValidXml = null;
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.updateMetadata(customerUri, requestedDoi, notValidXml));
+                                     () -> client.updateMetadata(requestedDoi, notValidXml));
         assertThat(exception.getMessage(), containsString(MISSING_DATACITE_XML_ARGUMENT));
     }
 
     @Test
     void shouldUpdateMetadataSuccessfullyWhenSupplyingCorrectInputAndClientIsWorking() throws ClientException {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForUpdatingMetadata = createMetadataDoiIdentifierPath(doi);
         stubUpdateMetadataResponse(expectedPathForUpdatingMetadata);
-        client.updateMetadata(customerId, doi, getValidMetadataPayload());
+        client.updateMetadata(doi, getValidMetadataPayload());
         verifyUpdateMetadataResponse(expectedPathForUpdatingMetadata);
     }
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingTosSetLandingPageToNull() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var requestedDoi = Doi.fromDoiIdentifier(EXAMPLE_DOI_FROM_FILE);
         URI notValidLandingPage = null;
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.setLandingPage(customerId, requestedDoi, notValidLandingPage));
+                                     () -> client.setLandingPage(requestedDoi, notValidLandingPage));
         assertThat(exception.getMessage(), containsString(MISSING_LANDING_PAGE_ARGUMENT));
     }
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToSetLandingPageWithoutDoi() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var landingPage = randomUri();
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.setLandingPage(customerId, notValidDoi, landingPage));
+                                     () -> client.setLandingPage(notValidDoi, landingPage));
         assertThat(exception.getMessage(), containsString(MISSING_DOI_IDENTIFIER_ARGUMENT));
     }
 
     @Test
     void shouldSetLandingPageWhenInputParametersAreValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
 
         stubSetLandingPageResponse(doi);
 
-        client.setLandingPage(customerId, doi, EXAMPLE_LANDING_PAGE);
+        client.setLandingPage(doi, EXAMPLE_LANDING_PAGE);
 
         verifySetLandingResponse(doi);
     }
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToDeleteMetadataForEmptyDoi() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.deleteMetadata(customerId, notValidDoi));
+                                     () -> client.deleteMetadata(notValidDoi));
         assertThat(exception.getMessage(), containsString(MISSING_DOI_IDENTIFIER_ARGUMENT));
     }
 
     @Test
     void shouldDeleteMetadataWhenInputParametersIsValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         var expectedPathForDeletingMetadata = createMetadataDoiIdentifierPath(doi);
         stubDeleteMetadataResponse(expectedPathForDeletingMetadata);
 
-        client.deleteMetadata(customerId, doi);
+        client.deleteMetadata(doi);
 
         verifyDeleteMetadataResponse(expectedPathForDeletingMetadata);
     }
 
     @Test
     void shouldGetMetadata() throws ClientException {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         var expectedPathForGetMetadata = createMetadataDoiIdentifierPath(doi);
         stubGetMetadataResponse(expectedPathForGetMetadata);
 
-        var metadata = client.getMetadata(customerId, doi);
+        var metadata = client.getMetadata(doi);
         assertThat(metadata, containsString("http://datacite.org/schema/kernel-4"));
     }
 
     @Test
     void shouldThrowNullPointerExceptionWhenAttemptingToDeleteDraftDoiWithoutSupplyingADoi() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         Doi notValidDoi = null;
         var exception = assertThrows(NullPointerException.class,
-                                     () -> client.deleteDraftDoi(customerId, notValidDoi));
+                                     () -> client.deleteDraftDoi(notValidDoi));
         assertThat(exception.getMessage(), containsString(MISSING_DOI_IDENTIFIER_ARGUMENT));
     }
 
     @Test
     void shouldDeleteDraftDoiWhenInputParametersAreValidAndHttpClientReturnsOk() throws ClientException {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponse(expectedPathForDeletingDoiInDraftStatus);
 
-        client.deleteDraftDoi(customerId, doi);
+        client.deleteDraftDoi(doi);
 
         verifyDeleteDoiResponse(expectedPathForDeletingDoiInDraftStatus);
     }
 
     @Test
     void shouldThrowExceptionIfDeleteDraftDoiRequestRespondsWithErrorCode() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         studDeleteDraftApiResponseThatFails(expectedPathForDeletingDoiInDraftStatus);
         assertThrows(ClientException.class,
-                     () -> client.deleteDraftDoi(customerId, doi));
+                     () -> client.deleteDraftDoi(doi));
     }
 
     @Test
     void deleteDraftDoiForCustomerWhereDoiIsFindableThrowsApiExceptionAsClientException() {
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         Doi doi = createDoiWithDemoPrefixAndExampleSuffix();
         String expectedPathForDeletingDoiInDraftStatus = createDoiIdentifierPath(doi);
         stubDeleteDraftApiResponseForFindableDoi(expectedPathForDeletingDoiInDraftStatus);
 
         var actualException = assertThrows(DeleteDraftDoiException.class,
-                                           () -> client.deleteDraftDoi(customerId, doi));
+                                           () -> client.deleteDraftDoi(doi));
         assertThat(actualException, isA(ClientException.class));
         assertThat(actualException.getMessage(),
                    containsString(doi.toIdentifier()));

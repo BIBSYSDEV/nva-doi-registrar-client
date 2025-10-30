@@ -48,8 +48,8 @@ public class DataCiteRestApiClient extends HttpSender {
         return convertResponseToDoi(response);
     }
 
-    public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    public DoiStateDto getDoi(Doi doi) throws ClientException {
+        var customer = customerConfigExtractor.getCustomerConfig(doi);
         var request = createGetDoiRequest(customer, doi);
         var response = sendRequest(request);
         return DoiStateDto.fromJson(response.body());

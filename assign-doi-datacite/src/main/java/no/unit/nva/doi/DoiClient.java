@@ -33,7 +33,6 @@ public interface DoiClient {
     /**
      * Update metadata for a DOI.
      *
-     * @param customerId          NVAs customerId
      * @param metadataDataCiteXml datacite schema serialized xml as string
      * @param doi                 {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
@@ -41,48 +40,45 @@ public interface DoiClient {
      * @see <a href="https://support.datacite.org/docs/connecting-research-outputs">Connect Reseearch Outputs
      *     (SCHOLIX)</a>
      */
-    void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml) throws ClientException;
+    void updateMetadata(Doi doi, String metadataDataCiteXml) throws ClientException;
 
     /**
      * Set landing page for a Doi. This will also turns the DOI into findable state!
      *
      * <p>Once a DOI is findable, it cannot be deleted!
      *
-     * @param customerId NVAs customerId
      * @param url        Location of landing page.
      * @param doi        {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      * @see <a href="https://support.datacite.org/docs/datacite-doi-display-guidelines">DOI display guidelines.</a>
      */
-    void setLandingPage(URI customerId, Doi doi, URI url) throws ClientException;
+    void setLandingPage(Doi doi, URI url) throws ClientException;
 
     /**
      * Delete metadata from DOI.
      *
      * <p>Findable DOIs can be transitioned to the registered state (the metadata are no longer included in the search
-     * index) using this ${@link #deleteMetadata(URI, Doi)}.
+     * index) using this ${@link #deleteMetadata(Doi)}.
      *
      * <p>Notice: Updating metadata for a DOI that has been in deleted state (registered) will turn it into findable
      * state.
      *
-     * @param customerId NVAs customerId
      * @param doi        {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      */
-    void deleteMetadata(URI customerId, Doi doi) throws ClientException;
+    void deleteMetadata(Doi doi) throws ClientException;
 
     /**
      * Delete a DOI which is in draft.
      *
      * <p>The DOI cannot be deleted after its first promotion to findable state.
      *
-     * @param customerId NVAs customerId
      * @param doi        {@link Doi} containing prefix/suffix ({@link Doi#toIdentifier()})
      * @throws ClientException Error while communicating with Registry Agency
      */
-    void deleteDraftDoi(URI customerId, Doi doi) throws ClientException;
+    void deleteDraftDoi(Doi doi) throws ClientException;
 
-    DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException;
+    DoiStateDto getDoi(Doi doi) throws ClientException;
 
-    String getMetadata(URI customerId, Doi doi) throws ClientException;
+    String getMetadata(Doi doi) throws ClientException;
 }

@@ -68,14 +68,11 @@ public class FindableDoiHandlerTest extends TestBase {
         mockDataciteXmlBody(publicationIdentifier, DATACITE_XML_BODY);
         handler.handleRequest(createRequest(publicationIdentifier), output, context);
         var response = GatewayResponse.fromOutputStream(output, DoiResponse.class);
-        URI expectedCustomerId = CUSTOMER_ID_IN_INPUT_EVENT;
-        Doi expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
+        var expectedDoi = Doi.fromUri(VALID_SAMPLE_DOI);
         verify(doiClient).updateMetadata(
-            eq(expectedCustomerId),
             eq(expectedDoi),
             eq(DATACITE_XML_BODY));
         verify(doiClient).setLandingPage(
-            expectedCustomerId,
             expectedDoi,
             UriWrapper.fromUri(createPublicationId(publicationIdentifier)).getUri()
         );

@@ -98,7 +98,7 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId(),
                     input.getDuplicateOf().orElse(null));
-        var response = attempt(() -> doiClient.getDoi(input.getCustomerId(), doi)).toOptional();
+        var response = attempt(() -> doiClient.getDoi(doi)).toOptional();
         if (response.isPresent()) {
             handleDoiWhenPublicationIsGone(response.get(), input, doi, e) ;
         } else {
@@ -133,7 +133,7 @@ public class UpdateDoiEventHandler
     private void deleteDraftDoi(DoiUpdateRequestEvent updateRequestEvent, Doi doi) {
         try {
             logger.info(DELETING_DRAFT_DOI_MESSAGE, doi.getUri(), updateRequestEvent.getCustomerId(), updateRequestEvent.getPublicationId());
-            doiClient.deleteDraftDoi(updateRequestEvent.getCustomerId(), doi);
+            doiClient.deleteDraftDoi(doi);
         } catch (ClientException ex) {
             throw new RuntimeException(ex);
         }
@@ -143,7 +143,7 @@ public class UpdateDoiEventHandler
         if (isDeletedPublication(exception) || isDeletedDuplicatePublication(exception)) {
             logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
 
-            var resource = getMetadata(input, doi);
+            var resource = getMetadata(doi);
 
             if (input.getDuplicateOf().isPresent()) {
                 var duplicateOf = input.getDuplicateOf().orElseThrow();
@@ -151,7 +151,7 @@ public class UpdateDoiEventHandler
                 addDuplicateIdentifier(resource, duplicateOf);
             }
 
-            deleteMetadata(input.getCustomerId(), doi, toString(resource));
+            deleteMetadata(doi, toString(resource));
         }
     }
 
@@ -169,8 +169,8 @@ public class UpdateDoiEventHandler
         return sw.toString();
     }
 
-    private Resource getMetadata(DoiUpdateRequestEvent input, Doi doi) {
-        return attempt(() -> doiClient.getMetadata(input.getCustomerId(), doi))
+    private Resource getMetadata(Doi doi) {
+        return attempt(() -> doiClient.getMetadata(doi))
                    .map(UpdateDoiEventHandler::unmarshall)
                    .orElseThrow();
     }
@@ -216,15 +216,15 @@ public class UpdateDoiEventHandler
                     input.getPublicationId(),
                     input.getCustomerId());
 
-        doiClient.updateMetadata(input.getCustomerId(), doi, dataCiteXmlMetadata);
-        doiClient.setLandingPage(input.getCustomerId(), doi, input.getPublicationId());
+        doiClient.updateMetadata(doi, dataCiteXmlMetadata);
+        doiClient.setLandingPage(doi, input.getPublicationId());
         logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
     }
 
-    private void deleteMetadata(URI customerId, Doi doi, String updatedMetadata) {
+    private void deleteMetadata(Doi doi, String updatedMetadata) {
         try {
-            doiClient.updateMetadata(customerId, doi, updatedMetadata);
-            doiClient.deleteMetadata(customerId, doi);
+            doiClient.updateMetadata(doi, updatedMetadata);
+            doiClient.deleteMetadata(doi);
         } catch (ClientException ex) {
             throw new RuntimeException(ex);
         }

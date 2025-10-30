@@ -49,32 +49,32 @@ public class DataCiteClientV2 implements DoiClient {
     }
 
     @Override
-    public void updateMetadata(URI customerId, Doi doi, String metadataDataCiteXml) throws ClientException {
-        mdsClient.updateMetadata(customerId, doi, metadataDataCiteXml);
+    public void updateMetadata(Doi doi, String metadataDataCiteXml) throws ClientException {
+        mdsClient.updateMetadata(doi, metadataDataCiteXml);
     }
 
     @Override
-    public void setLandingPage(URI customerId, Doi doi, URI url) throws ClientException {
-        mdsClient.setLandingPage(customerId, doi, url);
+    public void setLandingPage(Doi doi, URI url) throws ClientException {
+        mdsClient.setLandingPage(doi, url);
     }
 
     @Override
-    public void deleteMetadata(URI customerId, Doi doi) throws ClientException {
-        mdsClient.deleteMedata(customerId, doi);
+    public void deleteMetadata(Doi doi) throws ClientException {
+        mdsClient.deleteMedata(doi);
     }
 
     @Override
-    public void deleteDraftDoi(URI customerId, Doi doi) throws ClientException {
-        mdsClient.deleteDraftDoi(customerId, doi);
+    public void deleteDraftDoi(Doi doi) throws ClientException {
+        mdsClient.deleteDraftDoi(doi);
     }
 
     @Override
-    public DoiStateDto getDoi(URI customerId, Doi doi) throws ClientException {
-        return dataCiteRestApiClient.getDoi(customerId, doi);
+    public DoiStateDto getDoi(Doi doi) throws ClientException {
+        return dataCiteRestApiClient.getDoi(doi);
     }
 
     @Override
-    public String getMetadata(URI customerId, Doi doi) throws ClientException {
-        return mdsClient.getMetadata(customerId, doi);
+    public String getMetadata(Doi doi) throws ClientException {
+        return mdsClient.getMetadata(doi);
     }
 }

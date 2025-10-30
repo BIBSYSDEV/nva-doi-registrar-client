@@ -97,7 +97,7 @@ public class DeleteDraftDoiHandlerTest {
 
     private DoiClient doiClientThrowingException(URI doi) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any())).thenAnswer(invocation -> {
+        when(doiClient.getDoi(any())).thenAnswer(invocation -> {
             throw new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
         });
         return doiClient;
@@ -105,16 +105,16 @@ public class DeleteDraftDoiHandlerTest {
 
     private DoiClient doiClientThrowingExceptionWhenDeleting(URI doi) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any()))
+        when(doiClient.getDoi(any()))
             .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), State.DRAFT));
         doThrow(new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY))
-            .when(doiClient).deleteDraftDoi(any(), any());
+            .when(doiClient).deleteDraftDoi(any());
         return doiClient;
     }
 
     private DoiClient doiClientReturningDoi(URI doi, State state) throws ClientException {
         DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any(), any()))
+        when(doiClient.getDoi(any()))
             .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), state));
         return doiClient;
     }
