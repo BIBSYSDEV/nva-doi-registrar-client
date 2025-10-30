@@ -43,12 +43,12 @@ public class MdsClientTest {
         var httpClientMock = mock(HttpClient.class);
         var exceptionMessage = "Something horrible happened";
         when(httpClientMock.send(any(), any())).thenThrow(new IOException(exceptionMessage));
-        var customerId = createValidCustomer(customerConfigExtractor);
+        createValidCustomer(customerConfigExtractor);
         var doi = Doi.fromPrefixAndSuffix(DOI_HOST, DOI_PREFIX, DOI_SUFFIX);
 
         client = new MdsClient(runtimeInfo.getHttpBaseUrl(), customerConfigExtractor, httpClientMock);
 
-        var exception = assertThrows(ClientException.class, () -> client.deleteDraftDoi(customerId, doi));
+        var exception = assertThrows(ClientException.class, () -> client.deleteDraftDoi(doi));
         var expectedMessage = String.format("Request http://localhost:%d/doi/%s/%s DELETE failed.",
                                             runtimeInfo.getHttpPort(),
                                             DOI_PREFIX,

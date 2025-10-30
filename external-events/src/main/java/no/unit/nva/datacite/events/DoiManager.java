@@ -14,10 +14,10 @@ public class DoiManager {
         this.doiClient = doiClient;
     }
 
-    public void deleteDoiIfOnlyDrafted(URI customerId, Doi doi) throws ClientException {
-        var doiState = doiClient.getDoi(customerId, doi);
+    public void deleteDoiIfOnlyDrafted(Doi doi) throws ClientException {
+        var doiState = doiClient.getDoi(doi);
         if (State.DRAFT.equals(doiState.getState())) {
-            doiClient.deleteDraftDoi(customerId, doi);
+            doiClient.deleteDraftDoi(doi);
         }
     }
 }

@@ -6,7 +6,6 @@ import static nva.commons.core.ioutils.IoUtils.stringFromResources;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -97,7 +96,7 @@ public class ExternalUpdatesEventHandlerTest {
     void shouldSilentlyIgnoreExternalEventIfResourceHasNoDoi() throws ClientException {
         var s3Uri = randomUri();
         var messageBody = generateMessageBody(s3Uri);
-        var customerId = UriWrapper.fromUri("https://apihost/customer")
+        UriWrapper.fromUri("https://apihost/customer")
                              .addChild(SortableIdentifier.next().toString())
                              .getUri();
         var eventReference = stringFromResources(Path.of("eventReferenceWithoutDoi.json"));
@@ -105,8 +104,8 @@ public class ExternalUpdatesEventHandlerTest {
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
-        verify(doiClient, times(0)).getDoi(eq(customerId), any());
-        verify(doiClient, times(0)).deleteDraftDoi(eq(customerId), any());
+        verify(doiClient, times(0)).getDoi(any());
+        verify(doiClient, times(0)).deleteDraftDoi(any());
     }
 
     @Test
@@ -120,11 +119,11 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
         var draftDoi = new DoiStateDto(doi.toString(), State.DRAFT);
-        doReturn(draftDoi).when(doiClient).getDoi(eq(customerId), ArgumentMatchers.eq(Doi.fromUri(doi)));
+        doReturn(draftDoi).when(doiClient).getDoi(ArgumentMatchers.eq(Doi.fromUri(doi)));
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
-        verify(doiClient, times(1)).deleteDraftDoi(eq(customerId), any());
+        verify(doiClient, times(1)).deleteDraftDoi(any());
     }
 
     @ParameterizedTest
@@ -139,11 +138,11 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
         var actualDoiState = new DoiStateDto(doi.toString(), state);
-        doReturn(actualDoiState).when(doiClient).getDoi(eq(customerId), ArgumentMatchers.eq(Doi.fromUri(doi)));
+        doReturn(actualDoiState).when(doiClient).getDoi(ArgumentMatchers.eq(Doi.fromUri(doi)));
 
         assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
 
-        verify(doiClient, times(0)).deleteDraftDoi(eq(customerId), any());
+        verify(doiClient, times(0)).deleteDraftDoi(any());
     }
 
     private void invokeHandlerWithEventReferenceAndAssertThrows(String eventReference) {

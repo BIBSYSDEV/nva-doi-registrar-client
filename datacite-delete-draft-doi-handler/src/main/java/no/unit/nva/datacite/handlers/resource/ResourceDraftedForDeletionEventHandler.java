@@ -18,7 +18,6 @@ import nva.commons.core.JacocoGenerated;
 public class ResourceDraftedForDeletionEventHandler
     extends DestinationsEventBridgeEventHandler<ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
 
-    public static final String DRAFT = "draft";
     public static final URI NO_DOI = null;
     public static final String ERROR_GETTING_DOI_STATE = "Error getting DOI state";
     public static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
@@ -55,10 +54,9 @@ public class ResourceDraftedForDeletionEventHandler
 
         verifyEventHasDoi(input);
 
-        var customerId = input.getCustomerId();
         var doi = getDoi(input);
-        verifyDoiIsInDraftState(customerId, doi);
-        return deleteDraftPublication(input, customerId, doi);
+        verifyDoiIsInDraftState(doi);
+        return deleteDraftPublication(input, doi);
     }
 
     private void verifyEventHasDoi(ResourceDraftedForDeletionEvent event) {
@@ -71,10 +69,10 @@ public class ResourceDraftedForDeletionEventHandler
         return Doi.fromUri(input.getDoi());
     }
 
-    private void verifyDoiIsInDraftState(URI customerId, Doi doi) {
+    private void verifyDoiIsInDraftState(Doi doi) {
         DoiStateDto doiState;
         try {
-            doiState = doiClient.getDoi(customerId, doi);
+            doiState = doiClient.getDoi(doi);
         } catch (ClientException e) {
             throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
         }
@@ -86,10 +84,9 @@ public class ResourceDraftedForDeletionEventHandler
 
     private ResourceDraftedForDeletionEvent deleteDraftPublication(
         ResourceDraftedForDeletionEvent event,
-        URI customerId,
         Doi doi) {
         try {
-            doiClient.deleteDraftDoi(customerId, doi);
+            doiClient.deleteDraftDoi(doi);
         } catch (ClientException e) {
             throw new RuntimeException(ERROR_DELETING_DRAFT_DOI, e);
         }

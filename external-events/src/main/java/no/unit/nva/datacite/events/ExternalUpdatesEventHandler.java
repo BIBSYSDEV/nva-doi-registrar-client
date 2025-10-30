@@ -1,13 +1,11 @@
 package no.unit.nva.datacite.events;
 
-import static java.util.Objects.nonNull;
 import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,8 +31,7 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalUpdatesEventHandler.class);
     private static final TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<EventReference>>>
-        SQS_VALUE_TYPE_REF = new TypeReference<>() {
-    };
+        SQS_VALUE_TYPE_REF = new TypeReference<>() {};
     private static final Set<String> HANDLED_TOPICS = Set.of("PublicationService.Resource.Deleted");
     private static final String EVENTS_BUCKET_NAME_ENV = "EVENTS_BUCKET_NAME";
 
@@ -77,24 +74,16 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
     }
 
     private void deleteDoiIfDrafted(Resource deletedResource) {
-        var customerId = extractPublisherIdOrThrow(deletedResource);
         var doi = Doi.fromUri(deletedResource.doi());
         try {
-            doiManager.deleteDoiIfOnlyDrafted(customerId, doi);
+            doiManager.deleteDoiIfOnlyDrafted(doi);
         } catch (ClientException e) {
-            var message = String.format("Failed to check state or delete doi %s on behalf of %s", doi, customerId);
+            var message = String.format("Failed to check state or delete doi %s", doi);
             throw new EventHandlingException(message, e);
         }
 
         var resourceIdentifier = deletedResource.identifier();
         logger.info("Deleted draft DOI {} as resource {} was deleted.", doi.getUri(), resourceIdentifier);
-    }
-
-    private URI extractPublisherIdOrThrow(Resource resource) {
-        if (nonNull(resource.publisher()) && nonNull(resource.publisher().id())) {
-            return resource.publisher().id();
-        }
-        throw new EventHandlingException("Resource has no publisher id.");
     }
 
     private ResourceUpdateEvent getEventBodyFromS3(EventReference eventReference) {
