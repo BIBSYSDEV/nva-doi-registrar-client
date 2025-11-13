@@ -30,8 +30,9 @@ public class HttpSender {
         var response = attempt(() -> httpClient.send(request, BodyHandlers.ofString()))
                            .orElseThrow(failure -> handleFailure(request, failure));
         if (isNotSuccessful(response)) {
-            var message = String.format("External API responded with %s on request %s", response, request);
+            var message = String.format("External API responded with %s on request %s", response.body(), request);
             logger.error(message);
+            logger.error(response.body());
             throw new ClientException(message);
         }
         return response;
