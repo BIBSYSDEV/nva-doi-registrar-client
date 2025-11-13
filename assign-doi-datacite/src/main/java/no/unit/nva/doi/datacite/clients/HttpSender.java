@@ -32,6 +32,7 @@ public class HttpSender {
         if (isNotSuccessful(response)) {
             var message = String.format("External API responded with %s on request %s", response, request);
             logger.error(message);
+            logger.error(response.body());
             throw new ClientException(message);
         }
         return response;
