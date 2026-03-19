@@ -2,6 +2,7 @@ plugins{
     id 'jacoco-report-aggregation'
     id 'base'
     id 'java-library'
+    id 'io.github.michael-nestler.spectral'
 }
 
 
@@ -26,4 +27,9 @@ reporting {
 
 tasks.named('check') {
     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+}
+
+spectral {
+    documents.from("docs/*.yaml")
+    ruleset.set(file('.spectral.yaml'))
 }
