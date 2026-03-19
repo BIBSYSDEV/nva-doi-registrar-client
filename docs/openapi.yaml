@@ -1,7 +1,16 @@
 openapi: 3.0.3
 info:
   title: NVA Doi Registrar API
+  description: API for managing DOI registration and lifecycle through DataCite
   version: 1.0.0
+  contact:
+    email: kontakt@sikt.no
+    url: https://nva.sikt.no
+servers:
+  - url: https://api.nva.unit.no
+tags:
+  - name: DOI
+    description: DOI registration and lifecycle management
 x-amazon-apigateway-request-validators:
   validate_parameters:
     validateRequestBody: false
@@ -13,6 +22,9 @@ paths:
   /draft:
     post:
       summary: Reserve Doi
+      description: Reserve a draft DOI through DataCite for a given customer
+      tags:
+        - DOI
       operationId: createDoiDraft
       requestBody:
         required: true
@@ -45,6 +57,9 @@ paths:
   /draft/{doiPrefix}/{doiSuffix}:
     delete:
       summary: Delete Draft Doi
+      description: Delete a draft DOI from DataCite by prefix and suffix
+      tags:
+        - DOI
       operationId: deleteDoiDraft
       parameters:
         - in: path
@@ -93,6 +108,9 @@ paths:
   /findable:
     post:
       summary: Make Doi findable
+      description: Update a DOI state to findable and register metadata with DataCite
+      tags:
+        - DOI
       operationId: setDoiFindable
       requestBody:
         required: true
