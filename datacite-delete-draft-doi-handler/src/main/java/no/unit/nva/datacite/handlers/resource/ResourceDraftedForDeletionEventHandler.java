@@ -77,7 +77,7 @@ public class ResourceDraftedForDeletionEventHandler
             throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
         }
 
-        if (!State.DRAFT.equals(doiState.getState())) {
+        if (State.DRAFT != doiState.getState()) {
             throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
         }
     }

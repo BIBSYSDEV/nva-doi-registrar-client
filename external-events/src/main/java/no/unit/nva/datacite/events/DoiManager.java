@@ -1,6 +1,5 @@
 package no.unit.nva.datacite.events;
 
-import java.net.URI;
 import no.unit.nva.doi.DoiClient;
 import no.unit.nva.doi.datacite.clients.exception.ClientException;
 import no.unit.nva.doi.datacite.restclient.models.State;
@@ -16,7 +15,7 @@ public class DoiManager {
 
     public void deleteDoiIfOnlyDrafted(Doi doi) throws ClientException {
         var doiState = doiClient.getDoi(doi);
-        if (State.DRAFT.equals(doiState.getState())) {
+        if (State.DRAFT == doiState.getState()) {
             doiClient.deleteDraftDoi(doi);
         }
     }

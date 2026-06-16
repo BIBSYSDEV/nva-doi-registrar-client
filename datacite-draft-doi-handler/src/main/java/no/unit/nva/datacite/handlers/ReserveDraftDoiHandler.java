@@ -54,7 +54,7 @@ public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest,
     private ApiGatewayException logAndThrow(URI customerId, Exception exception) {
         var message = String.format("Creating draft doi for customer '%s' failed.", customerId);
         logger.error(message, exception);
-        return exception instanceof CustomerConfigException customerConfigException
+        return exception instanceof CustomerConfigException
                 ? new BadRequestException("Request could not be processed: DOI customer relation is missing")
                 : new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
     }

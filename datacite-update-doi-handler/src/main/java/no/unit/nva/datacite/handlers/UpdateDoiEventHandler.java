@@ -47,7 +47,7 @@ public class UpdateDoiEventHandler
         + "and duplicateOf \"{}\")";
     private static final String SUCCESSFUL_DOI_REGISTERED =
         "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
-    private static final Logger logger = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
     public static final String ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE = "Adding duplicate identifier to resource {}";
     public static final String DELETING_DRAFT_DOI_MESSAGE = "Deleting draft DOI {} for customer {} when unpublished publication {}";
     public static final String DOI_ALREADY_REGISTERED_MESSAGE = "Doi is already registered {} at customer {} and publication {}";
@@ -93,7 +93,7 @@ public class UpdateDoiEventHandler
         DoiUpdateRequestEvent input,
         PublicationApiClientException e,
         Doi doi) {
-        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
+        LOGGER.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId(),
@@ -107,7 +107,7 @@ public class UpdateDoiEventHandler
     }
 
     private void throwException(PublicationApiClientException exception, DoiUpdateRequestEvent input) {
-        logger.error("Unknown error for publication id {}", input.getPublicationId(), exception);
+        LOGGER.error("Unknown error for publication id {}", input.getPublicationId(), exception);
         throw exception;
     }
 
@@ -119,7 +119,7 @@ public class UpdateDoiEventHandler
             case REGISTERED -> handleRegisteredDoi(input, doi);
             case null, default -> throwException(e, input);
         }
-        logger.info(SUCCESSFUL_DOI_REGISTERED,
+        LOGGER.info(SUCCESSFUL_DOI_REGISTERED,
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId());
@@ -127,12 +127,12 @@ public class UpdateDoiEventHandler
     }
 
     private void handleRegisteredDoi(DoiUpdateRequestEvent requestEvent, Doi doi) {
-        logger.info(DOI_ALREADY_REGISTERED_MESSAGE, doi, requestEvent.getCustomerId(), requestEvent.getPublicationId());
+        LOGGER.info(DOI_ALREADY_REGISTERED_MESSAGE, doi, requestEvent.getCustomerId(), requestEvent.getPublicationId());
     }
 
     private void deleteDraftDoi(DoiUpdateRequestEvent updateRequestEvent, Doi doi) {
         try {
-            logger.info(DELETING_DRAFT_DOI_MESSAGE, doi.getUri(), updateRequestEvent.getCustomerId(), updateRequestEvent.getPublicationId());
+            LOGGER.info(DELETING_DRAFT_DOI_MESSAGE, doi.getUri(), updateRequestEvent.getCustomerId(), updateRequestEvent.getPublicationId());
             doiClient.deleteDraftDoi(doi);
         } catch (ClientException ex) {
             throw new RuntimeException(ex);
@@ -141,13 +141,13 @@ public class UpdateDoiEventHandler
 
     private void handleFindableDoi(DoiUpdateRequestEvent input, Doi doi, PublicationApiClientException exception) {
         if (isDeletedPublication(exception) || isDeletedDuplicatePublication(exception)) {
-            logger.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
+            LOGGER.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
 
             var resource = getMetadata(doi);
 
             if (input.getDuplicateOf().isPresent()) {
                 var duplicateOf = input.getDuplicateOf().orElseThrow();
-                logger.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
+                LOGGER.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
                 addDuplicateIdentifier(resource, duplicateOf);
             }
 
@@ -204,21 +204,21 @@ public class UpdateDoiEventHandler
 
     private static boolean isIdentical(RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
         return existingIdentifier.getValue().equals(newIdentifier.getValue())
-               && existingIdentifier.getRelatedIdentifierType().equals(newIdentifier.getRelatedIdentifierType());
+               && existingIdentifier.getRelatedIdentifierType() == newIdentifier.getRelatedIdentifierType();
     }
 
     private void makeDoiFindable(
         DoiUpdateRequestEvent input,
         Doi doi,
         String dataCiteXmlMetadata) throws ClientException {
-        logger.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG,
+        LOGGER.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG,
                     doi.getUri(),
                     input.getPublicationId(),
                     input.getCustomerId());
 
         doiClient.updateMetadata(doi, dataCiteXmlMetadata);
         doiClient.setLandingPage(doi, input.getPublicationId());
-        logger.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
+        LOGGER.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
     }
 
     private void deleteMetadata(Doi doi, String updatedMetadata) {
