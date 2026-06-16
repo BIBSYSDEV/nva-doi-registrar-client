@@ -48,7 +48,7 @@ public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
         var doiState = attempt(() -> doiClient.getDoi(doi))
                 .orElseThrow(failure ->
                         handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
-        if (!State.DRAFT.equals(doiState.getState())) {
+        if (State.DRAFT != doiState.getState()) {
             throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
         }
     }

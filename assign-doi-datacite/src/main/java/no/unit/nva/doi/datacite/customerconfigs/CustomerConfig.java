@@ -2,6 +2,7 @@ package no.unit.nva.doi.datacite.customerconfigs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
@@ -36,7 +37,8 @@ public class CustomerConfig {
     }
 
     private static String basicAuth(String username, String password) {
-        return "Basic " + Base64.getEncoder().encodeToString((username + COLON + password).getBytes());
+        return "Basic " + Base64.getEncoder()
+                   .encodeToString((username + COLON + password).getBytes(StandardCharsets.UTF_8));
     }
 
     private boolean isFullyConfigured() {

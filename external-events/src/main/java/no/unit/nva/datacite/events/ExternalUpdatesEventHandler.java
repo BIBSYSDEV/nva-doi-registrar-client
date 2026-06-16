@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Void> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExternalUpdatesEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalUpdatesEventHandler.class);
     private static final TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<EventReference>>>
         SQS_VALUE_TYPE_REF = new TypeReference<>() {};
     private static final Set<String> HANDLED_TOPICS = Set.of("PublicationService.Resource.Deleted");
@@ -83,7 +83,7 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
         }
 
         var resourceIdentifier = deletedResource.identifier();
-        logger.info("Deleted draft DOI {} as resource {} was deleted.", doi.getUri(), resourceIdentifier);
+        LOGGER.info("Deleted draft DOI {} as resource {} was deleted.", doi.getUri(), resourceIdentifier);
     }
 
     private ResourceUpdateEvent getEventBodyFromS3(EventReference eventReference) {
@@ -94,7 +94,7 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
 
     private RuntimeException logAndThrow(Failure<ResourceUpdateEvent> updateEventFailure) {
         final Throwable cause = updateEventFailure.getException();
-        logger.error("Unable to parse s3 event reference", cause);
+        LOGGER.error("Unable to parse s3 event reference", cause);
         throw new EventHandlingException(
             "Failed to parse s3 event reference!", cause);
     }
