@@ -32,10 +32,6 @@ tasks.withType(JavaCompile) {
     dependsOn(xsd2java)
 }
 
-tasks.withType(Checkstyle) {
-    exclude { '**/generated/*' }
-}
-
 tasks.withType(Pmd) {
     exclude { '**/generated/*' }
 }
