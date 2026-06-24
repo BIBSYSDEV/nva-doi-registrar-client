@@ -33,7 +33,7 @@ task xsd2java() {
         ant.jaxbTargetDir = jaxbTargetDir
         ant.xjc(
                 destdir: '${jaxbTargetDir}',
-                package: 'org.datacide.schema.kernel_4',
+                package: 'org.datacite.schema.kernel_4',
                 schema: "https://schema.datacite.org/meta/kernel-${schemaVersion}/metadata.xsd"
         )
     }

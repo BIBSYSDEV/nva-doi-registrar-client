@@ -6,7 +6,7 @@ nva {
     dependencyAnalysis {
         enforced = false // FIXME
     }
-    generatedCode = ['org/datacide/schema/**']
+    generatedCode = ['org/datacite/schema/**']
     jacoco {
         minMethodCoverage = 1.000
         minClassCoverage = 1.000
