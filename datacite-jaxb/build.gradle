@@ -1,3 +1,7 @@
+plugins {
+    id 'nva.doiregistrar.service.java-conventions'
+}
+
 project.ext {
     jaxbTargetDir = file("$buildDir/generated/sources/xjc")
 }

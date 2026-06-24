@@ -1,3 +1,7 @@
+plugins {
+    id 'nva.doiregistrar.service.java-conventions'
+}
+
 dependencies {
 
     implementation nvaLibs.core
