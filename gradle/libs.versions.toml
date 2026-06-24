@@ -1,16 +1,10 @@
 [versions]
-awsSdk = { strictly = '1.12.787' }
 jakartaBindApi = { strictly = '4.0.5' }
 javaxActivation = { strictly = '2.1.4' }
 jaxbRuntime = { strictly = '4.0.9' }
-secretsCaching = { strictly = '1.0.1' }
 sunJaxb = { strictly = '4.0.9' }
 
 [libraries]
-aws-sdk = { group = 'com.amazonaws', name = 'aws-java-sdk', version.ref = 'awsSdk' }
-aws-sdk-secrets = { group = 'com.amazonaws', name = 'aws-java-sdk-secretsmanager', version.ref = 'awsSdk' }
-aws-secretsmanager-caching = { group = 'com.amazonaws.secretsmanager', name = 'aws-secretsmanager-caching-java', version.ref = 'secretsCaching' }
-
 jakarta-bind-api = { group = 'jakarta.xml.bind', name = 'jakarta.xml.bind-api', version.ref = 'jakartaBindApi' }
 jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxbRuntime' }
 xsd2java-xjc = { group = 'com.sun.xml.bind', name = 'jaxb-xjc', version.ref = 'sunJaxb' }

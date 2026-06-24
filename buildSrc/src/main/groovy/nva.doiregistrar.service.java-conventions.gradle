@@ -20,11 +20,7 @@ nva {
     }
 }
 
-
 dependencies {
-    testImplementation nvaCatalog.junit.jupiter.engine
-    testImplementation nvaCatalog.junit.jupiter.params
-    testImplementation nvaCatalog.hamcrest
-    testImplementation nvaCatalog.mockito.core
-    testImplementation nvaLibs.testutils
+    testRuntimeOnly(nvaCatalog.junit.jupiter.engine)
+    testRuntimeOnly(nvaCatalog.junit.platform.launcher)
 }
