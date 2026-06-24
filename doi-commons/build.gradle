@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api nvaCatalog.jackson.annotations
-    api nvaCatalog.zalando
-    implementation nvaLibs.core
+    api(nvaCatalog.jackson.annotations)
+    api(nvaCatalog.zalando)
+    implementation(nvaLibs.core)
 }

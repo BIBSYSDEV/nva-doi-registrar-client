@@ -3,12 +3,12 @@ plugins {
 }
 
 dependencies {
-    api nvaLibs.eventhandlers
-    api project (":doi-commons")
-    implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.wiremock.core
-    implementation nvaLibs.core
-    implementation nvaLibs.json
+    api(nvaLibs.eventhandlers)
+    api(project(":doi-commons"))
+    implementation(nvaCatalog.jackson.databind)
+    implementation(nvaCatalog.wiremock.core)
+    implementation(nvaLibs.core)
+    implementation(nvaLibs.json)
 }
 
 test{

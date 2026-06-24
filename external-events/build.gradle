@@ -3,24 +3,24 @@ plugins {
 }
 
 dependencies {
-    api nvaCatalog.aws.lambda.core
-    api nvaCatalog.aws.lambda.events
-    api nvaCatalog.aws.sdk2.s3
-    api nvaLibs.core
-    api nvaLibs.doi
-    api project(":assign-doi-datacite")
-    implementation nvaCatalog.jackson.core
-    implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.log4j.core
-    implementation nvaCatalog.slf4j.api
-    implementation nvaLibs.eventhandlers
-    implementation nvaLibs.json
-    implementation nvaLibs.s3
-    testImplementation nvaCatalog.junit.jupiter.api
-    testImplementation nvaCatalog.junit.jupiter.params
-    testImplementation nvaCatalog.mockito.core
-    testImplementation nvaLibs.identifiers
-    testImplementation nvaLibs.testutils
+    api(nvaCatalog.aws.lambda.core)
+    api(nvaCatalog.aws.lambda.events)
+    api(nvaCatalog.aws.sdk2.s3)
+    api(nvaLibs.core)
+    api(nvaLibs.doi)
+    api(project(":assign-doi-datacite"))
+    implementation(nvaCatalog.jackson.core)
+    implementation(nvaCatalog.jackson.databind)
+    implementation(nvaCatalog.log4j.core)
+    implementation(nvaCatalog.slf4j.api)
+    implementation(nvaLibs.eventhandlers)
+    implementation(nvaLibs.json)
+    implementation(nvaLibs.s3)
+    testImplementation(nvaCatalog.junit.jupiter.api)
+    testImplementation(nvaCatalog.junit.jupiter.params)
+    testImplementation(nvaCatalog.mockito.core)
+    testImplementation(nvaLibs.identifiers)
+    testImplementation(nvaLibs.testutils)
 }
 
 

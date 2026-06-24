@@ -3,29 +3,29 @@ plugins {
 }
 
 dependencies {
-    api nvaCatalog.aws.lambda.core
-    api nvaCatalog.jackson.annotations
-    api nvaLibs.apigateway
-    api nvaLibs.core
-    api nvaLibs.eventhandlers
-    api nvaLibs.identifiers
-    api project(":assign-doi-datacite")
-    implementation nvaCatalog.log4j.core
-    implementation nvaCatalog.slf4j.api
-    implementation nvaLibs.doi
-    implementation project(":doi-commons")
-    testImplementation nvaCatalog.aws.sdk2.utils
-    testImplementation nvaCatalog.guava
-    testImplementation nvaCatalog.hamcrest
-    testImplementation nvaCatalog.httpcore5
-    testImplementation nvaCatalog.jackson.core
-    testImplementation nvaCatalog.jackson.databind
-    testImplementation nvaCatalog.junit.jupiter.api
-    testImplementation nvaCatalog.mockito.core
-    testImplementation nvaCatalog.wiremock.junit5
-    testImplementation nvaCatalog.zalando
-    testImplementation nvaLibs.json
-    testImplementation nvaLibs.testutils
+    api(nvaCatalog.aws.lambda.core)
+    api(nvaCatalog.jackson.annotations)
+    api(nvaLibs.apigateway)
+    api(nvaLibs.core)
+    api(nvaLibs.eventhandlers)
+    api(nvaLibs.identifiers)
+    api(project(":assign-doi-datacite"))
+    implementation(nvaCatalog.log4j.core)
+    implementation(nvaCatalog.slf4j.api)
+    implementation(nvaLibs.doi)
+    implementation(project(":doi-commons"))
+    testImplementation(nvaCatalog.aws.sdk2.utils)
+    testImplementation(nvaCatalog.guava)
+    testImplementation(nvaCatalog.hamcrest)
+    testImplementation(nvaCatalog.httpcore5)
+    testImplementation(nvaCatalog.jackson.core)
+    testImplementation(nvaCatalog.jackson.databind)
+    testImplementation(nvaCatalog.junit.jupiter.api)
+    testImplementation(nvaCatalog.mockito.core)
+    testImplementation(nvaCatalog.wiremock.junit5)
+    testImplementation(nvaCatalog.zalando)
+    testImplementation(nvaLibs.json)
+    testImplementation(nvaLibs.testutils)
 }
 
 
