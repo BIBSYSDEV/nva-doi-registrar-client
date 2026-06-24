@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static no.unit.nva.datacite.handlers.UpdateDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,8 +44,7 @@ import no.unit.nva.identifiers.SortableIdentifier;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
-import nva.commons.logutils.TestAppender;
+import nva.commons.logutils.LogRecorder;
 import org.datacite.schema.kernel_4.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -139,12 +139,12 @@ public class UpdateDoiEventHandlerTest extends TestBase {
 
     @Test
     void handleRequestSuccessfullyIsLogged() {
-        TestAppender testingAppender = LogUtils.getTestingAppender(UpdateDoiEventHandler.class);
+        var logRecorder = LogRecorder.forClass(UpdateDoiEventHandler.class);
         var publicationIdentifier = SortableIdentifier.next().toString();
         var inputStream = createDoiRequestInputStream(publicationIdentifier);
         mockDataciteXmlBody(publicationIdentifier);
         updateDoiHandler.handleRequest(inputStream, outputStream, context);
-        assertThat(testingAppender.getMessages(), containsString(SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI));
+        assertThat(logRecorder.messages(), hasItem(containsString(SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI)));
     }
 
     @Test

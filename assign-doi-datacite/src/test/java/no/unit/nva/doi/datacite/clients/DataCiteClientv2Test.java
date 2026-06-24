@@ -27,6 +27,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
@@ -58,7 +59,7 @@ import no.unit.nva.doi.models.Doi;
 import no.unit.nva.stubs.WiremockHttpClient;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.useragent.UserAgent;
-import nva.commons.logutils.LogUtils;
+import nva.commons.logutils.LogRecorder;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,13 +181,13 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowDoiClientExceptionWhenDataciteRespondsWithException() {
-        final var logAppender = LogUtils.getTestingAppenderForRootLogger();
+        var logRecorder = LogRecorder.forRoot(DataCiteClientv2Test.class);
         var customerUri = createValidCustomer(customerConfigExtractor);
         var responseBody = "someResponseBody";
         stubHttpClientException(responseBody);
         var exception = assertThrows(ClientException.class, () -> client.createDoi(customerUri));
         assertThat(exception.getMessage(), containsString("403"));
-        assertThat(logAppender.getMessages(), containsString(responseBody));
+        assertThat(logRecorder.messages(), hasItem(containsString(responseBody)));
     }
 
     @Test
