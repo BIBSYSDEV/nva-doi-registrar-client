@@ -7,16 +7,16 @@ import no.unit.nva.doi.models.Doi;
 
 public class DoiManager {
 
-    private final DoiClient doiClient;
+  private final DoiClient doiClient;
 
-    public DoiManager(final DoiClient doiClient) {
-        this.doiClient = doiClient;
-    }
+  public DoiManager(final DoiClient doiClient) {
+    this.doiClient = doiClient;
+  }
 
-    public void deleteDoiIfOnlyDrafted(Doi doi) throws ClientException {
-        var doiState = doiClient.getDoi(doi);
-        if (State.DRAFT == doiState.getState()) {
-            doiClient.deleteDraftDoi(doi);
-        }
+  public void deleteDoiIfOnlyDrafted(Doi doi) throws ClientException {
+    var doiState = doiClient.getDoi(doi);
+    if (State.DRAFT == doiState.getState()) {
+      doiClient.deleteDraftDoi(doi);
     }
+  }
 }

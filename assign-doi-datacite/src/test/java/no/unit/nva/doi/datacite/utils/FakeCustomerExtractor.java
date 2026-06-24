@@ -7,19 +7,19 @@ import no.unit.nva.doi.models.Doi;
 
 public class FakeCustomerExtractor implements CustomerConfigExtractor {
 
-    private CustomerConfig customerConfig;
+  private CustomerConfig customerConfig;
 
-    @Override
-    public CustomerConfig getCustomerConfig(URI customerId) {
-        return customerConfig;
-    }
+  @Override
+  public CustomerConfig getCustomerConfig(URI customerId) {
+    return customerConfig;
+  }
 
-    @Override
-    public CustomerConfig getCustomerConfig(Doi doi) {
-        return customerConfig;
-    }
+  @Override
+  public CustomerConfig getCustomerConfig(Doi doi) {
+    return customerConfig;
+  }
 
-    public void setCustomerConfig(CustomerConfig customerConfig) {
-        this.customerConfig = customerConfig;
-    }
+  public void setCustomerConfig(CustomerConfig customerConfig) {
+    this.customerConfig = customerConfig;
+  }
 }

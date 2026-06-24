@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,84 +24,91 @@ import org.junit.jupiter.api.Test;
 
 class ResourceDraftedForDeletionEventHandlerTest {
 
-    static final String DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON = "delete_draft_publication_without_doi.json";
-    static final String DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON = "delete_draft_publication_with_doi.json";
-    static final String DOI_IDENTIFIER = "10.23/456789";
+  static final String DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON =
+      "delete_draft_publication_without_doi.json";
+  static final String DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON =
+      "delete_draft_publication_with_doi.json";
+  static final String DOI_IDENTIFIER = "10.23/456789";
 
-    private ResourceDraftedForDeletionEventHandler handler;
-    private ByteArrayOutputStream outputStream;
-    private Context context;
+  private ResourceDraftedForDeletionEventHandler handler;
+  private ByteArrayOutputStream outputStream;
+  private Context context;
 
-    @BeforeEach
-    void setUp() throws ClientException {
-        handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningDoi(State.DRAFT));
-        outputStream = new ByteArrayOutputStream();
-        context = mock(Context.class);
+  @BeforeEach
+  void setUp() throws ClientException {
+    handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningDoi(State.DRAFT));
+    outputStream = new ByteArrayOutputStream();
+    context = mock(Context.class);
+  }
+
+  @Test
+  void handleRequestReturnsOutputWithoutDoiOnInputWithDoi() throws IOException {
+    try (var inputStream =
+        IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
+      handler.handleRequest(inputStream, outputStream, context);
+
+      var event =
+          dtoObjectMapper.readValue(
+              outputStream.toString(StandardCharsets.UTF_8), ResourceDraftedForDeletionEvent.class);
+
+      assertThat(event.hasDoi(), is(equalTo(false)));
     }
+  }
 
-    @Test
-    void handleRequestReturnsOutputWithoutDoiOnInputWithDoi() throws IOException {
-        try (var inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
-            handler.handleRequest(inputStream, outputStream, context);
+  @Test
+  void handleRequestThrowsExceptionOnInputWithoutDoi() throws IOException {
+    try (var inputStream =
+        IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON)) {
 
-            var event =
-                dtoObjectMapper.readValue(outputStream.toString(StandardCharsets.UTF_8),
-                                          ResourceDraftedForDeletionEvent.class);
-
-            assertThat(event.hasDoi(), is(equalTo(false)));
-        }
+      assertThrows(
+          RuntimeException.class,
+          () -> handler.handleRequest(inputStream, outputStream, context),
+          ResourceDraftedForDeletionEventHandler.EXPECTED_EVENT_WITH_DOI);
     }
+  }
 
-    @Test
-    void handleRequestThrowsExceptionOnInputWithoutDoi() throws IOException {
-        try (var inputStream
-                 = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITHOUT_DOI_JSON)) {
+  @Test
+  void handleRequestThrowsExceptionWhenRemoteServiceFails() throws ClientException, IOException {
+    handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningError());
 
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         ResourceDraftedForDeletionEventHandler.EXPECTED_EVENT_WITH_DOI);
-        }
+    try (var inputStream =
+        IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
+      assertThrows(
+          RuntimeException.class,
+          () -> handler.handleRequest(inputStream, outputStream, context),
+          ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI);
     }
+  }
 
-    @Test
-    void handleRequestThrowsExceptionWhenRemoteServiceFails() throws ClientException, IOException {
-        handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningError());
+  @Test
+  void handleRequestThrowsExceptionWhenDoiIsNotInDraftState() throws ClientException, IOException {
+    handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningDoi(State.FINDABLE));
 
-        try (var inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI);
-        }
+    try (var inputStream =
+        IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
+      assertThrows(
+          RuntimeException.class,
+          () -> handler.handleRequest(inputStream, outputStream, context),
+          ResourceDraftedForDeletionEventHandler.NOT_DRAFT_DOI_ERROR);
     }
+  }
 
-    @Test
-    void handleRequestThrowsExceptionWhenDoiIsNotInDraftState() throws ClientException, IOException {
-        handler = new ResourceDraftedForDeletionEventHandler(doiClientReturningDoi(State.FINDABLE));
+  private DoiClient doiClientReturningError() throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.getDoi(any())).thenAnswer(invocation -> doiState(State.DRAFT));
+    doThrow(new RuntimeException(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI))
+        .when(doiClient)
+        .deleteDraftDoi(any());
+    return doiClient;
+  }
 
-        try (var inputStream = IoUtils.inputStreamFromResources(DELETE_DRAFT_PUBLICATION_WITH_DOI_JSON)) {
-            assertThrows(RuntimeException.class,
-                         () -> handler.handleRequest(inputStream, outputStream, context),
-                         ResourceDraftedForDeletionEventHandler.NOT_DRAFT_DOI_ERROR);
-        }
-    }
+  private DoiClient doiClientReturningDoi(State state) throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.getDoi(any())).thenAnswer(invocation -> doiState(state));
+    return doiClient;
+  }
 
-    private DoiClient doiClientReturningError() throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any()))
-            .thenAnswer(invocation -> doiState(State.DRAFT));
-        doThrow(new RuntimeException(ResourceDraftedForDeletionEventHandler.ERROR_DELETING_DRAFT_DOI))
-            .when(doiClient).deleteDraftDoi(any());
-        return doiClient;
-    }
-
-    private DoiClient doiClientReturningDoi(State state) throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any()))
-            .thenAnswer(invocation -> doiState(state));
-        return doiClient;
-    }
-
-    private DoiStateDto doiState(State state) {
-        return new DoiStateDto(DOI_IDENTIFIER, state);
-    }
+  private DoiStateDto doiState(State state) {
+    return new DoiStateDto(DOI_IDENTIFIER, state);
+  }
 }

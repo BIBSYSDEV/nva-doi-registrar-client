@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.handlers;
 
 import static nva.commons.core.attempt.Try.attempt;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -21,51 +22,54 @@ import org.slf4j.LoggerFactory;
 
 public class ReserveDraftDoiHandler extends ApiGatewayHandler<ReserveDoiRequest, DoiResponse> {
 
-    private final Logger logger = LoggerFactory.getLogger(ReserveDraftDoiHandler.class);
+  private final Logger logger = LoggerFactory.getLogger(ReserveDraftDoiHandler.class);
 
-    public static final String BAD_RESPONSE_FROM_DATA_CITE = "Bad response from DataCite";
-    private final DoiClient doiClient;
+  public static final String BAD_RESPONSE_FROM_DATA_CITE = "Bad response from DataCite";
+  private final DoiClient doiClient;
 
-    public ReserveDraftDoiHandler(DoiClient doiClient, Environment environment) {
-        super(ReserveDoiRequest.class, environment);
-        this.doiClient = doiClient;
-    }
+  public ReserveDraftDoiHandler(DoiClient doiClient, Environment environment) {
+    super(ReserveDoiRequest.class, environment);
+    this.doiClient = doiClient;
+  }
 
-    @JacocoGenerated
-    public ReserveDraftDoiHandler() {
-        this(defaultDoiClient(), new Environment());
-    }
+  @JacocoGenerated
+  public ReserveDraftDoiHandler() {
+    this(defaultDoiClient(), new Environment());
+  }
 
-    @Override
-    protected void validateRequest(ReserveDoiRequest reserveDoiRequest, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        //Do nothing
-    }
+  @Override
+  protected void validateRequest(
+      ReserveDoiRequest reserveDoiRequest, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    // Do nothing
+  }
 
-    @Override
-    protected DoiResponse processInput(ReserveDoiRequest input, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        var customerId = input.getCustomer();
-        return attempt(() -> doiClient.createDoi(customerId))
-                   .map(doi -> new DoiResponse(doi.getUri()))
-                   .orElseThrow(failure -> logAndThrow(customerId, failure.getException()));
-    }
+  @Override
+  protected DoiResponse processInput(
+      ReserveDoiRequest input, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    var customerId = input.getCustomer();
+    return attempt(() -> doiClient.createDoi(customerId))
+        .map(doi -> new DoiResponse(doi.getUri()))
+        .orElseThrow(failure -> logAndThrow(customerId, failure.getException()));
+  }
 
-    private ApiGatewayException logAndThrow(URI customerId, Exception exception) {
-        var message = String.format("Creating draft doi for customer '%s' failed.", customerId);
-        logger.error(message, exception);
-        return exception instanceof CustomerConfigException
-                ? new BadRequestException("Request could not be processed: DOI customer relation is missing")
-                : new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
-    }
+  private ApiGatewayException logAndThrow(URI customerId, Exception exception) {
+    var message = String.format("Creating draft doi for customer '%s' failed.", customerId);
+    logger.error(message, exception);
+    return exception instanceof CustomerConfigException
+        ? new BadRequestException(
+            "Request could not be processed: DOI customer relation is missing")
+        : new BadGatewayException(BAD_RESPONSE_FROM_DATA_CITE);
+  }
 
-    @Override
-    protected Integer getSuccessStatusCode(ReserveDoiRequest input, DoiResponse output) {
-        return HttpURLConnection.HTTP_CREATED;
-    }
+  @Override
+  protected Integer getSuccessStatusCode(ReserveDoiRequest input, DoiResponse output) {
+    return HttpURLConnection.HTTP_CREATED;
+  }
 
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 }

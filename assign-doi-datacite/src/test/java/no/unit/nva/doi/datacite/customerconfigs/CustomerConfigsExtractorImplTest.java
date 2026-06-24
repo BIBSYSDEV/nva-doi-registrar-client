@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.nio.file.Path;
 import no.unit.nva.doi.datacite.utils.FakeSecretsManagerCountingCalls;
 import no.unit.nva.doi.models.Doi;
@@ -18,86 +19,104 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("PMD.CloseResource")
 class CustomerConfigsExtractorImplTest {
 
-    private static final String SECRET_NAME = "someSecretName";
-    private static final String SECRET_KEY = "someSecretKey";
+  private static final String SECRET_NAME = "someSecretName";
+  private static final String SECRET_KEY = "someSecretKey";
 
+  private static CustomerConfigExtractorImpl getDefaultConfigExtractor() {
+    var fakeSecretsManagerClient = new FakeSecretsManagerClient();
+    fakeSecretsManagerClient.putSecret(SECRET_NAME, SECRET_KEY, getValidSecretString());
+    var secretsReader = new SecretsReader(fakeSecretsManagerClient);
+    return new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
+  }
 
-    private static CustomerConfigExtractorImpl getDefaultConfigExtractor() {
-        var fakeSecretsManagerClient = new FakeSecretsManagerClient();
-        fakeSecretsManagerClient.putSecret(SECRET_NAME, SECRET_KEY, getValidSecretString());
-        var secretsReader = new SecretsReader(fakeSecretsManagerClient);
-        return new CustomerConfigExtractorImpl(secretsReader,
-          SECRET_NAME,
-          SECRET_KEY);
-    }
+  private static String getValidSecretString() {
+    return IoUtils.stringFromResources(Path.of("example-mds-config.json"));
+  }
 
-    private static String getValidSecretString() {
-        return IoUtils.stringFromResources(Path.of("example-mds-config.json"));
-    }
+  @Test
+  void shouldThrowExceptionWhenRetrievingCustomerConfigIfSecretReaderDoesNotContainCustomer() {
+    var fakeSecretsManagerClient = new FakeSecretsManagerClient();
+    var secretsReader = new SecretsReader(fakeSecretsManagerClient);
+    var customerConfigExtractor =
+        new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
+    assertThrows(
+        CustomerConfigException.class,
+        () -> customerConfigExtractor.getCustomerConfig(randomUri()));
+  }
 
-    @Test
-    void shouldThrowExceptionWhenRetrievingCustomerConfigIfSecretReaderDoesNotContainCustomer() {
-        var fakeSecretsManagerClient = new FakeSecretsManagerClient();
-        var secretsReader = new SecretsReader(fakeSecretsManagerClient);
-        var customerConfigExtractor = new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
-        assertThrows(CustomerConfigException.class, () -> customerConfigExtractor.getCustomerConfig(randomUri()));
-    }
+  @Test
+  void shouldThrowExceptionIfConfigFromSecretsManagerIsNotParsable() {
+    var fakeSecretsManagerClient = new FakeSecretsManagerClient();
+    fakeSecretsManagerClient.putSecret(SECRET_NAME, SECRET_KEY, randomString());
+    var secretsReader = new SecretsReader(fakeSecretsManagerClient);
+    var customerConfigExtractor =
+        new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
+    assertThrows(
+        CustomerConfigException.class,
+        () -> customerConfigExtractor.getCustomerConfig(randomUri()));
+  }
 
-    @Test
-    void shouldThrowExceptionIfConfigFromSecretsManagerIsNotParsable() {
-        var fakeSecretsManagerClient = new FakeSecretsManagerClient();
-        fakeSecretsManagerClient.putSecret(SECRET_NAME, SECRET_KEY, randomString());
-        var secretsReader = new SecretsReader(fakeSecretsManagerClient);
-        var customerConfigExtractor = new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
-        assertThrows(CustomerConfigException.class, () -> customerConfigExtractor.getCustomerConfig(randomUri()));
-    }
+  @Test
+  void shouldThrowExceptionWhenAttemptingToRetrieveCustomerThatDoesNotExist() {
+    var customerUriNotInConfig = randomUri();
+    var customerConfigExtractor = getDefaultConfigExtractor();
+    assertThrows(
+        CustomerConfigException.class,
+        () -> customerConfigExtractor.getCustomerConfig(customerUriNotInConfig));
+  }
 
-    @Test
-    void shouldThrowExceptionWhenAttemptingToRetrieveCustomerThatDoesNotExist() {
-        var customerUriNotInConfig = randomUri();
-        var customerConfigExtractor = getDefaultConfigExtractor();
-        assertThrows(CustomerConfigException.class,
-                     () -> customerConfigExtractor.getCustomerConfig(customerUriNotInConfig));
-    }
+  @Test
+  void shouldReturnCustomerWhenRetrievingCustomerThatExistInConfig()
+      throws CustomerConfigException {
+    var expectedCustomer =
+        new CustomerConfig(
+            UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
+            "randompasswd1",
+            "user1.repository",
+            "10.5072");
+    var customerConfigExtractor = getDefaultConfigExtractor();
+    var actualCustomer =
+        customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
+    assertThat(actualCustomer, is(equalTo(expectedCustomer)));
+  }
 
-    @Test
-    void shouldReturnCustomerWhenRetrievingCustomerThatExistInConfig()
-        throws CustomerConfigException {
-        var expectedCustomer = new CustomerConfig(UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
-                                                  "randompasswd1",
-                                                  "user1.repository",
-                                                  "10.5072");
-        var customerConfigExtractor = getDefaultConfigExtractor();
-        var actualCustomer = customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
-        assertThat(actualCustomer, is(equalTo(expectedCustomer)));
-    }
+  @Test
+  void shouldReturnCustomerConfigWhenInputIsDoiAndCustomerExists() throws CustomerConfigException {
+    var doiPrefix = "10.5072";
+    var expectedCustomer =
+        new CustomerConfig(
+            UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
+            "randompasswd1",
+            "user1.repository",
+            doiPrefix);
+    var customerConfigExtractor = getDefaultConfigExtractor();
+    var actualCustomer =
+        customerConfigExtractor.getCustomerConfig(Doi.fromDoiIdentifier(doiPrefix + "/123"));
+    assertThat(actualCustomer, is(equalTo(expectedCustomer)));
+  }
 
-    @Test
-    void shouldReturnCustomerConfigWhenInputIsDoiAndCustomerExists() throws CustomerConfigException {
-        var doiPrefix = "10.5072";
-        var expectedCustomer = new CustomerConfig(UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
-                "randompasswd1",
-                "user1.repository",
-                doiPrefix);
-        var customerConfigExtractor = getDefaultConfigExtractor();
-        var actualCustomer = customerConfigExtractor.getCustomerConfig(Doi.fromDoiIdentifier(doiPrefix + "/123"));
-        assertThat(actualCustomer, is(equalTo(expectedCustomer)));
-    }
-
-    @Test
-    void shouldOnlyFetchSecretOnceAfterBeingConstructed() throws CustomerConfigException {
-        var fakeSecretsManagerClientCountingCalls = new FakeSecretsManagerCountingCalls();
-        fakeSecretsManagerClientCountingCalls.putSecret(SECRET_NAME, SECRET_KEY, getValidSecretString());
-        var secretsReader = new SecretsReader(fakeSecretsManagerClientCountingCalls);
-        var customerConfigExtractor = new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
-        var expectedCustomer = new CustomerConfig(UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
-                                                  "randompasswd1",
-                                                  "user1.repository",
-                                                  "10.5072");
-        var actualCustomerFirst = customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
-        var actualCustomerSecond = customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
-        assertThat(actualCustomerFirst, is(equalTo(expectedCustomer)));
-        assertThat(actualCustomerSecond, is(equalTo(expectedCustomer)));
-        assertThat(fakeSecretsManagerClientCountingCalls.getNumberOfTimesFetchSecretsHasBeenCalled(), is(equalTo(1)));
-    }
+  @Test
+  void shouldOnlyFetchSecretOnceAfterBeingConstructed() throws CustomerConfigException {
+    var fakeSecretsManagerClientCountingCalls = new FakeSecretsManagerCountingCalls();
+    fakeSecretsManagerClientCountingCalls.putSecret(
+        SECRET_NAME, SECRET_KEY, getValidSecretString());
+    var secretsReader = new SecretsReader(fakeSecretsManagerClientCountingCalls);
+    var customerConfigExtractor =
+        new CustomerConfigExtractorImpl(secretsReader, SECRET_NAME, SECRET_KEY);
+    var expectedCustomer =
+        new CustomerConfig(
+            UriWrapper.fromUri("https://example.net/customer/id/1234").getUri(),
+            "randompasswd1",
+            "user1.repository",
+            "10.5072");
+    var actualCustomerFirst =
+        customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
+    var actualCustomerSecond =
+        customerConfigExtractor.getCustomerConfig(expectedCustomer.getCustomerId());
+    assertThat(actualCustomerFirst, is(equalTo(expectedCustomer)));
+    assertThat(actualCustomerSecond, is(equalTo(expectedCustomer)));
+    assertThat(
+        fakeSecretsManagerClientCountingCalls.getNumberOfTimesFetchSecretsHasBeenCalled(),
+        is(equalTo(1)));
+  }
 }

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   AWS
@@ -7,7 +7,7 @@ Description: >
 
 Parameters:
   CognitoAuthorizerArn:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Description: Reference to Cognito UserPool for the stage
     Default: CognitoAuthorizerArn
   CognitoAuthorizerUrls:
@@ -18,23 +18,23 @@ Parameters:
     Description: Base path mapping in CustomDomain
     Default: doi-registrar
   DataCiteMdsHost:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Default: dataCiteMdsHost
   DataCiteRestHost:
-    Type: 'AWS::SSM::Parameter::Value<String>'
+    Type: "AWS::SSM::Parameter::Value<String>"
     Default: dataCiteRestHost
   EventBusName:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/NVA/Events/EventsBusName'
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/NVA/Events/EventsBusName"
   EventBusArn:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/NVA/Events/EventsBusArn'
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/NVA/Events/EventsBusArn"
   EventsBucketsName:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: '/NVA/Events/EventsBucketName'
+    Default: "/NVA/Events/EventsBucketName"
   ApiDomain:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/NVA/ApiDomain'
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/NVA/ApiDomain"
   CustomerSecretsSecretName:
     Type: String
     Default: dataCiteCustomerSecrets
@@ -45,18 +45,18 @@ Parameters:
     Type: String
   Suffix:
     Type: String
-    Default: ''
+    Default: ""
     Description: Suffix used for naming resources for feature branches to avoid conflicts.
   SlackSnsArn:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: '/NVA/Monitoring/SlackSnsArn'
+    Default: "/NVA/Monitoring/SlackSnsArn"
   AllowedOrigins:
     Type: String
     Description: comma separated list of external clients that are allowed to contact the HTTP APIs, "*" indicates that all origins are allowed
-    Default: '*'
+    Default: "*"
 
 Conditions:
-  WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
+  WithSuffix: !Not [!Equals [!Ref Suffix, ""]]
 
 Globals:
   Function:
@@ -72,9 +72,7 @@ Globals:
         LOG_LEVEL: "info"
         LOG4J_CONFIGURATION_FILE: classpath:nva-log4j2.xml
 
-
 Resources:
-
   ApiAccessLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -84,7 +82,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -94,7 +92,7 @@ Resources:
       Policies:
         - PolicyName: LambdaDefaults
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -104,16 +102,16 @@ Resources:
                 Resource: "*"
         - PolicyName: InvokeLambda
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
                 #Allow all resources to avoid circular dependencies.
-                Resource: '*'
+                Resource: "*"
         - PolicyName: SqsEvents
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -126,7 +124,7 @@ Resources:
                   - !GetAtt ResourceDraftedForDeletionEventHandlerDLQ.Arn
         - PolicyName: EventBridgeEvents
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -135,7 +133,7 @@ Resources:
                 Resource: !Ref EventBusArn
         - PolicyName: ReadSecrets
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -167,7 +165,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail-type: ["Lambda Function Invocation Result - Success"]
               detail:
                 responsePayload:
                   topic:
@@ -202,7 +200,7 @@ Resources:
           Properties:
             EventBusName: !Ref EventBusName
             Pattern:
-              detail-type: [ "Lambda Function Invocation Result - Success" ]
+              detail-type: ["Lambda Function Invocation Result - Success"]
               detail:
                 responsePayload:
                   topic:
@@ -281,7 +279,6 @@ Resources:
             Method: delete
             RestApiId: !Ref NvaDoiRegistrarClientApi
 
-
   NvaDoiRegistrarClientApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -291,7 +288,7 @@ Resources:
       StageName: Prod
       EndpointConfiguration: REGIONAL
       DefinitionBody:
-        'Fn::Transform':
+        "Fn::Transform":
           Name: AWS::Include
           Parameters:
             Location: ./docs/openapi.yaml
@@ -455,7 +452,7 @@ Resources:
           - Effect: Allow
             Principal:
               Service: "events.amazonaws.com"
-            Action: 'sqs:SendMessage'
+            Action: "sqs:SendMessage"
             Resource: !GetAtt ExternalUpdatesQueue.Arn
             Condition:
               ArnEquals:
@@ -464,7 +461,7 @@ Resources:
   ConsumeMessagesFromExternalEventsQueueManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: 'Managed IAM policy to consume messages from external events queue'
+      Description: "Managed IAM policy to consume messages from external events queue"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -478,9 +475,9 @@ Resources:
   ReadDataCiteCredentialsManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: 'Managed IAM policy to read secrets required to authenticate to datacite on behalf of customers'
+      Description: "Managed IAM policy to read secrets required to authenticate to datacite on behalf of customers"
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
@@ -491,7 +488,7 @@ Resources:
   ReadEventBucketManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: 'Managed IAM policy to consume messages from external events queue'
+      Description: "Managed IAM policy to consume messages from external events queue"
       PolicyDocument:
         Version: 2012-10-17
         Statement:

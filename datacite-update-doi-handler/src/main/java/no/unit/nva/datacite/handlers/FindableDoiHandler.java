@@ -2,6 +2,7 @@ package no.unit.nva.datacite.handlers;
 
 import static java.util.Objects.nonNull;
 import static nva.commons.core.attempt.Try.attempt;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import java.net.HttpURLConnection;
 import no.unit.nva.datacite.commons.DataCiteMetadataResolver;
@@ -19,53 +20,56 @@ import nva.commons.core.JacocoGenerated;
 
 public class FindableDoiHandler extends ApiGatewayHandler<UpdateDoiRequest, DoiResponse> {
 
-    private final DoiClient doiClient;
-    private final DataCiteMetadataResolver dataCiteMetadataResolver;
+  private final DoiClient doiClient;
+  private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
-    @JacocoGenerated
-    public FindableDoiHandler() {
-        this(defaultDoiClient(), new DataCiteMetadataResolver(), new Environment());
-    }
+  @JacocoGenerated
+  public FindableDoiHandler() {
+    this(defaultDoiClient(), new DataCiteMetadataResolver(), new Environment());
+  }
 
-    public FindableDoiHandler(DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver,
-                              Environment environment) {
-        super(UpdateDoiRequest.class, environment);
-        this.doiClient = doiClient;
-        this.dataCiteMetadataResolver = dataCiteMetadataResolver;
-    }
+  public FindableDoiHandler(
+      DoiClient doiClient,
+      DataCiteMetadataResolver dataCiteMetadataResolver,
+      Environment environment) {
+    super(UpdateDoiRequest.class, environment);
+    this.doiClient = doiClient;
+    this.dataCiteMetadataResolver = dataCiteMetadataResolver;
+  }
 
-    @Override
-    protected void validateRequest(UpdateDoiRequest updateDoiRequest, RequestInfo requestInfo, Context context)
-        throws ApiGatewayException {
-        //Do nothing
-    }
+  @Override
+  protected void validateRequest(
+      UpdateDoiRequest updateDoiRequest, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    // Do nothing
+  }
 
-    @Override
-    protected DoiResponse processInput(UpdateDoiRequest input, RequestInfo requestInfo, Context context) {
-        return attempt(() -> getDoi(input))
-                   .map(doi -> makeDoiFindable(input, doi))
-                   .orElseThrow();
-    }
+  @Override
+  protected DoiResponse processInput(
+      UpdateDoiRequest input, RequestInfo requestInfo, Context context) {
+    return attempt(() -> getDoi(input)).map(doi -> makeDoiFindable(input, doi)).orElseThrow();
+  }
 
-    @Override
-    protected Integer getSuccessStatusCode(UpdateDoiRequest input, DoiResponse output) {
-        return HttpURLConnection.HTTP_CREATED;
-    }
+  @Override
+  protected Integer getSuccessStatusCode(UpdateDoiRequest input, DoiResponse output) {
+    return HttpURLConnection.HTTP_CREATED;
+  }
 
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 
-    private Doi getDoi(UpdateDoiRequest input) throws ClientException {
-        var doi = input.getDoi();
-        return nonNull(doi) ? Doi.fromUri(doi) : doiClient.createDoi(input.getCustomerId());
-    }
+  private Doi getDoi(UpdateDoiRequest input) throws ClientException {
+    var doi = input.getDoi();
+    return nonNull(doi) ? Doi.fromUri(doi) : doiClient.createDoi(input.getCustomerId());
+  }
 
-    private DoiResponse makeDoiFindable(UpdateDoiRequest input, Doi doi) throws ClientException {
-        var dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
-        doiClient.updateMetadata(doi, dataCiteXmlMetadata);
-        doiClient.setLandingPage(doi, input.getPublicationId());
-        return new DoiResponse(doi.getUri());
-    }
+  private DoiResponse makeDoiFindable(UpdateDoiRequest input, Doi doi) throws ClientException {
+    var dataCiteXmlMetadata =
+        dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
+    doiClient.updateMetadata(doi, dataCiteXmlMetadata);
+    doiClient.setLandingPage(doi, input.getPublicationId());
+    return new DoiResponse(doi.getUri());
+  }
 }

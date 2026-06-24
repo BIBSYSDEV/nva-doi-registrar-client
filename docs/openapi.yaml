@@ -31,29 +31,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReserveDoiRequest'
+              $ref: "#/components/schemas/ReserveDoiRequest"
       security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "aws.cognito.signin.user.admin"]
       x-amazon-apigateway-request-validator: validate_body
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteReserveDraftDoiHandlerFunction.Arn}/invocations
-        responses: { }
+        responses: {}
         httpMethod: POST
         type: AWS_PROXY
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Doi'
-        '502':
+                $ref: "#/components/schemas/Doi"
+        "502":
           description: Bad Gateway
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
   /draft/{doiPrefix}/{doiSuffix}:
     delete:
       summary: Delete Draft Doi
@@ -81,29 +81,29 @@ paths:
           required: true
           description: CustomerId of NVA customer with DataCite config
       security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "aws.cognito.signin.user.admin"]
       x-amazon-apigateway-request-validator: validate_parameters
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteDeleteDraftDoiHandler.Arn}/invocations
-        responses: { }
+        responses: {}
         httpMethod: POST
         type: AWS_PROXY
       responses:
-        '202':
+        "202":
           description: Doi was deleted successfully
-        '405':
+        "405":
           description: Not allowed to delete findable doi
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Problem'
-        '502':
+                $ref: "#/components/schemas/Problem"
+        "502":
           description: Problems fetching or deleting doi, bad response from DataCite
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
 
   /findable:
     post:
@@ -117,29 +117,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateDoiRequest'
+              $ref: "#/components/schemas/UpdateDoiRequest"
       security:
-        - CognitoUserPool: [ 'https://api.nva.unit.no/scopes/backend', 'aws.cognito.signin.user.admin' ]
+        - CognitoUserPool: ["https://api.nva.unit.no/scopes/backend", "aws.cognito.signin.user.admin"]
       x-amazon-apigateway-request-validator: validate_body
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DataCiteFindableDoiHandler.Arn}/invocations
-        responses: { }
+        responses: {}
         httpMethod: POST
         type: AWS_PROXY
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Doi'
-        '502':
+                $ref: "#/components/schemas/Doi"
+        "502":
           description: Bad Gateway
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
 
 components:
   schemas:
@@ -202,5 +202,4 @@ components:
       x-amazon-apigateway-authorizer:
         type: cognito_user_pools
         providerARNs:
-          - Ref:
-              CognitoAuthorizerArn
+          - Ref: CognitoAuthorizerArn
