@@ -71,7 +71,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @WireMockTest
-class DataCiteClientV2Test {
+class DataCiteClientTest {
 
   private static final String HEADER_CONTENT_TYPE = "Content-Type";
   private static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
@@ -187,7 +187,7 @@ class DataCiteClientV2Test {
 
   @Test
   void shouldThrowDoiClientExceptionWhenDataciteRespondsWithException() {
-    var logRecorder = LogRecorder.forRoot(DataCiteClientV2Test.class);
+    var logRecorder = LogRecorder.forRoot(DataCiteClientTest.class);
     var customerUri = createValidCustomer(customerConfigExtractor);
     var responseBody = "someResponseBody";
     stubHttpClientException(responseBody);
