@@ -1,10 +1,10 @@
 [versions]
 awsSdk = { strictly = '1.12.787' }
-jakartaBindApi = { strictly = '4.0.1' }
-javaxActivation = { strictly = '2.1.2' }
-jaxbRuntime = { strictly = '4.0.4' }
+jakartaBindApi = { strictly = '4.0.5' }
+javaxActivation = { strictly = '2.1.4' }
+jaxbRuntime = { strictly = '4.0.9' }
 secretsCaching = { strictly = '1.0.1' }
-sunJaxb = { strictly = '4.0.4' }
+sunJaxb = { strictly = '4.0.9' }
 
 [libraries]
 aws-sdk = { group = 'com.amazonaws', name = 'aws-java-sdk', version.ref = 'awsSdk' }
