@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static software.amazon.awssdk.utils.http.SdkHttpUtils.urlEncode;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -40,94 +41,101 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class DeleteDraftDoiHandlerTest {
 
-    private static final String API_HOST = "API_HOST";
-    private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
-    private final Environment environment = mock(Environment.class);
-    private Context context;
-    private ByteArrayOutputStream output;
+  private static final String API_HOST = "API_HOST";
+  private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
+  private final Environment environment = mock(Environment.class);
+  private Context context;
+  private ByteArrayOutputStream output;
 
-    @BeforeEach
-    void setUp() {
-        context = mock(Context.class);
-        when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        when(environment.readEnv(API_HOST)).thenReturn("localhost");
-        when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
-        output = new ByteArrayOutputStream();
-    }
+  @BeforeEach
+  void setUp() {
+    context = mock(Context.class);
+    when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+    when(environment.readEnv(API_HOST)).thenReturn("localhost");
+    when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
+    output = new ByteArrayOutputStream();
+  }
 
-    @Test
-    @SuppressWarnings("PMD.CloseResource")
-    void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
-        var doi = randomDoi();
-        var request = createRequest(doi);
-        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.DRAFT), environment);
-        handler.handleRequest(request, output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_ACCEPTED)));
-    }
+  @Test
+  @SuppressWarnings("PMD.CloseResource")
+  void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
+    var doi = randomDoi();
+    var request = createRequest(doi);
+    var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.DRAFT), environment);
+    handler.handleRequest(request, output, context);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_ACCEPTED)));
+  }
 
-    @Test
-    void shouldReturnBadGatewayWhenBadResponseFromDataCiteVerifyingDoiStatus()
-        throws ClientException, IOException {
-        var doi = randomDoi();
-        var handler = new DeleteDraftDoiHandler(doiClientThrowingException(doi), environment);
-        handler.handleRequest(createRequest(doi), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-    }
+  @Test
+  void shouldReturnBadGatewayWhenBadResponseFromDataCiteVerifyingDoiStatus()
+      throws ClientException, IOException {
+    var doi = randomDoi();
+    var handler = new DeleteDraftDoiHandler(doiClientThrowingException(doi), environment);
+    handler.handleRequest(createRequest(doi), output, context);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+  }
 
-    @Test
-    void shouldReturnBadGatewayWhenDoiIsNotADraft()
-        throws IOException, ClientException {
-        var doi = randomDoi();
-        var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.FINDABLE), environment);
-        handler.handleRequest(createRequest(doi), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_METHOD)));
-    }
+  @Test
+  void shouldReturnBadGatewayWhenDoiIsNotADraft() throws IOException, ClientException {
+    var doi = randomDoi();
+    var handler =
+        new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.FINDABLE), environment);
+    handler.handleRequest(createRequest(doi), output, context);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_METHOD)));
+  }
 
-    @Test
-    void shouldReturnBadGatewayWhenDoiClientFailsOnDraftDoiDeletion()
-        throws ClientException, IOException {
-        var doi = randomDoi();
-        var handler = new DeleteDraftDoiHandler(doiClientThrowingExceptionWhenDeleting(doi), environment);
-        handler.handleRequest(createRequest(doi), output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-    }
+  @Test
+  void shouldReturnBadGatewayWhenDoiClientFailsOnDraftDoiDeletion()
+      throws ClientException, IOException {
+    var doi = randomDoi();
+    var handler =
+        new DeleteDraftDoiHandler(doiClientThrowingExceptionWhenDeleting(doi), environment);
+    handler.handleRequest(createRequest(doi), output, context);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+  }
 
-    private DoiClient doiClientThrowingException(URI doi) throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any())).thenAnswer(invocation -> {
-            throw new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
-        });
-        return doiClient;
-    }
+  private DoiClient doiClientThrowingException(URI doi) throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.getDoi(any()))
+        .thenAnswer(
+            invocation -> {
+              throw new DeleteDraftDoiException(
+                  Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
+            });
+    return doiClient;
+  }
 
-    private DoiClient doiClientThrowingExceptionWhenDeleting(URI doi) throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any()))
-            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), State.DRAFT));
-        doThrow(new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY))
-            .when(doiClient).deleteDraftDoi(any());
-        return doiClient;
-    }
+  private DoiClient doiClientThrowingExceptionWhenDeleting(URI doi) throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.getDoi(any()))
+        .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), State.DRAFT));
+    doThrow(new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY))
+        .when(doiClient)
+        .deleteDraftDoi(any());
+    return doiClient;
+  }
 
-    private DoiClient doiClientReturningDoi(URI doi, State state) throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.getDoi(any()))
-            .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), state));
-        return doiClient;
-    }
+  private DoiClient doiClientReturningDoi(URI doi, State state) throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.getDoi(any()))
+        .thenAnswer(invocation -> new DoiStateDto(String.valueOf(doi), state));
+    return doiClient;
+  }
 
-    private InputStream createRequest(URI doi) throws JsonProcessingException {
-        var pathParameters = Map.of("doiPrefix", doi.getRawPath().split("/")[1],
-                                    "doiSuffix", doi.getRawPath().split("/")[2]);
-        Map<String, String> queryParameters = Map.of("customerId", urlEncode(randomUri().toString()));
-        return new HandlerRequestBuilder<DeleteDraftDoiRequest>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withPathParameters(pathParameters)
-                   .withQueryParameters(queryParameters)
-                   .build();
-    }
+  private InputStream createRequest(URI doi) throws JsonProcessingException {
+    var pathParameters =
+        Map.of(
+            "doiPrefix", doi.getRawPath().split("/")[1],
+            "doiSuffix", doi.getRawPath().split("/")[2]);
+    Map<String, String> queryParameters = Map.of("customerId", urlEncode(randomUri().toString()));
+    return new HandlerRequestBuilder<DeleteDraftDoiRequest>(dtoObjectMapper)
+        .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
+        .withPathParameters(pathParameters)
+        .withQueryParameters(queryParameters)
+        .build();
+  }
 }

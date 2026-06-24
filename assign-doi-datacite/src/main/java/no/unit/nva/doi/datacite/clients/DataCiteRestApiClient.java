@@ -18,89 +18,90 @@ import nva.commons.core.useragent.UserAgent;
 
 public class DataCiteRestApiClient extends HttpSender {
 
-    private  static final int TIMEOUT = 2000;
+  private static final int TIMEOUT = 2000;
 
-    public static final String ACCEPT = "Accept";
-    public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
-    public static final String CONTENT_TYPE = "Content-Type";
+  public static final String ACCEPT = "Accept";
+  public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
+  public static final String CONTENT_TYPE = "Content-Type";
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String DOIS_PATH_PARAMETER = "dois";
-    private final String dataciteRestApiURI;
-    private final CustomerConfigExtractor customerConfigExtractor;
+  private static final String AUTHORIZATION_HEADER = "Authorization";
+  public static final String DOIS_PATH_PARAMETER = "dois";
+  private final String dataciteRestApiURI;
+  private final CustomerConfigExtractor customerConfigExtractor;
 
-    private final String doiHost;
+  private final String doiHost;
 
-    public DataCiteRestApiClient(String dataciteRestApiURI,
-                                 String doiHost,
-                                 CustomerConfigExtractor customerConfigExtractor,
-                                 HttpClient httpClient) {
-        super(httpClient);
-        this.dataciteRestApiURI = dataciteRestApiURI;
-        this.customerConfigExtractor = customerConfigExtractor;
-        this.doiHost = doiHost;
-    }
+  public DataCiteRestApiClient(
+      String dataciteRestApiURI,
+      String doiHost,
+      CustomerConfigExtractor customerConfigExtractor,
+      HttpClient httpClient) {
+    super(httpClient);
+    this.dataciteRestApiURI = dataciteRestApiURI;
+    this.customerConfigExtractor = customerConfigExtractor;
+    this.doiHost = doiHost;
+  }
 
-    public Doi createDoi(URI customerId) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(customerId);
-        var request = createPostDoiRequest(customer);
-        var response = sendRequest(request);
-        return convertResponseToDoi(response);
-    }
+  public Doi createDoi(URI customerId) throws ClientException {
+    var customer = customerConfigExtractor.getCustomerConfig(customerId);
+    var request = createPostDoiRequest(customer);
+    var response = sendRequest(request);
+    return convertResponseToDoi(response);
+  }
 
-    public DoiStateDto getDoi(Doi doi) throws ClientException {
-        var customer = customerConfigExtractor.getCustomerConfig(doi);
-        var request = createGetDoiRequest(customer, doi);
-        var response = sendRequest(request);
-        return DoiStateDto.fromJson(response.body());
-    }
+  public DoiStateDto getDoi(Doi doi) throws ClientException {
+    var customer = customerConfigExtractor.getCustomerConfig(doi);
+    var request = createGetDoiRequest(customer, doi);
+    var response = sendRequest(request);
+    return DoiStateDto.fromJson(response.body());
+  }
 
-    private Doi convertResponseToDoi(HttpResponse<String> response) {
-        DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
-        return responseBody.toDoi().changeHost(doiHost);
-    }
+  private Doi convertResponseToDoi(HttpResponse<String> response) {
+    DraftDoiDto responseBody = DraftDoiDto.fromJson(response.body());
+    return responseBody.toDoi().changeHost(doiHost);
+  }
 
-    private HttpRequest createGetDoiRequest(CustomerConfig customer, Doi doi)
-        throws CustomerConfigException {
-        return HttpRequest.newBuilder()
-                   .uri(requestTargetUriToDoi(doi))
-                   .GET()
-                   .header(ACCEPT, JSON_API_CONTENT_TYPE)
-                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(DataCiteRestApiClient.class))
-                   .timeout(Duration.ofMillis(TIMEOUT))
-                   .headers(AUTHORIZATION_HEADER, getBasicAuth(customer))
-                   .build();
-    }
+  private HttpRequest createGetDoiRequest(CustomerConfig customer, Doi doi)
+      throws CustomerConfigException {
+    return HttpRequest.newBuilder()
+        .uri(requestTargetUriToDoi(doi))
+        .GET()
+        .header(ACCEPT, JSON_API_CONTENT_TYPE)
+        .header(UserAgent.USER_AGENT, UserAgentUtil.create(DataCiteRestApiClient.class))
+        .timeout(Duration.ofMillis(TIMEOUT))
+        .headers(AUTHORIZATION_HEADER, getBasicAuth(customer))
+        .build();
+  }
 
-    private URI requestTargetUriToDoi(Doi doi) {
-        return UriWrapper.fromUri(dataciteRestApiURI)
-                   .addChild(DOIS_PATH_PARAMETER)
-                   .addChild(doi.toIdentifier())
-                   .getUri();
-    }
+  private URI requestTargetUriToDoi(Doi doi) {
+    return UriWrapper.fromUri(dataciteRestApiURI)
+        .addChild(DOIS_PATH_PARAMETER)
+        .addChild(doi.toIdentifier())
+        .getUri();
+  }
 
-    private HttpRequest createPostDoiRequest(CustomerConfig customerConfig)
-        throws CustomerConfigException {
-        return HttpRequest.newBuilder()
-                   .uri(doiRequestUri())
-                   .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
-                   .header(UserAgent.USER_AGENT, UserAgentUtil.create(DataCiteRestApiClient.class))
-                   .POST(BodyPublishers.ofString(requestBodyContainingTheDoiPrefix(customerConfig)))
-                   .headers(AUTHORIZATION_HEADER, getBasicAuth(customerConfig))
-                   .timeout(Duration.ofMillis(TIMEOUT))
-                   .build();
-    }
+  private HttpRequest createPostDoiRequest(CustomerConfig customerConfig)
+      throws CustomerConfigException {
+    return HttpRequest.newBuilder()
+        .uri(doiRequestUri())
+        .header(CONTENT_TYPE, JSON_API_CONTENT_TYPE)
+        .header(UserAgent.USER_AGENT, UserAgentUtil.create(DataCiteRestApiClient.class))
+        .POST(BodyPublishers.ofString(requestBodyContainingTheDoiPrefix(customerConfig)))
+        .headers(AUTHORIZATION_HEADER, getBasicAuth(customerConfig))
+        .timeout(Duration.ofMillis(TIMEOUT))
+        .build();
+  }
 
-    private String getBasicAuth(CustomerConfig customerConfig) throws CustomerConfigException {
-        return customerConfig.extractBasicAuthenticationString();
-    }
+  private String getBasicAuth(CustomerConfig customerConfig) throws CustomerConfigException {
+    return customerConfig.extractBasicAuthenticationString();
+  }
 
-    private String requestBodyContainingTheDoiPrefix(CustomerConfig customerConfig) {
-        DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(customerConfig.getDoiPrefix());
-        return bodyObject.toJson();
-    }
+  private String requestBodyContainingTheDoiPrefix(CustomerConfig customerConfig) {
+    DraftDoiDto bodyObject = DraftDoiDto.fromPrefix(customerConfig.getDoiPrefix());
+    return bodyObject.toJson();
+  }
 
-    private URI doiRequestUri() {
-        return UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
-    }
+  private URI doiRequestUri() {
+    return UriWrapper.fromUri(dataciteRestApiURI).addChild(DOIS_PATH_PARAMETER).getUri();
+  }
 }

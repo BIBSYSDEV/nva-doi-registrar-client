@@ -8,13 +8,13 @@ import no.unit.nva.doi.models.Doi;
 
 public class FakeCustomerExtractorThrowingException implements CustomerConfigExtractor {
 
-    @Override
-    public CustomerConfig getCustomerConfig(Doi doi) throws CustomerConfigException {
-        throw new CustomerConfigException();
-    }
+  @Override
+  public CustomerConfig getCustomerConfig(Doi doi) throws CustomerConfigException {
+    throw new CustomerConfigException();
+  }
 
-    @Override
-    public CustomerConfig getCustomerConfig(URI customerId) throws CustomerConfigException {
-        throw new CustomerConfigException();
-    }
+  @Override
+  public CustomerConfig getCustomerConfig(URI customerId) throws CustomerConfigException {
+    throw new CustomerConfigException();
+  }
 }

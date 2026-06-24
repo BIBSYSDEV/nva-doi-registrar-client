@@ -38,12 +38,12 @@ abstract class Xsd2Pojo extends DefaultTask {
                 name: 'xjc',
                 classname: 'com.sun.tools.xjc.XJC2Task',
                 classpath: normalizedClasspath.collect { it.absolutePath }.join(File.pathSeparator)
-        )
+                )
         ant.xjc(
                 destdir: outputDir.get().asFile,
                 package: targetPackage.get(),
                 schema: schemaUri.get()
-        )
+                )
     }
 }
 

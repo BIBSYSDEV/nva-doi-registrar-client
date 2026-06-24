@@ -6,20 +6,20 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 
 public class FakeSecretsManagerCountingCalls extends FakeSecretsManagerClient {
 
-    private int numberOfTimesFetchSecretsHasBeenCalled;
+  private int numberOfTimesFetchSecretsHasBeenCalled;
 
-    public FakeSecretsManagerCountingCalls() {
-        super();
-        numberOfTimesFetchSecretsHasBeenCalled = 0;
-    }
+  public FakeSecretsManagerCountingCalls() {
+    super();
+    numberOfTimesFetchSecretsHasBeenCalled = 0;
+  }
 
-    @Override
-    public GetSecretValueResponse getSecretValue(GetSecretValueRequest getSecretValueRequest) {
-        numberOfTimesFetchSecretsHasBeenCalled++;
-        return super.getSecretValue(getSecretValueRequest);
-    }
+  @Override
+  public GetSecretValueResponse getSecretValue(GetSecretValueRequest getSecretValueRequest) {
+    numberOfTimesFetchSecretsHasBeenCalled++;
+    return super.getSecretValue(getSecretValueRequest);
+  }
 
-    public int getNumberOfTimesFetchSecretsHasBeenCalled() {
-        return numberOfTimesFetchSecretsHasBeenCalled;
-    }
+  public int getNumberOfTimesFetchSecretsHasBeenCalled() {
+    return numberOfTimesFetchSecretsHasBeenCalled;
+  }
 }

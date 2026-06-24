@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -37,75 +38,76 @@ import org.zalando.problem.Problem;
 @WireMockTest(httpsEnabled = true)
 class ReserveDraftDoiHandlerTest {
 
-    private static final String DOI_IDENTIFIER = "10.1052/identifier";
-    private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
-    private static final String API_HOST = "API_HOST";
-    private final Environment environment = mock(Environment.class);
-    private Context context;
-    private AtomicReference<URI> inputBuffer;
-    private ByteArrayOutputStream output;
+  private static final String DOI_IDENTIFIER = "10.1052/identifier";
+  private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
+  private static final String API_HOST = "API_HOST";
+  private final Environment environment = mock(Environment.class);
+  private Context context;
+  private AtomicReference<URI> inputBuffer;
+  private ByteArrayOutputStream output;
 
-    @BeforeEach
-    void setUp() {
-        context = mock(Context.class);
-        when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        when(environment.readEnv(API_HOST)).thenReturn("localhost");
-        when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
-        output = new ByteArrayOutputStream();
-        inputBuffer = new AtomicReference<>();
-    }
+  @BeforeEach
+  void setUp() {
+    context = mock(Context.class);
+    when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+    when(environment.readEnv(API_HOST)).thenReturn("localhost");
+    when(environment.readEnv(COGNITO_AUTHORIZER_URLS)).thenReturn("http://localhost:3000");
+    output = new ByteArrayOutputStream();
+    inputBuffer = new AtomicReference<>();
+  }
 
-    @Test
-    @SuppressWarnings("PMD.CloseResource")
-    void shouldReturnBadGatewayWhenBadResponseFromDataCite() throws IOException, ClientException {
-        var customerId = randomUri();
-        var request = createRequest(customerId);
-        var handler = new ReserveDraftDoiHandler(doiClientThrowingException(), environment);
-        handler.handleRequest(request, output, context);
-        var response = GatewayResponse.fromOutputStream(output, Problem.class);
-        assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
-    }
+  @Test
+  @SuppressWarnings("PMD.CloseResource")
+  void shouldReturnBadGatewayWhenBadResponseFromDataCite() throws IOException, ClientException {
+    var customerId = randomUri();
+    var request = createRequest(customerId);
+    var handler = new ReserveDraftDoiHandler(doiClientThrowingException(), environment);
+    handler.handleRequest(request, output, context);
+    var response = GatewayResponse.fromOutputStream(output, Problem.class);
+    assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
+  }
 
-    @Test
-    @SuppressWarnings("PMD.CloseResource")
-    void shouldReturnDoiSuccessfully() throws IOException, ClientException {
-        var customerId = randomUri();
-        var expectedDoi = URI.create("https://doi.org/" + DOI_IDENTIFIER);
-        var request = createRequest(customerId);
-        var handler = new ReserveDraftDoiHandler(doiClientReturningDoi(), environment);
-        handler.handleRequest(request, output, context);
-        var response = GatewayResponse.fromOutputStream(output, DoiResponse.class);
-        var actualDoi = response.getBodyObject(DoiResponse.class);
-        assertThat(actualDoi.getDoi(), is(equalTo(expectedDoi)));
-    }
+  @Test
+  @SuppressWarnings("PMD.CloseResource")
+  void shouldReturnDoiSuccessfully() throws IOException, ClientException {
+    var customerId = randomUri();
+    var expectedDoi = URI.create("https://doi.org/" + DOI_IDENTIFIER);
+    var request = createRequest(customerId);
+    var handler = new ReserveDraftDoiHandler(doiClientReturningDoi(), environment);
+    handler.handleRequest(request, output, context);
+    var response = GatewayResponse.fromOutputStream(output, DoiResponse.class);
+    var actualDoi = response.getBodyObject(DoiResponse.class);
+    assertThat(actualDoi.getDoi(), is(equalTo(expectedDoi)));
+  }
 
-    private InputStream createRequest(URI customerId) throws JsonProcessingException {
-        return new HandlerRequestBuilder<ReserveDoiRequest>(dtoObjectMapper)
-                   .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
-                   .withBody(new ReserveDoiRequest(customerId))
-                   .build();
-    }
+  private InputStream createRequest(URI customerId) throws JsonProcessingException {
+    return new HandlerRequestBuilder<ReserveDoiRequest>(dtoObjectMapper)
+        .withHeaders(Map.of(ACCEPT, ContentType.APPLICATION_JSON.getMimeType()))
+        .withBody(new ReserveDoiRequest(customerId))
+        .build();
+  }
 
-    private DoiClient doiClientReturningDoi() throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        Doi doi = Doi.fromDoiIdentifier(DOI_IDENTIFIER);
-        when(doiClient.createDoi(any()))
-            .thenAnswer(invocation -> saveInputAndReturnSampleDoi(doi, invocation));
-        return doiClient;
-    }
+  private DoiClient doiClientReturningDoi() throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    Doi doi = Doi.fromDoiIdentifier(DOI_IDENTIFIER);
+    when(doiClient.createDoi(any()))
+        .thenAnswer(invocation -> saveInputAndReturnSampleDoi(doi, invocation));
+    return doiClient;
+  }
 
-    private Doi saveInputAndReturnSampleDoi(Doi doi, InvocationOnMock invocation) {
-        URI customerId = invocation.getArgument(0);
-        inputBuffer.set(customerId);
-        return doi;
-    }
+  private Doi saveInputAndReturnSampleDoi(Doi doi, InvocationOnMock invocation) {
+    URI customerId = invocation.getArgument(0);
+    inputBuffer.set(customerId);
+    return doi;
+  }
 
-    private DoiClient doiClientThrowingException() throws ClientException {
-        DoiClient doiClient = mock(DoiClient.class);
-        when(doiClient.createDoi(any())).thenAnswer(invocation -> {
-            throw new ClientException("Some exception");
-        });
-        return doiClient;
-    }
-
+  private DoiClient doiClientThrowingException() throws ClientException {
+    DoiClient doiClient = mock(DoiClient.class);
+    when(doiClient.createDoi(any()))
+        .thenAnswer(
+            invocation -> {
+              throw new ClientException("Some exception");
+            });
+    return doiClient;
+  }
 }

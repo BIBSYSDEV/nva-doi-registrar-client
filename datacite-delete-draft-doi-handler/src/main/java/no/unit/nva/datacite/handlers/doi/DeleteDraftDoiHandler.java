@@ -22,72 +22,77 @@ import org.slf4j.LoggerFactory;
 
 public class DeleteDraftDoiHandler extends ApiGatewayHandler<Void, Void> {
 
-    public static final String BAD_DATACITE_RESPONSE_MESSAGE = "Bad response from DataCite fetching doi";
-    public static final String CUSTOMER_ID = "customerId";
-    protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
-    protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
-    private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
-    private final DoiClient doiClient;
+  public static final String BAD_DATACITE_RESPONSE_MESSAGE =
+      "Bad response from DataCite fetching doi";
+  public static final String CUSTOMER_ID = "customerId";
+  protected static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
+  protected static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
+  private final Logger logger = LoggerFactory.getLogger(DeleteDraftDoiHandler.class);
+  private final DoiClient doiClient;
 
-    public DeleteDraftDoiHandler(DoiClient doiClient, Environment environment) {
-        super(Void.class, environment);
-        this.doiClient = doiClient;
-    }
+  public DeleteDraftDoiHandler(DoiClient doiClient, Environment environment) {
+    super(Void.class, environment);
+    this.doiClient = doiClient;
+  }
 
-    @JacocoGenerated
-    public DeleteDraftDoiHandler() {
-        this(defaultDoiClient(), new Environment());
-    }
+  @JacocoGenerated
+  public DeleteDraftDoiHandler() {
+    this(defaultDoiClient(), new Environment());
+  }
 
-    @Override
-    protected void validateRequest(Void unused, RequestInfo requestInfo, Context context) throws ApiGatewayException {
-        //Do nothing
-    }
+  @Override
+  protected void validateRequest(Void unused, RequestInfo requestInfo, Context context)
+      throws ApiGatewayException {
+    // Do nothing
+  }
 
-    private void validateRequest(Doi doi) throws BadMethodException, BadGatewayException {
-        var doiState = attempt(() -> doiClient.getDoi(doi))
-                .orElseThrow(failure ->
-                        handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
-        if (State.DRAFT != doiState.getState()) {
-            throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
-        }
+  private void validateRequest(Doi doi) throws BadMethodException, BadGatewayException {
+    var doiState =
+        attempt(() -> doiClient.getDoi(doi))
+            .orElseThrow(
+                failure -> handleFailure(failure.getException(), BAD_DATACITE_RESPONSE_MESSAGE));
+    if (State.DRAFT != doiState.getState()) {
+      throw new BadMethodException(NOT_DRAFT_DOI_ERROR);
     }
+  }
 
-    @Override
-    protected Void processInput(Void input, RequestInfo requestInfo, Context context)
-        throws BadGatewayException, BadMethodException, BadRequestException {
-        var doi = getDoiFromPath(requestInfo);
-        validateRequest(doi);
-        return attempt(() -> deleteDraftDoi(doi))
-                   .orElseThrow(failure -> handleFailure(failure.getException(), ERROR_DELETING_DRAFT_DOI));
-    }
+  @Override
+  protected Void processInput(Void input, RequestInfo requestInfo, Context context)
+      throws BadGatewayException, BadMethodException, BadRequestException {
+    var doi = getDoiFromPath(requestInfo);
+    validateRequest(doi);
+    return attempt(() -> deleteDraftDoi(doi))
+        .orElseThrow(failure -> handleFailure(failure.getException(), ERROR_DELETING_DRAFT_DOI));
+  }
 
-    @Override
-    protected Integer getSuccessStatusCode(Void input, Void output) {
-        return HttpURLConnection.HTTP_ACCEPTED;
-    }
+  @Override
+  protected Integer getSuccessStatusCode(Void input, Void output) {
+    return HttpURLConnection.HTTP_ACCEPTED;
+  }
 
-    private static Doi getDoiFromPath(RequestInfo requestInfo) {
-        return Doi.fromUriString(
-            requestInfo.getPathParameter("doiPrefix") + "/" + requestInfo.getPathParameter("doiSuffix"));
-    }
+  private static Doi getDoiFromPath(RequestInfo requestInfo) {
+    return Doi.fromUriString(
+        requestInfo.getPathParameter("doiPrefix")
+            + "/"
+            + requestInfo.getPathParameter("doiSuffix"));
+  }
 
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 
-    private BadGatewayException handleFailure(Exception exception, String message) {
-        logger.error("Delete draft doi failed with {}", exception);
-        return new BadGatewayException(message);
-    }
+  private BadGatewayException handleFailure(Exception exception, String message) {
+    logger.error("Delete draft doi failed with {}", exception);
+    return new BadGatewayException(message);
+  }
 
-    private Void deleteDraftDoi(Doi draftDoi) {
-        try {
-            doiClient.deleteDraftDoi(draftDoi);
-        } catch (ClientException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
+  private Void deleteDraftDoi(Doi draftDoi) {
+    try {
+      doiClient.deleteDraftDoi(draftDoi);
+    } catch (ClientException e) {
+      throw new RuntimeException(e);
     }
+    return null;
+  }
 }

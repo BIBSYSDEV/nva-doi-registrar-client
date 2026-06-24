@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.zalando.problem.Status.GONE;
 import static org.zalando.problem.Status.MOVED_PERMANENTLY;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import jakarta.xml.bind.JAXB;
 import java.io.StringReader;
@@ -34,224 +35,242 @@ import org.slf4j.LoggerFactory;
 public class UpdateDoiEventHandler
     extends DestinationsEventBridgeEventHandler<DoiUpdateRequestEvent, Void> {
 
-    public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
-    private static final String RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG =
-        "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
-    private static final String SUCCESSFULLY_MADE_DOI_FINDABLE =
-        "Successfully handled request for Doi {}";
-    public static final String SHOULD_REMOVE_METADATA_LOG_MESSAGE =
-        "Request for publication {} returned {}. Any Findable DOI associated with this URI "
-        + "will transition to Registered DOI.";
-    private static final String RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG =
-        "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {} , "
-        + "and duplicateOf \"{}\")";
-    private static final String SUCCESSFUL_DOI_REGISTERED =
-        "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
-    public static final String ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE = "Adding duplicate identifier to resource {}";
-    public static final String DELETING_DRAFT_DOI_MESSAGE = "Deleting draft DOI {} for customer {} when unpublished publication {}";
-    public static final String DOI_ALREADY_REGISTERED_MESSAGE = "Doi is already registered {} at customer {} and publication {}";
-    private final DoiClient doiClient;
-    private final DataCiteMetadataResolver dataCiteMetadataResolver;
+  public static final String MANDATORY_FIELD_ERROR_PREFIX = "Mandatory field is missing: ";
+  private static final String RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG =
+      "Received request to set landing page (make findable) for DOI {} to landing page {} for {}";
+  private static final String SUCCESSFULLY_MADE_DOI_FINDABLE =
+      "Successfully handled request for Doi {}";
+  public static final String SHOULD_REMOVE_METADATA_LOG_MESSAGE =
+      "Request for publication {} returned {}. Any Findable DOI associated with this URI "
+          + "will transition to Registered DOI.";
+  private static final String RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG =
+      "Will attempt to transition DOI {} to Registered DOI (for publication {} and customer {} , "
+          + "and duplicateOf \"{}\")";
+  private static final String SUCCESSFUL_DOI_REGISTERED =
+      "Transition DOI {} to Registered DOI was successful (for publication {} and customer {})";
+  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDoiEventHandler.class);
+  public static final String ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE =
+      "Adding duplicate identifier to resource {}";
+  public static final String DELETING_DRAFT_DOI_MESSAGE =
+      "Deleting draft DOI {} for customer {} when unpublished publication {}";
+  public static final String DOI_ALREADY_REGISTERED_MESSAGE =
+      "Doi is already registered {} at customer {} and publication {}";
+  private final DoiClient doiClient;
+  private final DataCiteMetadataResolver dataCiteMetadataResolver;
 
-    @JacocoGenerated
-    public UpdateDoiEventHandler() {
-        this(defaultDoiClient(), new DataCiteMetadataResolver());
+  @JacocoGenerated
+  public UpdateDoiEventHandler() {
+    this(defaultDoiClient(), new DataCiteMetadataResolver());
+  }
+
+  public UpdateDoiEventHandler(
+      DoiClient doiClient, DataCiteMetadataResolver dataCiteMetadataResolver) {
+    super(DoiUpdateRequestEvent.class);
+    this.doiClient = doiClient;
+    this.dataCiteMetadataResolver = dataCiteMetadataResolver;
+  }
+
+  @Override
+  protected Void processInputPayload(
+      DoiUpdateRequestEvent input,
+      AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
+      Context context) {
+
+    validateInput(input);
+
+    var doi = getDoiFromEventOrDraftDoi(input);
+
+    try {
+      var dataCiteXmlMetadata =
+          dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
+      makeDoiFindable(input, doi, dataCiteXmlMetadata);
+
+      return null;
+    } catch (ClientException e) {
+      throw new ClientRuntimeException(e);
+    } catch (PublicationApiClientException e) {
+      handleDoiWhenPublicationIsGone(input, e, doi);
     }
 
-    public UpdateDoiEventHandler(DoiClient doiClient,
-                                 DataCiteMetadataResolver dataCiteMetadataResolver) {
-        super(DoiUpdateRequestEvent.class);
-        this.doiClient = doiClient;
-        this.dataCiteMetadataResolver = dataCiteMetadataResolver;
+    return null;
+  }
+
+  private void handleDoiWhenPublicationIsGone(
+      DoiUpdateRequestEvent input, PublicationApiClientException e, Doi doi) {
+    LOGGER.info(
+        RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
+        doi.getUri(),
+        input.getPublicationId(),
+        input.getCustomerId(),
+        input.getDuplicateOf().orElse(null));
+    var response = attempt(() -> doiClient.getDoi(doi)).toOptional();
+    if (response.isPresent()) {
+      handleDoiWhenPublicationIsGone(response.get(), input, doi, e);
+    } else {
+      throwException(e, input);
+    }
+  }
+
+  private void throwException(
+      PublicationApiClientException exception, DoiUpdateRequestEvent input) {
+    LOGGER.error("Unknown error for publication id {}", input.getPublicationId(), exception);
+    throw exception;
+  }
+
+  private void handleDoiWhenPublicationIsGone(
+      DoiStateDto doiStateDto,
+      DoiUpdateRequestEvent input,
+      Doi doi,
+      PublicationApiClientException e) {
+    switch (doiStateDto.getState()) {
+      case FINDABLE -> handleFindableDoi(input, doi, e);
+      case DRAFT -> deleteDraftDoi(input, doi);
+      case REGISTERED -> handleRegisteredDoi(input, doi);
+      case null, default -> throwException(e, input);
+    }
+    LOGGER.info(
+        SUCCESSFUL_DOI_REGISTERED, doi.getUri(), input.getPublicationId(), input.getCustomerId());
+  }
+
+  private void handleRegisteredDoi(DoiUpdateRequestEvent requestEvent, Doi doi) {
+    LOGGER.info(
+        DOI_ALREADY_REGISTERED_MESSAGE,
+        doi,
+        requestEvent.getCustomerId(),
+        requestEvent.getPublicationId());
+  }
+
+  private void deleteDraftDoi(DoiUpdateRequestEvent updateRequestEvent, Doi doi) {
+    try {
+      LOGGER.info(
+          DELETING_DRAFT_DOI_MESSAGE,
+          doi.getUri(),
+          updateRequestEvent.getCustomerId(),
+          updateRequestEvent.getPublicationId());
+      doiClient.deleteDraftDoi(doi);
+    } catch (ClientException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private void handleFindableDoi(
+      DoiUpdateRequestEvent input, Doi doi, PublicationApiClientException exception) {
+    if (isDeletedPublication(exception) || isDeletedDuplicatePublication(exception)) {
+      LOGGER.info(
+          SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
+
+      var resource = getMetadata(doi);
+
+      if (input.getDuplicateOf().isPresent()) {
+        var duplicateOf = input.getDuplicateOf().orElseThrow();
+        LOGGER.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
+        addDuplicateIdentifier(resource, duplicateOf);
+      }
+
+      deleteMetadata(doi, toString(resource));
+    }
+  }
+
+  private static boolean isDeletedDuplicatePublication(PublicationApiClientException e) {
+    return e.getStatus() == MOVED_PERMANENTLY;
+  }
+
+  private static boolean isDeletedPublication(PublicationApiClientException e) {
+    return e.getStatus() == GONE;
+  }
+
+  private static String toString(Resource resource) {
+    var sw = new StringWriter();
+    JAXB.marshal(resource, sw);
+    return sw.toString();
+  }
+
+  private Resource getMetadata(Doi doi) {
+    return attempt(() -> doiClient.getMetadata(doi))
+        .map(UpdateDoiEventHandler::unmarshall)
+        .orElseThrow();
+  }
+
+  private static Resource unmarshall(String value) {
+    return JAXB.unmarshal(new StringReader(value), Resource.class);
+  }
+
+  private static void addDuplicateIdentifier(Resource resource, URI duplicateOf) {
+    var newIdentifier = new RelatedIdentifiers.RelatedIdentifier();
+    newIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
+    newIdentifier.setValue(duplicateOf.toString());
+    newIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
+    newIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
+
+    if (isNull(resource.getRelatedIdentifiers())) {
+      resource.setRelatedIdentifiers(new RelatedIdentifiers());
+    } else {
+      if (isRelatedIdentifierPresent(resource, newIdentifier)) {
+        return; // If an identical identifier is found, don't add the new one
+      }
     }
 
-    @Override
-    protected Void processInputPayload(DoiUpdateRequestEvent input,
-                                       AwsEventBridgeEvent<AwsEventBridgeDetail<DoiUpdateRequestEvent>> event,
-                                       Context context) {
+    resource.getRelatedIdentifiers().getRelatedIdentifier().add(newIdentifier);
+  }
 
-        validateInput(input);
+  private static boolean isRelatedIdentifierPresent(
+      Resource resource, RelatedIdentifier newIdentifier) {
+    return resource.getRelatedIdentifiers().getRelatedIdentifier().stream()
+        .anyMatch(existingIdentifier -> isIdentical(newIdentifier, existingIdentifier));
+  }
 
-        var doi = getDoiFromEventOrDraftDoi(input);
+  private static boolean isIdentical(
+      RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
+    return existingIdentifier.getValue().equals(newIdentifier.getValue())
+        && existingIdentifier.getRelatedIdentifierType()
+            == newIdentifier.getRelatedIdentifierType();
+  }
 
-        try {
-            var dataCiteXmlMetadata = dataCiteMetadataResolver.getDataCiteMetadataXml(input.getPublicationId());
-            makeDoiFindable(input, doi, dataCiteXmlMetadata);
+  private void makeDoiFindable(DoiUpdateRequestEvent input, Doi doi, String dataCiteXmlMetadata)
+      throws ClientException {
+    LOGGER.info(
+        RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG,
+        doi.getUri(),
+        input.getPublicationId(),
+        input.getCustomerId());
 
-            return null;
-        } catch (ClientException e) {
-            throw new ClientRuntimeException(e);
-        } catch (PublicationApiClientException e) {
-            handleDoiWhenPublicationIsGone(input, e, doi);
-        }
+    doiClient.updateMetadata(doi, dataCiteXmlMetadata);
+    doiClient.setLandingPage(doi, input.getPublicationId());
+    LOGGER.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
+  }
 
-        return null;
+  private void deleteMetadata(Doi doi, String updatedMetadata) {
+    try {
+      doiClient.updateMetadata(doi, updatedMetadata);
+      doiClient.deleteMetadata(doi);
+    } catch (ClientException ex) {
+      throw new RuntimeException(ex);
     }
+  }
 
-    private void handleDoiWhenPublicationIsGone(
-        DoiUpdateRequestEvent input,
-        PublicationApiClientException e,
-        Doi doi) {
-        LOGGER.info(RECEIVED_REQUEST_TO_MAKE_DOI_REGISTERED_LOG,
-                    doi.getUri(),
-                    input.getPublicationId(),
-                    input.getCustomerId(),
-                    input.getDuplicateOf().orElse(null));
-        var response = attempt(() -> doiClient.getDoi(doi)).toOptional();
-        if (response.isPresent()) {
-            handleDoiWhenPublicationIsGone(response.get(), input, doi, e) ;
-        } else {
-            throwException(e, input);
-        }
+  private static void validateInput(DoiUpdateRequestEvent input) {
+    var problems = new ArrayList<String>();
+    if (isNull(input.getPublicationId())) {
+      problems.add("publicationID");
     }
-
-    private void throwException(PublicationApiClientException exception, DoiUpdateRequestEvent input) {
-        LOGGER.error("Unknown error for publication id {}", input.getPublicationId(), exception);
-        throw exception;
+    if (isNull(input.getCustomerId())) {
+      problems.add("customerID");
     }
-
-    private void handleDoiWhenPublicationIsGone(DoiStateDto doiStateDto, DoiUpdateRequestEvent input, Doi doi,
-                                                PublicationApiClientException e) {
-        switch (doiStateDto.getState()) {
-            case FINDABLE -> handleFindableDoi(input, doi, e);
-            case DRAFT -> deleteDraftDoi(input, doi);
-            case REGISTERED -> handleRegisteredDoi(input, doi);
-            case null, default -> throwException(e, input);
-        }
-        LOGGER.info(SUCCESSFUL_DOI_REGISTERED,
-                    doi.getUri(),
-                    input.getPublicationId(),
-                    input.getCustomerId());
-
+    if (isNull(input.getDoi())) {
+      problems.add("doi");
     }
-
-    private void handleRegisteredDoi(DoiUpdateRequestEvent requestEvent, Doi doi) {
-        LOGGER.info(DOI_ALREADY_REGISTERED_MESSAGE, doi, requestEvent.getCustomerId(), requestEvent.getPublicationId());
+    if (!problems.isEmpty()) {
+      throw new IllegalArgumentException(
+          MANDATORY_FIELD_ERROR_PREFIX + String.join(", ", problems));
     }
+  }
 
-    private void deleteDraftDoi(DoiUpdateRequestEvent updateRequestEvent, Doi doi) {
-        try {
-            LOGGER.info(DELETING_DRAFT_DOI_MESSAGE, doi.getUri(), updateRequestEvent.getCustomerId(), updateRequestEvent.getPublicationId());
-            doiClient.deleteDraftDoi(doi);
-        } catch (ClientException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 
-    private void handleFindableDoi(DoiUpdateRequestEvent input, Doi doi, PublicationApiClientException exception) {
-        if (isDeletedPublication(exception) || isDeletedDuplicatePublication(exception)) {
-            LOGGER.info(SHOULD_REMOVE_METADATA_LOG_MESSAGE, input.getPublicationId(), exception.getStatus());
-
-            var resource = getMetadata(doi);
-
-            if (input.getDuplicateOf().isPresent()) {
-                var duplicateOf = input.getDuplicateOf().orElseThrow();
-                LOGGER.info(ADDING_DUPLICATE_IDENTIFIER_TO_RESOURCE, duplicateOf);
-                addDuplicateIdentifier(resource, duplicateOf);
-            }
-
-            deleteMetadata(doi, toString(resource));
-        }
-    }
-
-    private static boolean isDeletedDuplicatePublication(PublicationApiClientException e) {
-        return e.getStatus() == MOVED_PERMANENTLY;
-    }
-
-    private static boolean isDeletedPublication(PublicationApiClientException e) {
-        return e.getStatus() == GONE;
-    }
-
-    private static String toString(Resource resource) {
-        var sw = new StringWriter();
-        JAXB.marshal(resource, sw);
-        return sw.toString();
-    }
-
-    private Resource getMetadata(Doi doi) {
-        return attempt(() -> doiClient.getMetadata(doi))
-                   .map(UpdateDoiEventHandler::unmarshall)
-                   .orElseThrow();
-    }
-
-    private static Resource unmarshall(String value) {
-        return JAXB.unmarshal(new StringReader(value), Resource.class);
-    }
-
-    private static void addDuplicateIdentifier(Resource resource, URI duplicateOf) {
-        var newIdentifier = new RelatedIdentifiers.RelatedIdentifier();
-        newIdentifier.setRelatedIdentifierType(RelatedIdentifierType.URL);
-        newIdentifier.setValue(duplicateOf.toString());
-        newIdentifier.setRelationType(RelationType.IS_IDENTICAL_TO);
-        newIdentifier.setResourceTypeGeneral(resource.getResourceType().getResourceTypeGeneral());
-
-        if (isNull(resource.getRelatedIdentifiers())) {
-            resource.setRelatedIdentifiers(new RelatedIdentifiers());
-        } else {
-            if (isRelatedIdentifierPresent(resource, newIdentifier)) {
-                return;  // If an identical identifier is found, don't add the new one
-            }
-        }
-
-        resource.getRelatedIdentifiers().getRelatedIdentifier().add(newIdentifier);
-    }
-
-    private static boolean isRelatedIdentifierPresent(Resource resource, RelatedIdentifier newIdentifier) {
-        return resource.getRelatedIdentifiers().getRelatedIdentifier().stream()
-                   .anyMatch(existingIdentifier -> isIdentical(newIdentifier, existingIdentifier));
-    }
-
-    private static boolean isIdentical(RelatedIdentifier newIdentifier, RelatedIdentifier existingIdentifier) {
-        return existingIdentifier.getValue().equals(newIdentifier.getValue())
-               && existingIdentifier.getRelatedIdentifierType() == newIdentifier.getRelatedIdentifierType();
-    }
-
-    private void makeDoiFindable(
-        DoiUpdateRequestEvent input,
-        Doi doi,
-        String dataCiteXmlMetadata) throws ClientException {
-        LOGGER.info(RECEIVED_REQUEST_TO_MAKE_DOI_FINDABLE_LOG,
-                    doi.getUri(),
-                    input.getPublicationId(),
-                    input.getCustomerId());
-
-        doiClient.updateMetadata(doi, dataCiteXmlMetadata);
-        doiClient.setLandingPage(doi, input.getPublicationId());
-        LOGGER.info(SUCCESSFULLY_MADE_DOI_FINDABLE, doi.getUri());
-    }
-
-    private void deleteMetadata(Doi doi, String updatedMetadata) {
-        try {
-            doiClient.updateMetadata(doi, updatedMetadata);
-            doiClient.deleteMetadata(doi);
-        } catch (ClientException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static void validateInput(DoiUpdateRequestEvent input) {
-        var problems = new ArrayList<String>();
-        if (isNull(input.getPublicationId())) {
-            problems.add("publicationID");
-        }
-        if (isNull(input.getCustomerId())) {
-            problems.add("customerID");
-        }
-        if (isNull(input.getDoi())) {
-            problems.add("doi");
-        }
-        if (!problems.isEmpty()) {
-            throw new IllegalArgumentException(MANDATORY_FIELD_ERROR_PREFIX + String.join(", ", problems));
-        }
-    }
-
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
-
-    private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) {
-        return Doi.fromUri(input.getDoi());
-    }
+  private Doi getDoiFromEventOrDraftDoi(DoiUpdateRequestEvent input) {
+    return Doi.fromUri(input.getDoi());
+  }
 }

@@ -14,98 +14,97 @@ import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
 
-
 public class ResourceDraftedForDeletionEventHandler
-    extends DestinationsEventBridgeEventHandler<ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
+    extends DestinationsEventBridgeEventHandler<
+        ResourceDraftedForDeletionEvent, ResourceDraftedForDeletionEvent> {
 
-    public static final URI NO_DOI = null;
-    public static final String ERROR_GETTING_DOI_STATE = "Error getting DOI state";
-    public static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
-    public static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";
-    public static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
-    public static final String DELETED_DRAFT_DOI_EVENT_TOPIC = "DoiRegistrarService.Doi.DeletedDraft";
-    private final DoiClient doiClient;
+  public static final URI NO_DOI = null;
+  public static final String ERROR_GETTING_DOI_STATE = "Error getting DOI state";
+  public static final String ERROR_DELETING_DRAFT_DOI = "Error deleting draft DOI";
+  public static final String EXPECTED_EVENT_WITH_DOI = "Expected event with DOI";
+  public static final String NOT_DRAFT_DOI_ERROR = "DOI state is not draft, aborting deletion.";
+  public static final String DELETED_DRAFT_DOI_EVENT_TOPIC = "DoiRegistrarService.Doi.DeletedDraft";
+  private final DoiClient doiClient;
 
-    /**
-     * Default constructor for DeleteDraftDoiHandler.
-     *
-     * @throws IOException IOException
-     */
-    @JacocoGenerated
-    public ResourceDraftedForDeletionEventHandler() {
-        this(defaultDoiClient());
+  /**
+   * Default constructor for DeleteDraftDoiHandler.
+   *
+   * @throws IOException IOException
+   */
+  @JacocoGenerated
+  public ResourceDraftedForDeletionEventHandler() {
+    this(defaultDoiClient());
+  }
+
+  /**
+   * Constructor for DeleteDraftDoiHandler.
+   *
+   * @param doiClient doiClient
+   */
+  public ResourceDraftedForDeletionEventHandler(DoiClient doiClient) {
+    super(ResourceDraftedForDeletionEvent.class);
+    this.doiClient = doiClient;
+  }
+
+  @Override
+  protected ResourceDraftedForDeletionEvent processInputPayload(
+      ResourceDraftedForDeletionEvent input,
+      AwsEventBridgeEvent<AwsEventBridgeDetail<ResourceDraftedForDeletionEvent>> event,
+      Context context) {
+
+    verifyEventHasDoi(input);
+
+    var doi = getDoi(input);
+    verifyDoiIsInDraftState(doi);
+    return deleteDraftPublication(input, doi);
+  }
+
+  private void verifyEventHasDoi(ResourceDraftedForDeletionEvent event) {
+    if (!event.hasDoi()) {
+      throw new RuntimeException(EXPECTED_EVENT_WITH_DOI);
+    }
+  }
+
+  private Doi getDoi(ResourceDraftedForDeletionEvent input) {
+    return Doi.fromUri(input.getDoi());
+  }
+
+  private void verifyDoiIsInDraftState(Doi doi) {
+    DoiStateDto doiState;
+    try {
+      doiState = doiClient.getDoi(doi);
+    } catch (ClientException e) {
+      throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
     }
 
-    /**
-     * Constructor for DeleteDraftDoiHandler.
-     *
-     * @param doiClient doiClient
-     */
-    public ResourceDraftedForDeletionEventHandler(DoiClient doiClient) {
-        super(ResourceDraftedForDeletionEvent.class);
-        this.doiClient = doiClient;
+    if (State.DRAFT != doiState.getState()) {
+      throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
     }
+  }
 
-    @Override
-    protected ResourceDraftedForDeletionEvent processInputPayload(
-        ResourceDraftedForDeletionEvent input,
-        AwsEventBridgeEvent<AwsEventBridgeDetail<ResourceDraftedForDeletionEvent>> event,
-        Context context) {
-
-        verifyEventHasDoi(input);
-
-        var doi = getDoi(input);
-        verifyDoiIsInDraftState(doi);
-        return deleteDraftPublication(input, doi);
+  private ResourceDraftedForDeletionEvent deleteDraftPublication(
+      ResourceDraftedForDeletionEvent event, Doi doi) {
+    try {
+      doiClient.deleteDraftDoi(doi);
+    } catch (ClientException e) {
+      throw new RuntimeException(ERROR_DELETING_DRAFT_DOI, e);
     }
+    return copyDeletePublicationWithoutDoi(event);
+  }
 
-    private void verifyEventHasDoi(ResourceDraftedForDeletionEvent event) {
-        if (!event.hasDoi()) {
-            throw new RuntimeException(EXPECTED_EVENT_WITH_DOI);
-        }
-    }
+  private ResourceDraftedForDeletionEvent copyDeletePublicationWithoutDoi(
+      ResourceDraftedForDeletionEvent event) {
+    // Is this event necessary?
+    return new ResourceDraftedForDeletionEvent(
+        DELETED_DRAFT_DOI_EVENT_TOPIC,
+        event.getIdentifier(),
+        event.getStatus(),
+        NO_DOI,
+        event.getCustomerId());
+  }
 
-    private Doi getDoi(ResourceDraftedForDeletionEvent input) {
-        return Doi.fromUri(input.getDoi());
-    }
-
-    private void verifyDoiIsInDraftState(Doi doi) {
-        DoiStateDto doiState;
-        try {
-            doiState = doiClient.getDoi(doi);
-        } catch (ClientException e) {
-            throw new RuntimeException(ERROR_GETTING_DOI_STATE, e);
-        }
-
-        if (State.DRAFT != doiState.getState()) {
-            throw new RuntimeException(NOT_DRAFT_DOI_ERROR);
-        }
-    }
-
-    private ResourceDraftedForDeletionEvent deleteDraftPublication(
-        ResourceDraftedForDeletionEvent event,
-        Doi doi) {
-        try {
-            doiClient.deleteDraftDoi(doi);
-        } catch (ClientException e) {
-            throw new RuntimeException(ERROR_DELETING_DRAFT_DOI, e);
-        }
-        return copyDeletePublicationWithoutDoi(event);
-    }
-
-    private ResourceDraftedForDeletionEvent copyDeletePublicationWithoutDoi(ResourceDraftedForDeletionEvent event) {
-        //Is this event necessary?
-        return new ResourceDraftedForDeletionEvent(
-            DELETED_DRAFT_DOI_EVENT_TOPIC,
-            event.getIdentifier(),
-            event.getStatus(),
-            NO_DOI,
-            event.getCustomerId()
-        );
-    }
-
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 }

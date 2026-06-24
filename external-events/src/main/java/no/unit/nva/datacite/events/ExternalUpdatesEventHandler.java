@@ -1,6 +1,7 @@
 package no.unit.nva.datacite.events;
 
 import static nva.commons.core.attempt.Try.attempt;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
@@ -29,92 +30,91 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalUpdatesEventHandler.class);
-    private static final TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<EventReference>>>
-        SQS_VALUE_TYPE_REF = new TypeReference<>() {};
-    private static final Set<String> HANDLED_TOPICS = Set.of("PublicationService.Resource.Deleted");
-    private static final String EVENTS_BUCKET_NAME_ENV = "EVENTS_BUCKET_NAME";
+  private static final Logger LOGGER = LoggerFactory.getLogger(ExternalUpdatesEventHandler.class);
+  private static final TypeReference<AwsEventBridgeEvent<AwsEventBridgeDetail<EventReference>>>
+      SQS_VALUE_TYPE_REF = new TypeReference<>() {};
+  private static final Set<String> HANDLED_TOPICS = Set.of("PublicationService.Resource.Deleted");
+  private static final String EVENTS_BUCKET_NAME_ENV = "EVENTS_BUCKET_NAME";
 
-    private final S3Driver s3Driver;
-    private final DoiManager doiManager;
+  private final S3Driver s3Driver;
+  private final DoiManager doiManager;
 
-    @JacocoGenerated
-    public ExternalUpdatesEventHandler() {
-        this(
-            new Environment(),
-            S3Driver.defaultS3Client().build(),
-            new DoiManager(defaultDoiClient()));
+  @JacocoGenerated
+  public ExternalUpdatesEventHandler() {
+    this(new Environment(), S3Driver.defaultS3Client().build(), new DoiManager(defaultDoiClient()));
+  }
+
+  protected ExternalUpdatesEventHandler(
+      Environment environment, S3Client s3Client, DoiManager doiManager) {
+    this.s3Driver = new S3Driver(s3Client, environment.readEnv(EVENTS_BUCKET_NAME_ENV));
+    this.doiManager = doiManager;
+  }
+
+  @Override
+  public Void handleRequest(SQSEvent sqsEvent, Context context) {
+    Optional.ofNullable(sqsEvent.getRecords()).stream()
+        .flatMap(List::stream)
+        .map(ExternalUpdatesEventHandler::parseEventReference)
+        .filter(Objects::nonNull)
+        .forEach(this::processPayload);
+    return null;
+  }
+
+  private void processPayload(EventReference eventReference) {
+    if (!HANDLED_TOPICS.contains(eventReference.getTopic())) {
+      return;
     }
 
-    protected ExternalUpdatesEventHandler(
-        Environment environment, S3Client s3Client, DoiManager doiManager) {
-        this.s3Driver = new S3Driver(s3Client, environment.readEnv(EVENTS_BUCKET_NAME_ENV));
-        this.doiManager = doiManager;
+    var updateEvent = getEventBodyFromS3(eventReference);
+    if (updateEvent.isDeletionOfResourceWithDoi()) {
+      deleteDoiIfDrafted(updateEvent.oldData());
+    }
+  }
+
+  private void deleteDoiIfDrafted(Resource deletedResource) {
+    var doi = Doi.fromUri(deletedResource.doi());
+    try {
+      doiManager.deleteDoiIfOnlyDrafted(doi);
+    } catch (ClientException e) {
+      var message = String.format("Failed to check state or delete doi %s", doi);
+      throw new EventHandlingException(message, e);
     }
 
-    @Override
-    public Void handleRequest(SQSEvent sqsEvent, Context context) {
-        Optional.ofNullable(sqsEvent.getRecords()).stream()
-            .flatMap(List::stream)
-            .map(ExternalUpdatesEventHandler::parseEventReference)
-            .filter(Objects::nonNull)
-            .forEach(this::processPayload);
-        return null;
-    }
+    var resourceIdentifier = deletedResource.identifier();
+    LOGGER.info(
+        "Deleted draft DOI {} as resource {} was deleted.", doi.getUri(), resourceIdentifier);
+  }
 
-    private void processPayload(EventReference eventReference) {
-        if (!HANDLED_TOPICS.contains(eventReference.getTopic())) {
-            return;
-        }
+  private ResourceUpdateEvent getEventBodyFromS3(EventReference eventReference) {
+    var event = s3Driver.readEvent(eventReference.getUri());
+    return attempt(() -> JsonUtils.dtoObjectMapper.readValue(event, ResourceUpdateEvent.class))
+        .orElseThrow(this::logAndThrow);
+  }
 
-        var updateEvent = getEventBodyFromS3(eventReference);
-        if (updateEvent.isDeletionOfResourceWithDoi()) {
-            deleteDoiIfDrafted(updateEvent.oldData());
-        }
-    }
+  private RuntimeException logAndThrow(Failure<ResourceUpdateEvent> updateEventFailure) {
+    final Throwable cause = updateEventFailure.getException();
+    LOGGER.error("Unable to parse s3 event reference", cause);
+    throw new EventHandlingException("Failed to parse s3 event reference!", cause);
+  }
 
-    private void deleteDoiIfDrafted(Resource deletedResource) {
-        var doi = Doi.fromUri(deletedResource.doi());
-        try {
-            doiManager.deleteDoiIfOnlyDrafted(doi);
-        } catch (ClientException e) {
-            var message = String.format("Failed to check state or delete doi %s", doi);
-            throw new EventHandlingException(message, e);
-        }
+  private static EventReference parseEventReference(SQSMessage sqs) {
+    var event =
+        attempt(() -> JsonUtils.dtoObjectMapper.readValue(sqs.getBody(), SQS_VALUE_TYPE_REF))
+            .orElseThrow(
+                failure ->
+                    new EventHandlingException(
+                        "Failed to parse event body", failure.getException()));
 
-        var resourceIdentifier = deletedResource.identifier();
-        LOGGER.info("Deleted draft DOI {} as resource {} was deleted.", doi.getUri(), resourceIdentifier);
-    }
+    return Optional.ofNullable(event).stream()
+        .map(AwsEventBridgeEvent::getDetail)
+        .map(AwsEventBridgeDetail::getResponsePayload)
+        .collect(SingletonCollector.tryCollect())
+        .orElseThrow(
+            new EventHandlingException("Failed to extract response payload from event body"));
+  }
 
-    private ResourceUpdateEvent getEventBodyFromS3(EventReference eventReference) {
-        var event = s3Driver.readEvent(eventReference.getUri());
-        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(event, ResourceUpdateEvent.class))
-                   .orElseThrow(this::logAndThrow);
-    }
-
-    private RuntimeException logAndThrow(Failure<ResourceUpdateEvent> updateEventFailure) {
-        final Throwable cause = updateEventFailure.getException();
-        LOGGER.error("Unable to parse s3 event reference", cause);
-        throw new EventHandlingException(
-            "Failed to parse s3 event reference!", cause);
-    }
-
-    private static EventReference parseEventReference(SQSMessage sqs) {
-        var event = attempt(() -> JsonUtils.dtoObjectMapper.readValue(sqs.getBody(), SQS_VALUE_TYPE_REF))
-                        .orElseThrow(failure ->
-                                         new EventHandlingException("Failed to parse event body",
-                                                                    failure.getException()));
-
-        return Optional.ofNullable(event)
-                   .stream()
-                   .map(AwsEventBridgeEvent::getDetail)
-                   .map(AwsEventBridgeDetail::getResponsePayload)
-                   .collect(SingletonCollector.tryCollect())
-                   .orElseThrow(new EventHandlingException("Failed to extract response payload from event body"));
-    }
-
-    @JacocoGenerated
-    private static DoiClient defaultDoiClient() {
-        return new DataCiteClientV2();
-    }
+  @JacocoGenerated
+  private static DoiClient defaultDoiClient() {
+    return new DataCiteClientV2();
+  }
 }
