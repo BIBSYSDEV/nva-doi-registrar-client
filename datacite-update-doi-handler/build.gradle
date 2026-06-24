@@ -7,23 +7,39 @@ dependencies {
     implementation project (":datacite-jaxb")
 
 
-    implementation libs.nva.core
-    implementation libs.nva.json
-    implementation libs.nva.doi
-    implementation libs.nva.eventhandlers
-    implementation libs.nva.apigateway
-    implementation libs.nva.identifiers
-    implementation libs.nva.secrets
-    implementation libs.bundles.logging
-    implementation libs.bundles.jackson
+    implementation nvaLibs.core
+    implementation nvaLibs.json
+    implementation nvaLibs.doi
+    implementation nvaLibs.eventhandlers
+    implementation nvaLibs.apigateway
+    implementation nvaLibs.identifiers
+    implementation nvaLibs.secrets
+
+    implementation nvaCatalog.log4j.core
+    implementation nvaCatalog.log4j.api
+    implementation nvaCatalog.slf4j.api
+
+    implementation nvaCatalog.jackson.core
+    implementation nvaCatalog.jackson.databind
+    implementation nvaCatalog.jackson.annotations
+    implementation nvaCatalog.jackson.datatype.jdk8
+    implementation nvaCatalog.jackson.datatype.jsr310
+    implementation nvaCatalog.jackson.datatype.problem
 
     runtimeOnly libs.jaxb.runtime
     compileOnly libs.aws.sdk
 
     testImplementation project(path: ':test-utils')
-    testImplementation libs.bundles.testing
-    testImplementation libs.nva.logutils
-    testImplementation libs.wiremock
+    testImplementation nvaCatalog.junit.jupiter.engine
+    testImplementation nvaCatalog.junit.jupiter.params
+    testImplementation nvaCatalog.hamcrest
+    testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.testutils
+    testImplementation nvaLibs.logutils
+    testImplementation nvaCatalog.wiremock.core
+    testImplementation nvaCatalog.wiremock.junit5
+    testImplementation nvaCatalog.httpcore5
+    testRuntimeOnly nvaCatalog.wiremock
 }
 
 test{

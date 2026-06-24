@@ -9,12 +9,11 @@ plugins {
 group = 'com.github.bibsysdev'
 
 dependencies {
-    testImplementation libs.bundles.testing
-}
-
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
+    testImplementation nvaCatalog.junit.jupiter.engine
+    testImplementation nvaCatalog.junit.jupiter.params
+    testImplementation nvaCatalog.hamcrest
+    testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.testutils
 }
 
 tasks.named('test') {

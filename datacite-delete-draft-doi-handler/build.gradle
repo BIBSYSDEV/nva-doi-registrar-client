@@ -2,23 +2,40 @@ dependencies {
     implementation project(":assign-doi-datacite")
     implementation project(":doi-commons")
 
-    implementation libs.nva.core
-    implementation libs.nva.json
-    implementation libs.nva.doi
-    implementation libs.nva.identifiers
-    implementation libs.nva.eventhandlers
-    implementation libs.nva.apigateway
-    implementation libs.nva.secrets
-    implementation libs.bundles.logging
-    implementation libs.bundles.jackson
-    implementation libs.aws.sdk2.httpClientApi
+    implementation nvaLibs.core
+    implementation nvaLibs.json
+    implementation nvaLibs.doi
+    implementation nvaLibs.identifiers
+    implementation nvaLibs.eventhandlers
+    implementation nvaLibs.apigateway
+    implementation nvaLibs.secrets
+
+    implementation nvaCatalog.log4j.core
+    implementation nvaCatalog.log4j.api
+    implementation nvaCatalog.slf4j.api
+
+    implementation nvaCatalog.jackson.core
+    implementation nvaCatalog.jackson.databind
+    implementation nvaCatalog.jackson.annotations
+    implementation nvaCatalog.jackson.datatype.jdk8
+    implementation nvaCatalog.jackson.datatype.jsr310
+    implementation nvaCatalog.jackson.datatype.problem
+
+    implementation nvaCatalog.aws.sdk2.http.client
 
     runtimeOnly libs.jaxb.runtime
 
-    testImplementation libs.bundles.testing
-    testImplementation libs.wiremock
+    testImplementation nvaCatalog.junit.jupiter.engine
+    testImplementation nvaCatalog.junit.jupiter.params
+    testImplementation nvaCatalog.hamcrest
+    testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.testutils
+    testImplementation nvaCatalog.wiremock.core
+    testImplementation nvaCatalog.wiremock.junit5
+    testImplementation nvaCatalog.httpcore5
+    testRuntimeOnly nvaCatalog.wiremock
 
-    compileOnly(libs.aws.sdk.apigateway) {
+    compileOnly(nvaCatalog.aws.sdk.apigateway) {
         because "PMD complains for the com/amazonaws/regions/Regions class"
     }
 
