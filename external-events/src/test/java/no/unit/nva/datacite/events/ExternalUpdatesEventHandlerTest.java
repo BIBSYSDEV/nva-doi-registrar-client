@@ -33,9 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentMatchers;
 
-public class ExternalUpdatesEventHandlerTest {
+class ExternalUpdatesEventHandlerTest {
 
     private static final String MESSAGE_BODY_TEMPLATE =
         stringFromResources(Path.of("sqsMessageBodyTemplate.json"));
@@ -44,7 +43,7 @@ public class ExternalUpdatesEventHandlerTest {
     private DoiClient doiClient;
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         environment = mock(Environment.class);
         doiClient = mock(DoiClient.class);
     }
@@ -73,7 +72,7 @@ public class ExternalUpdatesEventHandlerTest {
     @Test
     void shouldFailWhenNotAbleToParseS3EventData() {
         var eventReference = stringFromResources(Path.of("unparsableS3EventReference.json"));
-        invokeHandlerWithEventReferenceAndAssertThrows(eventReference);
+        assertThrows(EventHandlingException.class, () -> invokeHandlerWithEventReference(eventReference));
     }
 
     @Test
@@ -83,27 +82,23 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = "ignored";
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
 
-        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+        assertDoesNotThrow(fixture::handleRequest);
     }
 
     @Test
     void shouldFailWhenNotAbleToParseEventReference() {
         var invalidMessageBody = stringFromResources(Path.of("unparsableSqsMessageBody.json"));
-        invokeHandlerWithMessageBodyAndAssertThrows(invalidMessageBody);
+        assertThrows(EventHandlingException.class, () -> invokeHandlerWithMessageBody(invalidMessageBody));
     }
 
     @Test
     void shouldSilentlyIgnoreExternalEventIfResourceHasNoDoi() throws ClientException {
         var s3Uri = randomUri();
         var messageBody = generateMessageBody(s3Uri);
-        UriWrapper.fromUri("https://apihost/customer")
-                             .addChild(SortableIdentifier.next().toString())
-                             .getUri();
         var eventReference = stringFromResources(Path.of("eventReferenceWithoutDoi.json"));
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
 
-        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
-
+        assertDoesNotThrow(fixture::handleRequest);
         verify(doiClient, times(0)).getDoi(any());
         verify(doiClient, times(0)).deleteDraftDoi(any());
     }
@@ -119,10 +114,9 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
         var draftDoi = new DoiStateDto(doi.toString(), State.DRAFT);
-        doReturn(draftDoi).when(doiClient).getDoi(ArgumentMatchers.eq(Doi.fromUri(doi)));
+        doReturn(draftDoi).when(doiClient).getDoi(Doi.fromUri(doi));
 
-        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
-
+        assertDoesNotThrow(fixture::handleRequest);
         verify(doiClient, times(1)).deleteDraftDoi(any());
     }
 
@@ -138,31 +132,25 @@ public class ExternalUpdatesEventHandlerTest {
         var eventReference = generateEventReference(customerId, doi);
         var fixture = prepareForTesting(s3Uri, eventReference, messageBody);
         var actualDoiState = new DoiStateDto(doi.toString(), state);
-        doReturn(actualDoiState).when(doiClient).getDoi(ArgumentMatchers.eq(Doi.fromUri(doi)));
+        doReturn(actualDoiState).when(doiClient).getDoi(Doi.fromUri(doi));
 
-        assertDoesNotThrow(() -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
-
+        assertDoesNotThrow(fixture::handleRequest);
         verify(doiClient, times(0)).deleteDraftDoi(any());
     }
 
-    private void invokeHandlerWithEventReferenceAndAssertThrows(String eventReference) {
+    private void invokeHandlerWithEventReference(String eventReference) {
         var s3Uri = randomUri();
         var messageBody = generateMessageBody(s3Uri);
-        invokeAndAssertThrows(eventReference, s3Uri, messageBody);
-    }
-
-    private void invokeHandlerWithMessageBodyAndAssertThrows(String messageBody) {
-        var s3Uri = randomUri();
-        invokeAndAssertThrows("ignoredEventReference", s3Uri, messageBody);
-    }
-
-    private void invokeAndAssertThrows(String eventReference, URI s3Uri, String messageBody) {
         var fixture =
-            prepareForTesting(s3Uri, eventReference, messageBody);
+          prepareForTesting(s3Uri, eventReference, messageBody);
+        fixture.handleRequest();
+    }
 
-        assertThrows(
-            EventHandlingException.class,
-            () -> fixture.handler().handleRequest(fixture.sqsEvent(), new FakeContext()));
+    private void invokeHandlerWithMessageBody(String messageBody) {
+        var s3Uri = randomUri();
+        var fixture =
+          prepareForTesting(s3Uri, "ignoredEventReference", messageBody);
+        fixture.handleRequest();
     }
 
     private String generateEventReference(URI customerId, URI doi) {
@@ -194,5 +182,8 @@ public class ExternalUpdatesEventHandlerTest {
 
     private record Fixture(ExternalUpdatesEventHandler handler, SQSEvent sqsEvent) {
 
+        private void handleRequest() {
+            handler().handleRequest(sqsEvent, new FakeContext());
+        }
     }
 }

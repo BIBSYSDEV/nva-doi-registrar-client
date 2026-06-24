@@ -38,7 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest(httpsEnabled = true)
-public class FindableDoiHandlerTest extends TestBase {
+class FindableDoiHandlerTest extends TestBase {
 
     private static final String DATACITE_XML_BODY = IoUtils.stringFromResources(Path.of("datacite.xml"));
 
@@ -53,7 +53,7 @@ public class FindableDoiHandlerTest extends TestBase {
     private FindableDoiHandler handler;
 
     @BeforeEach
-    public void setUp(WireMockRuntimeInfo wireMockRuntimeInfo) {
+    void setUp(WireMockRuntimeInfo wireMockRuntimeInfo) {
         setBaseUrl(wireMockRuntimeInfo.getHttpBaseUrl());
         when(environment.readEnv("API_HOST")).thenReturn(wireMockRuntimeInfo.getHttpsBaseUrl());
         context = mock(Context.class);

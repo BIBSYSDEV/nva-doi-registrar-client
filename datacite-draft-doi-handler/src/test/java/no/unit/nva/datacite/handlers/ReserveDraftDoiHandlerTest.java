@@ -35,25 +35,18 @@ import org.mockito.invocation.InvocationOnMock;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-public class ReserveDraftDoiHandlerTest {
+class ReserveDraftDoiHandlerTest {
 
-    public static final String DOI_IDENTIFIER = "10.1052/identifier";
-
-    public static final String EXPECTED_ERROR_MESSAGE = "DoiClientExceptedErrorMessage";
-
-    public static final int SAMPLE_STATUS_CODE = 500;
-
-    public static final String SAMPLE_DOI_PREFIX = "10.1234";
+    private static final String DOI_IDENTIFIER = "10.1052/identifier";
     private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
     private static final String API_HOST = "API_HOST";
     private final Environment environment = mock(Environment.class);
     private Context context;
     private AtomicReference<URI> inputBuffer;
     private ByteArrayOutputStream output;
-    private ReserveDraftDoiHandler handler;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = mock(Context.class);
         when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
         when(environment.readEnv(API_HOST)).thenReturn("localhost");
@@ -63,21 +56,23 @@ public class ReserveDraftDoiHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     void shouldReturnBadGatewayWhenBadResponseFromDataCite() throws IOException, ClientException {
         var customerId = randomUri();
         var request = createRequest(customerId);
-        handler = new ReserveDraftDoiHandler(doiClientThrowingException(), environment);
+        var handler = new ReserveDraftDoiHandler(doiClientThrowingException(), environment);
         handler.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, Problem.class);
         assertThat(response.getStatusCode(), is(equalTo(HttpURLConnection.HTTP_BAD_GATEWAY)));
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     void shouldReturnDoiSuccessfully() throws IOException, ClientException {
         var customerId = randomUri();
         var expectedDoi = URI.create("https://doi.org/" + DOI_IDENTIFIER);
         var request = createRequest(customerId);
-        handler = new ReserveDraftDoiHandler(doiClientReturningDoi(), environment);
+        var handler = new ReserveDraftDoiHandler(doiClientReturningDoi(), environment);
         handler.handleRequest(request, output, context);
         var response = GatewayResponse.fromOutputStream(output, DoiResponse.class);
         var actualDoi = response.getBodyObject(DoiResponse.class);

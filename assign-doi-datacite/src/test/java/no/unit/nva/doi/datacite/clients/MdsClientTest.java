@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest
-public class MdsClientTest {
+class MdsClientTest {
 
     private static final String DOI_HOST = "doi.org";
     private static final String DOI_SUFFIX = "2";
@@ -37,6 +37,7 @@ public class MdsClientTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     void shouldThrowClientExceptionWhenHttpClientThrowsIoExceptionOnDeleteDraftDoi(WireMockRuntimeInfo runtimeInfo)
         throws IOException,
                InterruptedException {
