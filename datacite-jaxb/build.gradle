@@ -2,58 +2,60 @@ plugins {
     id 'nva.doiregistrar.service.java-conventions'
 }
 
-project.ext {
-    jaxbTargetDir = file("$buildDir/generated/sources/xjc")
-}
-
-sourceSets.main.java.srcDirs += jaxbTargetDir
-
 configurations {
-    jaxb
+    xjc
 }
 
 dependencies {
-    jaxb libs.xsd2java.xjc
-    jaxb libs.xsd2java.impl
-    jaxb libs.jakarta.bind.api
-    jaxb libs.xsd2java.activation
-
-    implementation libs.xsd2java.xjc
-    implementation libs.xsd2java.impl
-    implementation libs.jakarta.bind.api
-    implementation libs.xsd2java.activation
+    api(libs.jakarta.bind.api)
+    xjc(libs.jakarta.bind.api)
+    xjc(libs.xsd2java.activation)
+    xjc(libs.xsd2java.impl)
+    xjc(libs.xsd2java.xjc)
 }
 
+@CacheableTask
+abstract class Xsd2Pojo extends DefaultTask {
 
-task xsd2java() {
-    def schemaVersion = '4.4'
-    doLast {
-        jaxbTargetDir.mkdirs()
-        ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJC2Task', classpath: configurations.jaxb.asPath)
-        ant.jaxbTargetDir = jaxbTargetDir
+    @Input
+    abstract Property<String> getSchemaUri()
+
+    @Input
+    abstract Property<String> getTargetPackage()
+
+    @Classpath
+    abstract ConfigurableFileCollection getXjcClasspath()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    @TaskAction
+    void generate() {
+        outputDir.get().asFile.mkdirs()
+        def normalizedClasspath = xjcClasspath.files.toSorted()
+
+        ant.taskdef(
+                name: 'xjc',
+                classname: 'com.sun.tools.xjc.XJC2Task',
+                classpath: normalizedClasspath.collect { it.absolutePath }.join(File.pathSeparator)
+        )
         ant.xjc(
-                destdir: '${jaxbTargetDir}',
-                package: 'org.datacite.schema.kernel_4',
-                schema: "https://schema.datacite.org/meta/kernel-${schemaVersion}/metadata.xsd"
+                destdir: outputDir.get().asFile,
+                package: targetPackage.get(),
+                schema: schemaUri.get()
         )
     }
 }
 
-tasks.withType(JavaCompile) {
-    dependsOn(xsd2java)
+def xsd2java = tasks.register('xsd2java', Xsd2Pojo) {
+    schemaUri = 'https://schema.datacite.org/meta/kernel-4.4/metadata.xsd'
+    targetPackage = 'org.datacite.schema.kernel_4'
+    xjcClasspath = configurations.xjc
+    outputDir = layout.buildDirectory.dir('generated/sources/xjc')
 }
 
-tasks.withType(Pmd) {
-    exclude { '**/generated/*' }
-}
+sourceSets.main.java.srcDir(xsd2java.flatMap { it.outputDir })
 
-
-build{
-    dependsOn xsd2java
-}
-
-jar {
-    from "$buildDir/classes/java/main"
-    //SAM build does not know what to do with the generated duplicates.
-    duplicatesStrategy(DuplicatesStrategy.WARN)
+tasks.withType(Jar).configureEach {
+    outputs.cacheIf { true }
 }
