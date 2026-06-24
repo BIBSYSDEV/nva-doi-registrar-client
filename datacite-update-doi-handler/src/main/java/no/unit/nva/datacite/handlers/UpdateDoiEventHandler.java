@@ -23,11 +23,11 @@ import no.unit.nva.events.handlers.DestinationsEventBridgeEventHandler;
 import no.unit.nva.events.models.AwsEventBridgeDetail;
 import no.unit.nva.events.models.AwsEventBridgeEvent;
 import nva.commons.core.JacocoGenerated;
-import org.datacide.schema.kernel_4.RelatedIdentifierType;
-import org.datacide.schema.kernel_4.RelationType;
-import org.datacide.schema.kernel_4.Resource;
-import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers;
-import org.datacide.schema.kernel_4.Resource.RelatedIdentifiers.RelatedIdentifier;
+import org.datacite.schema.kernel_4.RelatedIdentifierType;
+import org.datacite.schema.kernel_4.RelationType;
+import org.datacite.schema.kernel_4.Resource;
+import org.datacite.schema.kernel_4.Resource.RelatedIdentifiers;
+import org.datacite.schema.kernel_4.Resource.RelatedIdentifiers.RelatedIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -8,7 +8,7 @@ nva {
     errorprone {
         allErrorsAsWarnings = false
     }
-    generatedCode = ['org/datacide/schema/**']
+    generatedCode = ['org/datacite/schema/**']
     java {
         languageVersion = 21
     }
