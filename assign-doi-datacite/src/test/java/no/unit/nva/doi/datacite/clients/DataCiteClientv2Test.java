@@ -70,7 +70,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @WireMockTest
-public class DataCiteClientv2Test {
+class DataCiteClientV2Test {
 
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String APPLICATION_VND_API_JSON = "application/vnd.api+json";
@@ -86,8 +86,8 @@ public class DataCiteClientv2Test {
     private static final char FORWARD_SLASH = '/';
     private static final String HTTP_RESPONSE_OK = "OK";
 
-    private static final String metadataPathPrefix = FORWARD_SLASH + MdsClient.DATACITE_PATH_METADATA;
-    private static final String doiPath = FORWARD_SLASH + MdsClient.DATACITE_PATH_DOI;
+    private static final String METADATA_PATH_PREFIX = FORWARD_SLASH + MdsClient.DATACITE_PATH_METADATA;
+    private static final String DOI_PATH = FORWARD_SLASH + MdsClient.DATACITE_PATH_DOI;
 
     private static final URI EXAMPLE_LANDING_PAGE = URI.create("https://example.net/nva/publication/203124124");
     private static final String EXPECTED_USER_AGENT_REST = "DataCiteRestApiClient-api.localhost.nva.aws.unit.no/1.0 "
@@ -162,6 +162,7 @@ public class DataCiteClientv2Test {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     void shouldThrowClientExceptionWhenHttpClientThrowsIoException(WireMockRuntimeInfo runtimeInfo)
         throws IOException,
                InterruptedException {
@@ -181,7 +182,7 @@ public class DataCiteClientv2Test {
 
     @Test
     void shouldThrowDoiClientExceptionWhenDataciteRespondsWithException() {
-        var logRecorder = LogRecorder.forRoot(DataCiteClientv2Test.class);
+        var logRecorder = LogRecorder.forRoot(DataCiteClientV2Test.class);
         var customerUri = createValidCustomer(customerConfigExtractor);
         var responseBody = "someResponseBody";
         stubHttpClientException(responseBody);
@@ -429,7 +430,7 @@ public class DataCiteClientv2Test {
     }
 
     private String createDoiIdentifierPath(Doi requestedDoi) {
-        return doiPath + FORWARD_SLASH + requestedDoi.toIdentifier();
+        return DOI_PATH + FORWARD_SLASH + requestedDoi.toIdentifier();
     }
 
     private void verifyUpdateMetadataResponse(String expectedPath) {
@@ -457,7 +458,7 @@ public class DataCiteClientv2Test {
     }
 
     private String createMetadataDoiIdentifierPath(Doi doi) {
-        return metadataPathPrefix + FORWARD_SLASH + doi.toIdentifier();
+        return METADATA_PATH_PREFIX + FORWARD_SLASH + doi.toIdentifier();
     }
 
     private void stubGetDoiResponse(String getDoiResponseJson, Doi requestedDoi) {

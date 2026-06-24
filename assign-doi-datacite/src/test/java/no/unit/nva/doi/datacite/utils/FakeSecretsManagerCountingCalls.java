@@ -1,11 +1,10 @@
 package no.unit.nva.doi.datacite.utils;
 
 import no.unit.nva.stubs.FakeSecretsManagerClient;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
-public class FakeSecretsManagerCountingCalls extends FakeSecretsManagerClient implements SecretsManagerClient {
+public class FakeSecretsManagerCountingCalls extends FakeSecretsManagerClient {
 
     private int numberOfTimesFetchSecretsHasBeenCalled;
 

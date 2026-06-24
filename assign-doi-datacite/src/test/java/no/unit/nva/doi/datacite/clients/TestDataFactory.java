@@ -5,6 +5,7 @@ import java.net.URI;
 import no.unit.nva.doi.datacite.customerconfigs.CustomerConfig;
 import no.unit.nva.doi.datacite.utils.FakeCustomerExtractor;
 
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestDataFactory {
     static final String CUSTOMER_PASSWORD = "password";
     static final String CUSTOMER_USERNAME = "username";

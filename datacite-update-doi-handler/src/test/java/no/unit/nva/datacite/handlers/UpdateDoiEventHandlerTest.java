@@ -50,11 +50,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @WireMockTest(httpsEnabled = true)
-public class UpdateDoiEventHandlerTest extends TestBase {
+class UpdateDoiEventHandlerTest extends TestBase {
 
-    public static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
+    static final String SUCCESSFULLY_HANDLED_REQUEST_FOR_DOI = "Successfully handled request for Doi";
 
-    public static final String PUBLICATION_ID_CUSTOMER_ID = "publicationID, customerID";
+    static final String PUBLICATION_ID_CUSTOMER_ID = "publicationID, customerID";
 
     private static final URI CUSTOMER_ID_IN_INPUT_EVENT =
         UriWrapper.fromUri("https://api.dev.nva.aws.unit.no/customer/f54c8aa9-073a-46a1-8f7c-dde66c853934")
@@ -70,7 +70,8 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     private Context context;
 
     @BeforeEach
-    public void init(WireMockRuntimeInfo wireMockRuntimeInfo) {
+    @SuppressWarnings("PMD.CloseResource")
+    void init(WireMockRuntimeInfo wireMockRuntimeInfo) {
         setBaseUrl(wireMockRuntimeInfo.getHttpBaseUrl());
         var httpClient = WiremockHttpClient.create();
         updateDoiHandler = new UpdateDoiEventHandler(doiClient, new DataCiteMetadataResolver(httpClient));
@@ -138,6 +139,7 @@ public class UpdateDoiEventHandlerTest extends TestBase {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     void handleRequestSuccessfullyIsLogged() {
         var logRecorder = LogRecorder.forClass(UpdateDoiEventHandler.class);
         var publicationIdentifier = SortableIdentifier.next().toString();

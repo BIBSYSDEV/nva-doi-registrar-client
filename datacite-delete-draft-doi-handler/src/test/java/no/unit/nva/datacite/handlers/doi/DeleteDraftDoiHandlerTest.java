@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.zalando.problem.Problem;
 
 @WireMockTest(httpsEnabled = true)
-public class DeleteDraftDoiHandlerTest {
+class DeleteDraftDoiHandlerTest {
 
     private static final String API_HOST = "API_HOST";
     private static final String COGNITO_AUTHORIZER_URLS = "COGNITO_AUTHORIZER_URLS";
@@ -47,7 +47,7 @@ public class DeleteDraftDoiHandlerTest {
     private ByteArrayOutputStream output;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = mock(Context.class);
         when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
         when(environment.readEnv(API_HOST)).thenReturn("localhost");
@@ -56,7 +56,8 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    public void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
+    @SuppressWarnings("PMD.CloseResource")
+    void shouldDeleteDraftDoiSuccessfully() throws ClientException, IOException {
         var doi = randomDoi();
         var request = createRequest(doi);
         var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.DRAFT), environment);
@@ -66,7 +67,7 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    public void shouldReturnBadGatewayWhenBadResponseFromDataCiteVerifyingDoiStatus()
+    void shouldReturnBadGatewayWhenBadResponseFromDataCiteVerifyingDoiStatus()
         throws ClientException, IOException {
         var doi = randomDoi();
         var handler = new DeleteDraftDoiHandler(doiClientThrowingException(doi), environment);
@@ -76,7 +77,7 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    public void shouldReturnBadGatewayWhenDoiIsNotADraft()
+    void shouldReturnBadGatewayWhenDoiIsNotADraft()
         throws IOException, ClientException {
         var doi = randomDoi();
         var handler = new DeleteDraftDoiHandler(doiClientReturningDoi(doi, State.FINDABLE), environment);
@@ -86,7 +87,7 @@ public class DeleteDraftDoiHandlerTest {
     }
 
     @Test
-    public void shouldReturnBadGatewayWhenDoiClientFailsOnDraftDoiDeletion()
+    void shouldReturnBadGatewayWhenDoiClientFailsOnDraftDoiDeletion()
         throws ClientException, IOException {
         var doi = randomDoi();
         var handler = new DeleteDraftDoiHandler(doiClientThrowingExceptionWhenDeleting(doi), environment);
