@@ -3,26 +3,26 @@ plugins {
 }
 
 dependencies {
-    api nvaCatalog.jackson.annotations
-    api nvaLibs.core
-    api nvaLibs.doi
-    api nvaLibs.secrets
-    implementation nvaCatalog.httpcore4
-    implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.log4j.core
-    implementation nvaCatalog.slf4j.api
-    implementation nvaLibs.json
-    runtimeOnly nvaCatalog.aws.java.sdk.core
-    runtimeOnly nvaCatalog.jackson.dataformat.cbor
-    testImplementation nvaCatalog.aws.sdk2.secrets
-    testImplementation nvaCatalog.hamcrest
-    testImplementation nvaCatalog.junit.jupiter.api
-    testImplementation nvaCatalog.junit.jupiter.params
-    testImplementation nvaCatalog.mockito.core
-    testImplementation nvaCatalog.wiremock.core
-    testImplementation nvaCatalog.wiremock.junit5
-    testImplementation nvaLibs.logutils
-    testImplementation nvaLibs.testutils
+    api(nvaCatalog.jackson.annotations)
+    api(nvaLibs.core)
+    api(nvaLibs.doi)
+    api(nvaLibs.secrets)
+    implementation(nvaCatalog.httpcore4)
+    implementation(nvaCatalog.jackson.databind)
+    implementation(nvaCatalog.log4j.core)
+    implementation(nvaCatalog.slf4j.api)
+    implementation(nvaLibs.json)
+    runtimeOnly(nvaCatalog.aws.java.sdk.core)
+    runtimeOnly(nvaCatalog.jackson.dataformat.cbor)
+    testImplementation(nvaCatalog.aws.sdk2.secrets)
+    testImplementation(nvaCatalog.hamcrest)
+    testImplementation(nvaCatalog.junit.jupiter.api)
+    testImplementation(nvaCatalog.junit.jupiter.params)
+    testImplementation(nvaCatalog.mockito.core)
+    testImplementation(nvaCatalog.wiremock.core)
+    testImplementation(nvaCatalog.wiremock.junit5)
+    testImplementation(nvaLibs.logutils)
+    testImplementation(nvaLibs.testutils)
 }
 
 test {
