@@ -61,6 +61,8 @@ Conditions:
 Globals:
   Function:
     Timeout: 60
+    Architectures:
+      - arm64
     Runtime: java21
     MemorySize: 1408
     Environment:
