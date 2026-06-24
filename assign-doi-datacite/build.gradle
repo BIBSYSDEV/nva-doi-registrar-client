@@ -1,17 +1,27 @@
 dependencies {
 
-    implementation libs.nva.core
-    implementation libs.nva.json
-    implementation libs.nva.doi
-    implementation libs.nva.secrets
+    implementation nvaLibs.core
+    implementation nvaLibs.json
+    implementation nvaLibs.doi
+    implementation nvaLibs.secrets
 
     implementation libs.aws.secretsmanager.caching
-    implementation libs.aws.sdk2.secrets
-    implementation libs.bundles.logging
+    implementation nvaCatalog.aws.sdk2.secrets
 
-    testImplementation libs.wiremock
-    testImplementation libs.nva.logutils
-    testImplementation libs.bundles.testing
+    implementation nvaCatalog.log4j.core
+    implementation nvaCatalog.log4j.api
+    implementation nvaCatalog.slf4j.api
+
+    testImplementation nvaCatalog.wiremock.core
+    testImplementation nvaCatalog.wiremock.junit5
+    testRuntimeOnly nvaCatalog.wiremock
+    testImplementation nvaLibs.logutils
+
+    testImplementation nvaCatalog.junit.jupiter.engine
+    testImplementation nvaCatalog.junit.jupiter.params
+    testImplementation nvaCatalog.hamcrest
+    testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.testutils
 
 }
 

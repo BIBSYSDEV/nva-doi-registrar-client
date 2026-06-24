@@ -9,8 +9,15 @@ configurations {
 }
 
 dependencies {
-    jaxb libs.bundles.xsd2java
-    implementation libs.bundles.xsd2java
+    jaxb libs.xsd2java.xjc
+    jaxb libs.xsd2java.impl
+    jaxb libs.jakarta.bind.api
+    jaxb libs.xsd2java.activation
+
+    implementation libs.xsd2java.xjc
+    implementation libs.xsd2java.impl
+    implementation libs.jakarta.bind.api
+    implementation libs.xsd2java.activation
 }
 
 

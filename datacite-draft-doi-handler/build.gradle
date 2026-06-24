@@ -2,28 +2,44 @@ dependencies {
     implementation project(":assign-doi-datacite")
     implementation project(":doi-commons")
 
-    implementation libs.nva.doi
-    implementation libs.nva.core
-    implementation libs.nva.json
-    implementation libs.nva.secrets
-    implementation libs.nva.eventhandlers
-    implementation libs.nva.identifiers
-    implementation libs.nva.apigateway
+    implementation nvaLibs.doi
+    implementation nvaLibs.core
+    implementation nvaLibs.json
+    implementation nvaLibs.secrets
+    implementation nvaLibs.eventhandlers
+    implementation nvaLibs.identifiers
+    implementation nvaLibs.apigateway
 
-    implementation libs.bundles.logging
-    implementation libs.bundles.jackson
+    implementation nvaCatalog.log4j.core
+    implementation nvaCatalog.log4j.api
+    implementation nvaCatalog.slf4j.api
+
+    implementation nvaCatalog.jackson.core
+    implementation nvaCatalog.jackson.databind
+    implementation nvaCatalog.jackson.annotations
+    implementation nvaCatalog.jackson.datatype.jdk8
+    implementation nvaCatalog.jackson.datatype.jsr310
+    implementation nvaCatalog.jackson.datatype.problem
 
     runtimeOnly libs.jaxb.runtime
 
-    compileOnly(libs.aws.sdk.apigateway) {
+    compileOnly(nvaCatalog.aws.sdk.apigateway) {
         because "PMD complains for the com/amazonaws/regions/Regions class"
     }
 
     compileOnly(libs.aws.sdk.secrets) {
         because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
     }
-    testImplementation libs.bundles.testing
-    testImplementation libs.wiremock
+
+    testImplementation nvaCatalog.junit.jupiter.engine
+    testImplementation nvaCatalog.junit.jupiter.params
+    testImplementation nvaCatalog.hamcrest
+    testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.testutils
+    testImplementation nvaCatalog.wiremock.core
+    testImplementation nvaCatalog.wiremock.junit5
+    testImplementation nvaCatalog.httpcore5
+    testRuntimeOnly nvaCatalog.wiremock
 }
 
 test {
