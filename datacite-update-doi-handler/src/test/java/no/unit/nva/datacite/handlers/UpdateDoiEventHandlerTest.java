@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static no.unit.nva.datacite.handlers.UpdateDoiEventHandler.MANDATORY_FIELD_ERROR_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -240,8 +241,9 @@ public class UpdateDoiEventHandlerTest extends TestBase {
         try (var inputStream = createDoiRequestInputStream(publicationIdentifier, VALID_SAMPLE_DOI,
                                                            CUSTOMER_ID_IN_INPUT_EVENT, null)) {
             mockGetDoiResponse(null);
-            assertThrows(PublicationApiClientException.class,
+            var thrown = assertThrows(PublicationApiClientException.class,
                     () -> updateDoiHandler.handleRequest(inputStream, outputStream, context));
+            assertEquals("no.unit.nva.datacite.commons.PublicationApiClientException: Publication api answered with status: 404", thrown.getTitle());
         }
     }
 
