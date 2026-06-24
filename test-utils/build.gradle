@@ -3,29 +3,12 @@ plugins {
 }
 
 dependencies {
+    api nvaLibs.eventhandlers
+    api project (":doi-commons")
+    implementation nvaCatalog.jackson.databind
+    implementation nvaCatalog.wiremock.core
     implementation nvaLibs.core
     implementation nvaLibs.json
-    implementation nvaLibs.identifiers
-    implementation nvaLibs.eventhandlers
-    implementation nvaLibs.logutils
-
-    implementation nvaCatalog.jackson.core
-    implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.jackson.annotations
-    implementation nvaCatalog.jackson.datatype.jdk8
-    implementation nvaCatalog.jackson.datatype.jsr310
-    implementation nvaCatalog.jackson.datatype.problem
-
-    implementation nvaCatalog.junit.jupiter.engine
-    implementation nvaCatalog.junit.jupiter.params
-    implementation nvaCatalog.hamcrest
-    implementation nvaCatalog.mockito.core
-    implementation nvaLibs.testutils
-
-    implementation nvaCatalog.wiremock.core
-    runtimeOnly nvaCatalog.wiremock
-
-    implementation project (":doi-commons")
 }
 
 test{

@@ -3,51 +3,24 @@ plugins {
 }
 
 dependencies {
-    implementation project(":assign-doi-datacite")
-    implementation project(":doi-commons")
-
-    implementation nvaLibs.core
-    implementation nvaLibs.json
-    implementation nvaLibs.doi
-    implementation nvaLibs.identifiers
-    implementation nvaLibs.eventhandlers
-    implementation nvaLibs.apigateway
-    implementation nvaLibs.secrets
-    implementation nvaLibs.s3
-
-    implementation nvaCatalog.log4j.core
-    implementation nvaCatalog.log4j.api
-    implementation nvaCatalog.slf4j.api
-
+    api nvaCatalog.aws.lambda.core
+    api nvaCatalog.aws.lambda.events
+    api nvaCatalog.aws.sdk2.s3
+    api nvaLibs.core
+    api nvaLibs.doi
+    api project(":assign-doi-datacite")
     implementation nvaCatalog.jackson.core
     implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.jackson.annotations
-    implementation nvaCatalog.jackson.datatype.jdk8
-    implementation nvaCatalog.jackson.datatype.jsr310
-    implementation nvaCatalog.jackson.datatype.problem
-
-    implementation nvaCatalog.aws.sdk2.http.client
-    implementation nvaCatalog.aws.lambda.events
-    implementation nvaCatalog.aws.sdk2.s3
-    implementation nvaCatalog.aws.sdk2.sqs
-
-    runtimeOnly libs.jaxb.runtime
-
-    testImplementation nvaCatalog.junit.jupiter.engine
+    implementation nvaCatalog.log4j.core
+    implementation nvaCatalog.slf4j.api
+    implementation nvaLibs.eventhandlers
+    implementation nvaLibs.json
+    implementation nvaLibs.s3
+    testImplementation nvaCatalog.junit.jupiter.api
     testImplementation nvaCatalog.junit.jupiter.params
-    testImplementation nvaCatalog.hamcrest
     testImplementation nvaCatalog.mockito.core
+    testImplementation nvaLibs.identifiers
     testImplementation nvaLibs.testutils
-    testImplementation nvaCatalog.wiremock
-
-    compileOnly(nvaCatalog.aws.sdk.apigateway) {
-        because "PMD complains for the com/amazonaws/regions/Regions class"
-    }
-
-    compileOnly(libs.aws.sdk.secrets) {
-        because "PMD complains for the com/amazonaws/services/secretsmanager/AWSSecretsManager class"
-    }
-
 }
 
 

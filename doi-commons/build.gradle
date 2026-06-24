@@ -3,14 +3,7 @@ plugins {
 }
 
 dependencies {
+    api nvaCatalog.jackson.annotations
+    api nvaCatalog.zalando
     implementation nvaLibs.core
-    implementation nvaLibs.json
-    implementation nvaLibs.identifiers
-
-    implementation nvaCatalog.jackson.core
-    implementation nvaCatalog.jackson.databind
-    implementation nvaCatalog.jackson.annotations
-    implementation nvaCatalog.jackson.datatype.jdk8
-    implementation nvaCatalog.jackson.datatype.jsr310
-    implementation nvaCatalog.jackson.datatype.problem
 }
