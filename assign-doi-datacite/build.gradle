@@ -12,7 +12,6 @@ dependencies {
     implementation(nvaCatalog.log4j.core)
     implementation(nvaCatalog.slf4j.api)
     implementation(nvaLibs.json)
-    runtimeOnly(nvaCatalog.aws.java.sdk.core)
     runtimeOnly(nvaCatalog.jackson.dataformat.cbor)
     testImplementation(nvaCatalog.aws.sdk2.secrets)
     testImplementation(nvaCatalog.hamcrest)

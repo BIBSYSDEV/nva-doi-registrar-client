@@ -15,7 +15,6 @@ dependencies {
     implementation(nvaLibs.doi)
     implementation(project(":doi-commons"))
     testImplementation(nvaCatalog.aws.sdk2.utils)
-    testImplementation(nvaCatalog.guava)
     testImplementation(nvaCatalog.hamcrest)
     testImplementation(nvaCatalog.httpcore5)
     testImplementation(nvaCatalog.jackson.core)
