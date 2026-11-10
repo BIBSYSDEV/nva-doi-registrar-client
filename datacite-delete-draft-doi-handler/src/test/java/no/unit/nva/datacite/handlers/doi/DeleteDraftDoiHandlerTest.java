@@ -101,11 +101,9 @@ class DeleteDraftDoiHandlerTest {
   private DoiClient doiClientThrowingException(URI doi) throws ClientException {
     DoiClient doiClient = mock(DoiClient.class);
     when(doiClient.getDoi(any()))
-        .thenAnswer(
-            invocation -> {
-              throw new DeleteDraftDoiException(
-                  Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
-            });
+        .thenAnswer(invocation -> {
+          throw new DeleteDraftDoiException(Doi.fromUri(doi), HttpURLConnection.HTTP_BAD_GATEWAY);
+        });
     return doiClient;
   }
 

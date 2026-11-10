@@ -152,7 +152,7 @@ class DataCiteClientTest {
     assertThrows(CustomerConfigException.class, () -> client.createDoi(customerUri));
   }
 
-  @ParameterizedTest()
+  @ParameterizedTest
   @DisplayName("Should throw exception when creating DOI for customer that is not configured")
   @MethodSource("providedBadCustomerConfigs")
   void shouldThrowExceptionWhenCreatingDoiForCustomerThatIsNotConfigured(CustomerConfig customer) {
