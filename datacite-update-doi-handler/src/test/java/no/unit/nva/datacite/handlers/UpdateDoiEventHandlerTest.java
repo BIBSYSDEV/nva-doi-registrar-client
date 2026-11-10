@@ -199,10 +199,9 @@ class UpdateDoiEventHandlerTest extends TestBase {
       verify(doiClient)
           .updateMetadata(
               eq(doi),
-              argThat(
-                  s ->
-                      comparableSerializedObject(s)
-                          .equals(comparableSerializedObject(DATACITE_XML_WITH_DUPLICATE_BODY))));
+              argThat(s ->
+                  comparableSerializedObject(s)
+                      .equals(comparableSerializedObject(DATACITE_XML_WITH_DUPLICATE_BODY))));
     }
   }
 
@@ -224,10 +223,9 @@ class UpdateDoiEventHandlerTest extends TestBase {
       verify(doiClient)
           .updateMetadata(
               eq(doi),
-              argThat(
-                  s ->
-                      comparableSerializedObject(s)
-                          .equals(comparableSerializedObject(DATACITE_XML_WITH_DUPLICATE_BODY))));
+              argThat(s ->
+                  comparableSerializedObject(s)
+                      .equals(comparableSerializedObject(DATACITE_XML_WITH_DUPLICATE_BODY))));
     }
   }
 

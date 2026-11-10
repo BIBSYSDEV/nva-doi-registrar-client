@@ -70,19 +70,17 @@ public class CustomerConfigExtractorImpl implements CustomerConfigExtractor {
 
   private CustomerConfig[] convertCustomerConfigStringToDto(String customerConfigsString)
       throws CustomerConfigException {
-    return attempt(
-            () ->
-                JsonUtils.dtoObjectMapper.readValue(customerConfigsString, CustomerConfig[].class))
+    return attempt(() ->
+            JsonUtils.dtoObjectMapper.readValue(customerConfigsString, CustomerConfig[].class))
         .orElseThrow(fail -> new CustomerConfigException(fail.getException()));
   }
 
   private void createCustomersMap(final CustomerConfig... customers) {
     Arrays.stream(customers)
         .filter(customer -> nonNull(customer.getDoiPrefix()))
-        .forEach(
-            customer -> {
-              customerConfigs.put(customer.getCustomerId().toString(), customer);
-              customerConfigs.put(customer.getDoiPrefix(), customer);
-            });
+        .forEach(customer -> {
+          customerConfigs.put(customer.getCustomerId().toString(), customer);
+          customerConfigs.put(customer.getDoiPrefix(), customer);
+        });
   }
 }

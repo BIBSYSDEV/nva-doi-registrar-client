@@ -104,10 +104,9 @@ class ReserveDraftDoiHandlerTest {
   private DoiClient doiClientThrowingException() throws ClientException {
     DoiClient doiClient = mock(DoiClient.class);
     when(doiClient.createDoi(any()))
-        .thenAnswer(
-            invocation -> {
-              throw new ClientException("Some exception");
-            });
+        .thenAnswer(invocation -> {
+          throw new ClientException("Some exception");
+        });
     return doiClient;
   }
 }

@@ -100,10 +100,8 @@ public class ExternalUpdatesEventHandler implements RequestHandler<SQSEvent, Voi
   private static EventReference parseEventReference(SQSMessage sqs) {
     var event =
         attempt(() -> JsonUtils.dtoObjectMapper.readValue(sqs.getBody(), SQS_VALUE_TYPE_REF))
-            .orElseThrow(
-                failure ->
-                    new EventHandlingException(
-                        "Failed to parse event body", failure.getException()));
+            .orElseThrow(failure ->
+                new EventHandlingException("Failed to parse event body", failure.getException()));
 
     return Optional.ofNullable(event).stream()
         .map(AwsEventBridgeEvent::getDetail)
