@@ -164,7 +164,6 @@ class DataCiteClientTest {
   }
 
   @Test
-  @SuppressWarnings("PMD.CloseResource")
   void shouldThrowClientExceptionWhenHttpClientThrowsIoException(WireMockRuntimeInfo runtimeInfo)
       throws IOException, InterruptedException {
     var httpClientMock = mock(HttpClient.class);
