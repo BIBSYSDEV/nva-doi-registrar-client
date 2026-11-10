@@ -10,7 +10,7 @@ nva {
     }
     generatedCode = ['org/datacite/schema/**']
     java {
-        languageVersion = 21
+        languageVersion = 25
     }
     pmd {
         excludedRules = [
