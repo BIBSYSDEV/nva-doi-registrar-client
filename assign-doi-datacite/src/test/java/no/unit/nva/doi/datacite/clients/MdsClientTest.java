@@ -40,7 +40,6 @@ class MdsClientTest {
   }
 
   @Test
-  @SuppressWarnings("PMD.CloseResource")
   void shouldThrowClientExceptionWhenHttpClientThrowsIoExceptionOnDeleteDraftDoi(
       WireMockRuntimeInfo runtimeInfo) throws IOException, InterruptedException {
     var httpClientMock = mock(HttpClient.class);
