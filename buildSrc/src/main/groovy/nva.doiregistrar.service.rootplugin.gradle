@@ -6,6 +6,10 @@ nva {
     dependencyAnalysis {
         enforced = true
     }
+    spectral {
+        documents = ['docs/*.yaml']
+        rulesetFile = file('.spectral.yaml')
+    }
     generatedCode = ['org/datacite/schema/**']
     jacoco {
         minMethodCoverage = 1.000
